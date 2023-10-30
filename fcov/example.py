@@ -1,4 +1,4 @@
-from .context import Context
+from .context import CoverageContext
 from .covergroup import Covergroup
 from .coverpoint import Coverpoint
 from .sampler import Sampler
@@ -75,7 +75,6 @@ class MyCovergroup(Covergroup):
 
 class MyBigCoverGroup(Covergroup):
     def setup(self, ctx):
-        print(ctx.isa)
         self.add_covergroup(
             MyCovergroup(name="my_covergroup", description="A group of coverpoints")
         )
@@ -105,7 +104,7 @@ class MySampler(Sampler):
 
 if __name__ == "__main__":
     # testbench
-    with Context(isa="THIS IS AN ISA"):
+    with CoverageContext(isa="THIS IS AN ISA"):
         cvg = MyBigCoverGroup(name="my_big_covergroup", description="A group of stuff")
 
     cvg.print_tree()
