@@ -6,6 +6,8 @@ from types import SimpleNamespace
 from rich.console import Console
 from rich.table import Table
 
+from .context import CoverageContext
+
 from .axis import Axis
 from .cursor import Cursor
 from .goal import GoalItem
@@ -42,7 +44,7 @@ class Coverpoint:
         # Instance of Cursor class to increment hit count for a bucket
         self.cursor = Cursor(self)
 
-        self.setup()
+        self.setup(ctx=CoverageContext.get())
 
         self.axis_names = [x.name for x in self.axes]
         # TODO Check if goalsDict only has 1 entry
@@ -52,6 +54,9 @@ class Coverpoint:
             goal = self.apply_goals(bucket, goals)
             if goal:
                 self._cvg_goals[cursor] = goal
+
+    def setup(self, ctx: SimpleNamespace):
+        raise NotImplementedError("This needs to be implemented by the coverpoint")
 
     def all_axis_value_combinations(self):
         axis_values = []
