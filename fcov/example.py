@@ -1,3 +1,4 @@
+from .context import Context
 from .covergroup import Covergroup
 from .coverpoint import Coverpoint
 from .sampler import Sampler
@@ -20,7 +21,7 @@ class MyCoverpoint(Coverpoint):
     def __init__(self, name: str, description: str, trigger=None):
         super().__init__(name, description, trigger=None)
 
-    def setup(self):
+    def setup(self, ctx):
         self.add_axis(
             name="my_axis_1",
             values=[0, 1, [2, 3]],
@@ -65,7 +66,7 @@ class MyCoverpoint(Coverpoint):
 
 # covergroups
 class MyCovergroup(Covergroup):
-    def setup(self):
+    def setup(self, ctx):
         self.add_coverpoint(MyCoverpoint(name="my_coverpoint", description="A lovely coverpoint"))
         self.add_coverpoint(
             MyCoverpoint(name="another_coverpoint", description="A rather spiffing coverpoint")
@@ -73,7 +74,8 @@ class MyCovergroup(Covergroup):
 
 
 class MyBigCoverGroup(Covergroup):
-    def setup(self):
+    def setup(self, ctx):
+        print(ctx.isa)
         self.add_covergroup(
             MyCovergroup(name="my_covergroup", description="A group of coverpoints")
         )
@@ -103,8 +105,8 @@ class MySampler(Sampler):
 
 if __name__ == "__main__":
     # testbench
-
-    cvg = MyBigCoverGroup(name="my_big_covergroup", description="A group of stuff")
+    with Context(isa="THIS IS AN ISA"):
+        cvg = MyBigCoverGroup(name="my_big_covergroup", description="A group of stuff")
 
     cvg.print_tree()
     cvg.my_covergroup.print_tree()
