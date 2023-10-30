@@ -1,3 +1,7 @@
+from types import SimpleNamespace
+from .context import CoverageContext
+
+
 class Covergroup:
     """This class groups coverpoints together, and adds them to the hierarchy"""
 
@@ -14,7 +18,7 @@ class Covergroup:
 
         self.coverpoints = {}
         self.covergroups = {}
-        self.setup()
+        self.setup(ctx=CoverageContext.get())
 
     def add_coverpoint(self, coverpoint):
         """
@@ -41,7 +45,7 @@ class Covergroup:
         self.covergroups[covergroup.name] = covergroup
         setattr(self, covergroup.name, covergroup)
 
-    def setup(self):
+    def setup(self, ctx: SimpleNamespace):
         raise NotImplementedError("This needs to be implemented by the coverpoint")
 
     def print_tree(self, indent=0):
