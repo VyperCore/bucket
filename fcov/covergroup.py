@@ -1,5 +1,5 @@
 from types import SimpleNamespace
-from .context import Context
+from .context import CoverageContext
 
 
 class Covergroup:
@@ -18,7 +18,7 @@ class Covergroup:
 
         self.coverpoints = {}
         self.covergroups = {}
-        self.setup(ctx=Context.get())
+        self.setup(ctx=CoverageContext.get())
 
     def add_coverpoint(self, coverpoint):
         """

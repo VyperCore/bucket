@@ -6,7 +6,7 @@ from types import SimpleNamespace
 from rich.console import Console
 from rich.table import Table
 
-from .context import Context
+from .context import CoverageContext
 
 from .axis import Axis
 from .cursor import Cursor
@@ -44,7 +44,7 @@ class Coverpoint:
         # Instance of Cursor class to increment hit count for a bucket
         self.cursor = Cursor(self)
 
-        self.setup(ctx=Context.get())
+        self.setup(ctx=CoverageContext.get())
 
         self.axis_names = [x.name for x in self.axes]
         # TODO Check if goalsDict only has 1 entry

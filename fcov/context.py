@@ -1,9 +1,7 @@
 from copy import copy
 from types import SimpleNamespace
-from typing import Any
 
-
-class Context:
+class ContextBase:
     _stack: list["SimpleNamespace"] = [SimpleNamespace()]
     
     def __init__(self, replace=False, overlay=True, **kwargs):
@@ -22,10 +20,10 @@ class Context:
     def __exit__(self, _extype, _exval, _extb):
         self._stack.pop()
 
-    class NO_DEFAULT: ...
-
     @classmethod
     def get(cls):
         if len(cls._stack):
             return cls._stack[-1]
         return SimpleNamespace()
+
+class CoverageContext(ContextBase): ...
