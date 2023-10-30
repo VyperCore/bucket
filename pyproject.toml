@@ -1,0 +1,15 @@
+[build-system]
+requires = ["poetry"]
+build-backend = "poetry.masonry.api"
+
+[tool.poetry]
+name = "functional-coverage"
+version = "0.1"
+description = "Functional coverage"
+authors = []
+license = "Proprietary"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+rich = "^13.3.4"
