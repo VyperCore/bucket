@@ -7,7 +7,7 @@ class Axis:
         self.values = self.sanitise_values(values)
         self.description = description
 
-        print(f"Added {self.name} = {self.description}. Values are {self.values}")
+        print(f"Added {self.name}: {self.description}. Values are {self.values}")
 
     def sanitise_values(self, values):
         # Take input values and return a dict
