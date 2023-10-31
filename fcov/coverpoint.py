@@ -78,9 +78,14 @@ class Coverpoint:
         self._goal_dict[formatted_name] = GoalItem(name, amount, description)
 
     def apply_goals(self, bucket=None, goals=None):
+<<<<<<< HEAD
         if len(self._goal_dict) == 1:
             return self._goal_dict["DEFAULT"]
         raise NotImplementedError("This needs to be implemented by the coverpoint")
+=======
+        # This should be implemented by the coverpoint when required
+        ...
+>>>>>>> b9db2dc (Cunning updates)
 
     def sample():
         raise NotImplementedError("This needs to be implemented by the coverpoint")
@@ -98,18 +103,7 @@ class Coverpoint:
         self._debug_coverage()
 
     def _debug_coverage(self):
-        def print_fixed_width_columns(data, column_width, header=False):
-            formatted_item = ""
-            for item in data:
-                # Format each item with a fixed width
-                formatted_item += f"| {item!s:{column_width}} "
-            if header:
-                length = len(formatted_item)
-                print("-" * length)
-            print(formatted_item)
-            if header:
-                print("-" * length)
-
+       
         def percentage_hit(hits, goal):
             if goal >= 0:
                 return f"{min((100*hits/goal), 100):.1f}%"
@@ -125,6 +119,7 @@ class Coverpoint:
             "Goal Name",
             "Goal Description",
         ]
+        print(f'DEBUG: {header_names=}')
 
         for header in header_names:
             table.add_column(header, justify="right", style="cyan", no_wrap=True)
@@ -143,6 +138,7 @@ class Coverpoint:
             ]
 
             table.add_row(*data)
+            print(f'DEBUG: {data}')
 
         console = Console()
         console.print(table)
