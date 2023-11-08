@@ -1,10 +1,14 @@
+from dataclasses import asdict
 import itertools
 from collections import defaultdict
 from enum import Enum
 from types import SimpleNamespace
+from typing import Iterable, Iterator
 
 from rich.console import Console
 from rich.table import Table
+
+from .covergroup import PointStartPos, PointPos, CoverBase
 
 from .axis import Axis
 from .cursor import Cursor
@@ -18,7 +22,7 @@ class GOAL(Enum):
     DEFAULT = 10
 
 
-class Coverpoint:
+class Coverpoint(CoverBase):
     # coverpoints_by_trigger = defaultdict(set)
 
     def __init__(self, name: str, description: str, trigger=None):
@@ -53,6 +57,8 @@ class Coverpoint:
             if goal:
                 self._cvg_goals[cursor] = goal
 
+        self.pos = None
+
     def all_axis_value_combinations(self):
         axis_values = []
         for axis in self.axes:
@@ -67,30 +73,93 @@ class Coverpoint:
         # Dicts should be ordered, so keep the order they are installed...
         self.axes.append(Axis(name, values, description))
 
-    def add_goal(self, name, amount, description):
+    def add_goal(self, name, target, description):
         formatted_name = name.upper()
         if formatted_name in self._goal_dict:
             raise Exception(f'Goal "{formatted_name}" already defined for this coverpoint')
-        self._goal_dict[formatted_name] = GoalItem(name, amount, description)
+        self._goal_dict[formatted_name] = GoalItem(name, target, description)
 
     def apply_goals(self, bucket=None, goals=None):
         # This should be implemented by the coverpoint when requried
-        raise NotImplementedError("This needs to be implemented by the coverpoint")
-
-    def sample():
         raise NotImplementedError("This needs to be implemented by the coverpoint")
 
     def get_goal(self, cursor):
         if cursor in self._cvg_goals:
             return self._cvg_goals[cursor]
         else:
-            return GoalItem()
+            return self._goal_dict['DEFAULT']
+
+    def identify(self, start: PointStartPos | None = None) -> PointPos:
+        start = start or PointStartPos()
+
+        axis_end = start.axis_start + len(self.axes)
+        axis_value_end = start.axis_value_start
+        for axis in self.axes:
+            axis_value_end = axis.identify(axis_value_end)
+
+        goal_end = start.goal_start
+        for goal in self._goal_dict.values():
+            goal.identify(goal_end)
+            goal_end += 1
+
+        bucket_size = 0
+        target_end = start.target_start
+        for _cursor in self.all_axis_value_combinations():
+            target = self.get_goal(_cursor).target
+            if target > 0:
+                target_end += target
+            bucket_size += 1
+        bucket_end = start.bucket_start + bucket_size
+
+        self.pos = PointPos(**asdict(start),
+                              end=start.start+1,
+                              axis_end=axis_end,
+                              axis_value_end=axis_value_end,
+                              goal_end=goal_end,
+                              bucket_end=bucket_end,
+                              target_end=target_end)
+        return self.pos
+    
+    def serialize_points(self):
+        yield self
+
+    def serialize_axes(self):
+        yield from self.axes
+
+    def serialize_axis_values(self):
+        for axis in self.axes:
+            yield from axis.values.keys()
+
+    def serialize_goals(self):
+        yield from self._goal_dict.values()
+
+    def serialize_bucket_goals(self):
+        for cursor in self.all_axis_value_combinations():
+            yield self.get_goal(cursor)._offset
+
+    def serialize_bucket_targets(self):
+        for cursor in self.all_axis_value_combinations():
+            yield self.get_goal(cursor).target
+
+    def serialize_bucket_hits(self):
+        for cursor in self.all_axis_value_combinations():
+            yield self.cvg_hits[cursor]
+
+    def serialize_point_hits(self):
+        hits = 0
+        for cursor in self.all_axis_value_combinations():
+            target = self.get_goal(cursor).target
+            if target > 0:
+                hits += min(target, self.cvg_hits[cursor])
+        yield hits
 
     def export_coverage(self):
         # This should return all coverage in a useable format
         # or just axisName, cvg_hits and _goal_dict?
         # For now it prints
-        self._debug_coverage()
+        # print(self.offset, self.size, self.name)
+        # self._debug_coverage()
+        pass
 
     def _debug_coverage(self):
         def print_fixed_width_columns(data, column_width, header=False):
@@ -131,8 +200,8 @@ class Coverpoint:
             data = [
                 *list(cursor),
                 str(hits),
-                str(goal.amount),
-                percentage_hit(hits, goal.amount),
+                str(goal.target),
+                percentage_hit(hits, goal.target),
                 goal.name,
                 goal.description,
             ]
