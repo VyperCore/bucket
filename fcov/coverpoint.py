@@ -45,7 +45,6 @@ class Coverpoint:
         self.setup()
 
         self.axis_names = [x.name for x in self.axes]
-        # TODO Check if goalsDict only has 1 entry
         goals = SimpleNamespace(**self._goal_dict)
         for cursor in self.all_axis_value_combinations():
             bucket = SimpleNamespace(**dict(zip(self.axis_names, cursor, strict=True)))
@@ -74,7 +73,8 @@ class Coverpoint:
         self._goal_dict[formatted_name] = GoalItem(name, amount, description)
 
     def apply_goals(self, bucket=None, goals=None):
-        # This should be implemented by the coverpoint when requried
+        if len(self._goal_dict) == 1:
+            return self._goal_dict["DEFAULT"]
         raise NotImplementedError("This needs to be implemented by the coverpoint")
 
     def sample():
