@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2023 Vypercore. All Rights Reserved
+
 from functools import lru_cache
 
 
