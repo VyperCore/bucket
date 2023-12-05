@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2023 Vypercore. All Rights Reserved
+
 from .context import CoverageContext
 from .covergroup import Covergroup
 from .coverpoint import Coverpoint

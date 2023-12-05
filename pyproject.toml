@@ -5,9 +5,9 @@ build-backend = "poetry.masonry.api"
 [tool.poetry]
 name = "fcov"
 version = "0.1"
-description = "Functional coverage"
+description = "Python functional coverage"
 authors = []
-license = "Proprietary"
+license = { file="LICENSE" }
 readme = "README.md"
 
 [tool.poetry.dependencies]
