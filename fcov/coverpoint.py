@@ -78,14 +78,9 @@ class Coverpoint:
         self._goal_dict[formatted_name] = GoalItem(name, amount, description)
 
     def apply_goals(self, bucket=None, goals=None):
-<<<<<<< HEAD
         if len(self._goal_dict) == 1:
             return self._goal_dict["DEFAULT"]
         raise NotImplementedError("This needs to be implemented by the coverpoint")
-=======
-        # This should be implemented by the coverpoint when required
-        ...
->>>>>>> b9db2dc (Cunning updates)
 
     def sample():
         raise NotImplementedError("This needs to be implemented by the coverpoint")
@@ -119,6 +114,7 @@ class Coverpoint:
             "Goal Name",
             "Goal Description",
         ]
+        print(f'DEBUG: {header_names=}')
 
         for header in header_names:
             table.add_column(header, justify="right", style="cyan", no_wrap=True)
@@ -137,6 +133,7 @@ class Coverpoint:
             ]
 
             table.add_row(*data)
+            print(f'DEBUG: {data}')
 
         console = Console()
         console.print(table)
