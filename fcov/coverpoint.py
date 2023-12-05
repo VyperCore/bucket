@@ -114,7 +114,6 @@ class Coverpoint:
             "Goal Name",
             "Goal Description",
         ]
-        print(f'DEBUG: {header_names=}')
 
         for header in header_names:
             table.add_column(header, justify="right", style="cyan", no_wrap=True)
@@ -133,7 +132,6 @@ class Coverpoint:
             ]
 
             table.add_row(*data)
-            print(f'DEBUG: {data}')
 
         console = Console()
         console.print(table)
