@@ -90,7 +90,7 @@ class MySampler(Sampler):
 
         self.random = random.Random(2023)
 
-    def create_trace(self):
+    def process_trace(self, trace):
         """Nonsense function"""
         # This should come from monitors, etc
         trace_data_1 = self.random.randint(0, 3)
