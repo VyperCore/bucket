@@ -74,17 +74,15 @@ class Coverpoint:
         self._goal_dict[formatted_name] = GoalItem(name, target, description)
 
     def apply_goals(self, bucket=None, goals=None):
-        # This should be implemented by the coverpoint when requried
-        raise NotImplementedError("This needs to be implemented by the coverpoint")
-
-    def sample():
+        if len(self._goal_dict) == 1:
+            return self._goal_dict["DEFAULT"]
         raise NotImplementedError("This needs to be implemented by the coverpoint")
 
     def get_goal(self, cursor):
         if cursor in self._cvg_goals:
             return self._cvg_goals[cursor]
         else:
-            return GoalItem()
+            return self._goal_dict['DEFAULT']
 
     def export_coverage(self):
         # This should return all coverage in a useable format
