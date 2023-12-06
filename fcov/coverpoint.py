@@ -1,3 +1,4 @@
+from dataclasses import asdict
 import itertools
 from collections import defaultdict
 from enum import Enum
@@ -5,6 +6,9 @@ from types import SimpleNamespace
 
 from rich.console import Console
 from rich.table import Table
+
+from .chain import OpenLink, Link
+from .covergroup import CoverBase
 
 from .axis import Axis
 from .cursor import Cursor
@@ -18,7 +22,7 @@ class GOAL(Enum):
     DEFAULT = 10
 
 
-class Coverpoint:
+class Coverpoint(CoverBase):
     # coverpoints_by_trigger = defaultdict(set)
 
     def __init__(self, name: str, description: str, trigger=None):
@@ -32,7 +36,7 @@ class Coverpoint:
         print(f"{self.name}: {self.description}")
 
         # List of axes used by this coverpoint
-        self.axes = []  # TODO make a dict
+        self.axes: list[Axis] = []  # TODO make a dict
         # Number of hits for each bucket
         self.cvg_hits = defaultdict(int)
         # Dictionary of defined goals
@@ -84,11 +88,48 @@ class Coverpoint:
         else:
             return self._goal_dict['DEFAULT']
 
-    def export_coverage(self):
-        # This should return all coverage in a useable format
-        # or just axisName, cvg_hits and _goal_dict?
-        # For now it prints
-        self._debug_coverage()
+    def chain(self, start: OpenLink | None = None) -> Link:
+        start = start or OpenLink(prev=None)
+
+        child_start = start.link_down()
+        child_close = None
+
+        for axis in self.axes:
+            child_close = axis.chain(child_start)
+            child_start = child_close.link_across()
+
+        for goal in self._goal_dict.values():
+            child_close = goal.chain(child_start)
+            child_start = child_close.link_across()
+
+        bucket_size = 0
+        target_size = 0
+        for _cursor in self.all_axis_value_combinations():
+            target = self.get_goal(_cursor).target
+            if target > 0:
+                target_size += target
+            bucket_size += 1
+
+        return start.close(self, child_close,
+                           point_size=1,
+                           bucket_size=bucket_size, 
+                           target_size=target_size)
+
+    def serialize_bucket_goals(self):
+        for cursor in self.all_axis_value_combinations():
+            yield self.get_goal(cursor).name
+
+    def serialize_bucket_hits(self):
+        for cursor in self.all_axis_value_combinations():
+            yield self.cvg_hits[cursor]
+
+    def serialize_point_hits(self):
+        hits = 0
+        for cursor in self.all_axis_value_combinations():
+            target = self.get_goal(cursor).target
+            if target > 0:
+                hits += min(target, self.cvg_hits[cursor])
+        yield hits
 
     def _debug_coverage(self):
         def print_fixed_width_columns(data, column_width, header=False):
