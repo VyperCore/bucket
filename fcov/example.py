@@ -106,12 +106,12 @@ if __name__ == "__main__":
 
     cvg = MyBigCoverGroup(name="my_big_covergroup", description="A group of stuff")
 
-    cvg.print_tree()
-    cvg.my_covergroup.print_tree()
+    # cvg.print_tree()
+    # cvg.my_covergroup.print_tree()
 
     sampler = MySampler(coverage=cvg)
 
     for _ in range(200):
         sampler.sample()
 
-    cvg.export_coverage()
+    cvg.export()

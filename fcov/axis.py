@@ -1,5 +1,5 @@
 from functools import lru_cache
-
+from .chain import OpenLink, Link
 
 class Axis:
     def __init__(self, name, values, description):
@@ -8,6 +8,12 @@ class Axis:
         self.description = description
 
         print(f"Added {self.name} = {self.description}. Values are {self.values}")
+
+    def chain(self, start: OpenLink | None = None) -> Link:
+        start = start or OpenLink(prev=None)
+        return start.close(self,
+                           axis_size=1,
+                           axis_value_size=len(self.values.keys()))
 
     def sanitise_values(self, values):
         # Take input values and return a dict
