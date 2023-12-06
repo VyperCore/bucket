@@ -67,11 +67,11 @@ class Coverpoint:
         # Dicts should be ordered, so keep the order they are installed...
         self.axes.append(Axis(name, values, description))
 
-    def add_goal(self, name, amount, description):
+    def add_goal(self, name, target, description):
         formatted_name = name.upper()
         if formatted_name in self._goal_dict:
             raise Exception(f'Goal "{formatted_name}" already defined for this coverpoint')
-        self._goal_dict[formatted_name] = GoalItem(name, amount, description)
+        self._goal_dict[formatted_name] = GoalItem(name, target, description)
 
     def apply_goals(self, bucket=None, goals=None):
         # This should be implemented by the coverpoint when requried
@@ -131,8 +131,8 @@ class Coverpoint:
             data = [
                 *list(cursor),
                 str(hits),
-                str(goal.amount),
-                percentage_hit(hits, goal.amount),
+                str(goal.target),
+                percentage_hit(hits, goal.target),
                 goal.name,
                 goal.description,
             ]
