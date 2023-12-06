@@ -27,7 +27,6 @@ class Covergroup:
             raise Exception("Coverpoint names must be unique within a covergroup")
 
         self.coverpoints[coverpoint.name] = coverpoint
-        setattr(self, coverpoint.name, coverpoint)
 
     def add_covergroup(self, covergroup):
         """
@@ -39,10 +38,17 @@ class Covergroup:
             raise Exception("Covergroup names must be unique within a covergroup")
 
         self.covergroups[covergroup.name] = covergroup
-        setattr(self, covergroup.name, covergroup)
 
-    def setup(self):
-        raise NotImplementedError("This needs to be implemented by the coverpoint")
+    def __getattr__(self, key):
+        '''
+        Allow reference to child covergroups and coverpoints using <parent>.<child>
+        '''
+        if key in self.covergroups:
+            return self.covergroups[key]
+        elif key in self.coverpoints:
+            return self.coverpoints[key]
+        else:
+            return super().__getattribute__(key)
 
     def print_tree(self, indent=0):
         """Print out coverage hierarch from this covergroup down"""
