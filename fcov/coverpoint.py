@@ -98,18 +98,7 @@ class Coverpoint:
         self._debug_coverage()
 
     def _debug_coverage(self):
-        def print_fixed_width_columns(data, column_width, header=False):
-            formatted_item = ""
-            for item in data:
-                # Format each item with a fixed width
-                formatted_item += f"| {item!s:{column_width}} "
-            if header:
-                length = len(formatted_item)
-                print("-" * length)
-            print(formatted_item)
-            if header:
-                print("-" * length)
-
+       
         def percentage_hit(hits, goal):
             if goal >= 0:
                 return f"{min((100*hits/goal), 100):.1f}%"

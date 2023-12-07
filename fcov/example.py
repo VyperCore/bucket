@@ -90,6 +90,7 @@ class MySampler(Sampler):
 
         self.random = random.Random(2023)
 
+
     def create_trace(self):
         """Nonsense function"""
         # This should come from monitors, etc
@@ -100,6 +101,7 @@ class MySampler(Sampler):
         data = (trace_data_1, trace_data_2, trace_data_3)
         print(f"TRACE_DATA: {data}")
         return data
+
 
 
 if __name__ == "__main__":
@@ -113,6 +115,6 @@ if __name__ == "__main__":
     sampler = MySampler(coverage=cvg)
 
     for _ in range(200):
-        sampler.sample()
+        sampler.sample(sampler.create_trace())
 
     cvg.export_coverage()
