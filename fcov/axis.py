@@ -14,7 +14,7 @@ class Axis:
 
     def sanitise_values(self, values):
         # Take input values and return a dict
-        # Input values can be in the form of dict, tuple or list
+        # Input values can be in the form of dict, tuple, list or set
         # The return dictionary will have string form of the values as the key
         # and the values (or ranges) as the value.
         if isinstance(values, dict):

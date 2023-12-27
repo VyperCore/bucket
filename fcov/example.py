@@ -41,7 +41,6 @@ class MyCoverpoint(Coverpoint):
             description="Range of values for my_axis_3",
         )
 
-        # def add_goals(self):
         self.add_goal("MOULDY_CHEESE", -1, "Not so gouda!")
         self.add_goal("OPTMISTIC_CHEESE", 20, "I brie-live in myself!")
 
