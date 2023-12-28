@@ -1,5 +1,6 @@
 
-from fcov.chain import Link
+from fcov.common.chain import Link
+from ..coverchain import CovDef, CovRes
 from sqlalchemy import Integer, String, select, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
 
@@ -38,25 +39,26 @@ class PointRow(BaseRow):
     bucket_start:     Mapped[int] = mapped_column(Integer)
     bucket_end:       Mapped[int] = mapped_column(Integer)
     target:           Mapped[int] = mapped_column(Integer)
+    target_buckets:   Mapped[int] = mapped_column(Integer)
     name:             Mapped[str] = mapped_column(String(30))
     description:      Mapped[str] = mapped_column(String(30))
 
     @classmethod
-    def from_link(cls, definition: int, link: Link):
-        print(definition, link.point_start)
+    def from_link(cls, definition: int, link: Link[CovDef]):
         return cls(definition=definition,
-                   start=link.point_start,
-                   end=link.point_end,
+                   start=link.start.point,
+                   end=link.end.point,
                    depth=link.depth,
-                   axis_start=link.axis_start,
-                   axis_end=link.axis_end,
-                   axis_value_start=link.axis_value_start,
-                   axis_value_end=link.axis_value_end,
-                   goal_start=link.goal_start,
-                   goal_end=link.goal_end,
-                   bucket_start=link.bucket_start,
-                   bucket_end=link.bucket_end,
-                   target=link.target_end-link.target_start,
+                   axis_start=link.start.axis,
+                   axis_end=link.end.axis,
+                   axis_value_start=link.start.axis_value,
+                   axis_value_end=link.end.axis_value,
+                   goal_start=link.start.goal,
+                   goal_end=link.end.goal,
+                   bucket_start=link.start.bucket,
+                   bucket_end=link.end.bucket,
+                   target=link.end.target-link.start.target,
+                   target_buckets=link.end.target_buckets-link.start.target_buckets,
                    name=link.item.name,
                    description=link.item.description
         )
@@ -71,11 +73,11 @@ class AxisRow(BaseRow):
     description:      Mapped[str] = mapped_column(String(30))
 
     @classmethod
-    def from_link(cls, definition: int, link: Link):
+    def from_link(cls, definition: int, link: Link[CovDef]):
         return cls(definition=definition,
-                   start=link.axis_start,
-                   value_start=link.axis_value_start,
-                   value_end=link.axis_value_end,
+                   start=link.start.axis,
+                   value_start=link.start.axis_value,
+                   value_end=link.end.axis_value,
                    name=link.item.name,
                    description=link.item.description
         )
@@ -89,10 +91,10 @@ class GoalRow(BaseRow):
     description:      Mapped[str] = mapped_column(String(30))
 
     @classmethod
-    def from_link(cls, definition: int, link: Link):
+    def from_link(cls, definition: int, link: Link[CovDef]):
         return cls(definition=definition,
-                   start=link.goal_start,
-                   target=link.item.target,
+                   start=link.start.goal,
+                   target=link.end.target-link.start.target,
                    name=link.item.name,
                    description=link.item.description
         )
@@ -122,11 +124,21 @@ class PointHitRow(BaseRow):
     __tablename__ = "point_hit"
     run:              Mapped[int] = mapped_column(Integer, primary_key=True)
     start:            Mapped[int] = mapped_column(Integer, primary_key=True)
+    depth:            Mapped[int] = mapped_column(Integer, primary_key=True)
     hits:             Mapped[int] = mapped_column(Integer)
-
+    hit_buckets:      Mapped[int] = mapped_column(Integer)
+    full_buckets:     Mapped[int] = mapped_column(Integer)
+    
     @classmethod
-    def from_point_hit(cls, run: int, start: int, hits: int):
-        return cls(run=run, start=start, hits=hits)
+    def from_link(cls, run: int, link: Link[CovRes]):
+        return cls(run=run,
+                   start=link.start.point,
+                   depth=link.depth,
+                   hits=link.end.hits-link.start.hits,
+                   hit_buckets=link.end.hit_buckets-link.start.hit_buckets,
+                   full_buckets=link.end.full_buckets-link.start.full_buckets,
+        )
+
 
 class BucketHitRow(BaseRow):
     __tablename__ = "bucket_hit"
@@ -135,7 +147,7 @@ class BucketHitRow(BaseRow):
     hits:             Mapped[int] = mapped_column(Integer)
 
     @classmethod
-    def from_bucket_hit(cls, run: int, start: int, hits: int):
+    def from_bucket_hits(cls, run: int, start: int, hits: int):
         return cls(run=run, start=start, hits=hits)
 
 class Exporter:
@@ -143,7 +155,7 @@ class Exporter:
         self.engine = create_engine("sqlite://", echo=True)
         BaseRow.metadata.create_all(self.engine)
 
-    def write_definition(self, root_point: CoverBase, chain: Link) -> int:
+    def write_definition(self, chain: Link[CovDef]) -> int:
         with Session(self.engine) as session:
             # Insert a source row first
             def_row = DefinitionRow()
@@ -151,31 +163,33 @@ class Exporter:
             session.commit()
             definition = def_row.definition
 
-            for link in chain.iter():
-                match link.item:
-                    case Covergroup():
-                        session.add(PointRow.from_link(definition, link))
-                    case Coverpoint():
-                        session.add(PointRow.from_link(definition, link))
-                        # xyz
-                        start = link.bucket_start
-                        goal_start = link.goal_start
-                        goal_offsets = {k:i for i,k in enumerate(link.item._goal_dict.keys())}
-                        for offset, goal in enumerate(link.item.serialize_bucket_goals()):
-                            session.add(BucketGoalRow.from_bucket_goal(definition, start + offset, goal_start + goal_offsets[goal]))
-                    case Axis():
-                        session.add(AxisRow.from_link(definition, link))
-                        start = link.axis_value_start
-                        for offset, axis_value in enumerate(link.item.values.keys()):
-                            session.add(AxisValueRow.from_axis_value(definition, start + offset, axis_value))
-                    case GoalItem():
-                        session.add(GoalRow.from_link(definition, link))
+            for point_link in chain.index.iter(Covergroup):
+                session.add(PointRow.from_link(definition, point_link))
+
+            for point_link in chain.index.iter(Coverpoint):
+                session.add(PointRow.from_link(definition, point_link))
+
+                start = point_link.start.bucket
+                goal_start = point_link.start.goal
+                goal_offsets = {k:i for i,k in enumerate(point_link.item._goal_dict.keys())}
+                for offset, goal in enumerate(point_link.item.bucket_goals()):
+                    session.add(BucketGoalRow.from_bucket_goal(definition, start + offset, goal_start + goal_offsets[goal]))
+
+            for axis_link in chain.index.iter(Axis):
+                session.add(AxisRow.from_link(definition, axis_link))
+
+                start = axis_link.start.axis_value
+                for offset, axis_value in enumerate(axis_link.item.values.keys()):
+                    session.add(AxisValueRow.from_axis_value(definition, start + offset, axis_value))
+
+            for goal_link in chain.index.iter(GoalItem):
+                session.add(GoalRow.from_link(definition, goal_link))
 
             session.commit()
         
         return definition
 
-    def write_run(self, root_point: CoverBase, definition: int, chain: Link) -> int:
+    def write_run(self, definition: int, chain: Link[CovRes]) -> int:
             
         with Session(self.engine) as session:
             # Insert a source row first
@@ -184,20 +198,16 @@ class Exporter:
             session.commit()
             run = run_row.run
 
-            # for link in chain.iter():
-            #     match link.item:
-            #         case Coverpoint():
-            #             session.add(PointRow.from_link(definition, link))
-            #             start = link.bucket_start
-            #             for offset, hits in enumerate(link.item.serialize_bucket_hits()):
-            #                 session.add(BucketHitRow.from_bucket_hit(definition, start + offset, hits))
+            for point_link in chain.index.iter(Covergroup):
+                session.add(PointHitRow.from_link(run, point_link))
 
-            for start, hits in enumerate(root_point.serialize_point_hits()):
-                session.add(PointHitRow.from_point_hit(run, start, hits))
-            session.commit()
+            for point_link in chain.index.iter(Coverpoint):
+                session.add(PointHitRow.from_link(run, point_link))
 
-            for start, hits in enumerate(root_point.serialize_bucket_hits()):
-                session.add(BucketHitRow.from_bucket_hit(run, start, hits))
+                start = point_link.start.bucket
+                for offset, hits in enumerate(point_link.item.bucket_hits()):
+                    session.add(BucketHitRow.from_bucket_hits(run, start + offset, hits))
+            
             session.commit()
 
         return run
@@ -207,13 +217,17 @@ class Exporter:
             run_row = session.scalars(select(RunRow).where(RunRow.run==run)).one()
             definition = run_row.definition
 
-            
             summary_table_columns = [
                 Column("Name", justify="left", style="cyan", no_wrap=True),
                 Column("Description", justify="left", style="cyan", no_wrap=True),
-                Column("Hits", justify="right", style="cyan", no_wrap=True),
                 Column("Target", justify="right", style="cyan", no_wrap=True),
-                Column("Target %", justify="right", style="cyan", no_wrap=True),
+                Column("Hits", justify="right", style="cyan", no_wrap=True),
+                Column("Hits %", justify="right", style="cyan", no_wrap=True),
+                Column("Target Buckets", justify="right", style="cyan", no_wrap=True),
+                Column("Hit Buckets", justify="right", style="cyan", no_wrap=True),
+                Column("Full Bucket", justify="right", style="cyan", no_wrap=True),
+                Column("Hit %", justify="right", style="cyan", no_wrap=True),
+                Column("Full %", justify="right", style="cyan", no_wrap=True),
             ]
             summary_table = Table(*summary_table_columns, title="Point Summary")
 
@@ -226,8 +240,8 @@ class Exporter:
                 Column("Goal Description", justify="left", style="cyan", no_wrap=True),
             ]
 
-            point_st = select(PointRow).where(PointRow.definition==definition).order_by(PointRow.start)
-            point_hit_st = select(PointHitRow).where(PointHitRow.run==run).order_by(PointHitRow.start)
+            point_st = select(PointRow).where(PointRow.definition==definition).order_by(PointRow.start, PointRow.depth)
+            point_hit_st = select(PointHitRow).where(PointHitRow.run==run).order_by(PointHitRow.start, PointHitRow.depth)
 
             axis_st = select(AxisRow).where(AxisRow.definition==definition).order_by(AxisRow.start)
             axis_value_st = select(AxisValueRow).where(AxisValueRow.definition==definition).order_by(AxisValueRow.start)
@@ -249,12 +263,22 @@ class Exporter:
             for point, point_hit in zip(point_rows, point_hit_rows):
                 name = f"{point.depth * '| '}{point.name}"
                 desc = point.description
+
                 hits = point_hit.hits
                 target = point.target
                 target_percent = (hits / target) * 100
 
+                bucket_hits = point_hit.hit_buckets
+                bucket_target = point.target_buckets
+                bucket_target_percent = (bucket_hits / bucket_target) * 100
 
-                summary_table.add_row(name, desc, str(hits), str(target), f"{target_percent:.2f}%")
+                buckets_full = point_hit.full_buckets
+                buckets_full_percent = (buckets_full / bucket_target) * 100
+
+                summary_table.add_row(name, desc, 
+                                      str(target), str(hits), f"{target_percent:.2f}%",
+                                      str(bucket_target), str(bucket_hits), str(buckets_full), 
+                                      f"{bucket_target_percent:.2f}%", f"{buckets_full_percent:.2f}%")
 
                 if point.end != point.start + 1:
                     # It's a cover group
@@ -302,31 +326,8 @@ class Exporter:
 
                     point_table.add_row(*bucket_columns)
 
-                # [x.name for x in self.point_axes]
-
-
-                # axes = session.scalars(axis_st).all()
-                # axis_values = session.scalars(axis_value_st).all()
-
-                # for axis_row in session.scalars(axis_st).all():
-                #     start = axis_row.value_start
-                #     end = axis_row.value_end
-                #     breakpoint()
-
-
-
             console = Console()
             for point_table in point_tables:
                 console.print(point_table)
             console.print(summary_table)
 
-
-
-
-            
-
-            # statement = select(PointRow).where(PointRow.definition==source)
-            # for p in session.scalars(select(PointRow).where(PointRow.source==source)).all():
-            #     # if p.end == p.start + 1:
-            #     print(p.__dict__)
-            #     breakpoint()

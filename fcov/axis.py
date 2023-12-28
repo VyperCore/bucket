@@ -1,5 +1,7 @@
 from functools import lru_cache
-from .chain import OpenLink, Link
+
+from .coverchain import CovDef
+from .common.chain import OpenLink, Link
 
 class Axis:
     def __init__(self, name, values, description):
@@ -9,11 +11,10 @@ class Axis:
 
         print(f"Added {self.name} = {self.description}. Values are {self.values}")
 
-    def chain(self, start: OpenLink | None = None) -> Link:
-        start = start or OpenLink(prev=None)
-        return start.close(self,
-                           axis_size=1,
-                           axis_value_size=len(self.values.keys()))
+    def chain(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]:
+        start = start or OpenLink(CovDef())
+        link = CovDef(axis=1, axis_value=len(self.values.keys()))
+        return start.close(self, link=link, typ=Axis)
 
     def sanitise_values(self, values):
         # Take input values and return a dict

@@ -1,4 +1,3 @@
-from dataclasses import asdict
 import itertools
 from collections import defaultdict
 from enum import Enum
@@ -7,7 +6,8 @@ from types import SimpleNamespace
 from rich.console import Console
 from rich.table import Table
 
-from .chain import OpenLink, Link
+from .common.chain import OpenLink, Link
+from .coverchain import CovDef, CovRes
 from .covergroup import CoverBase
 
 from .axis import Axis
@@ -88,8 +88,8 @@ class Coverpoint(CoverBase):
         else:
             return self._goal_dict['DEFAULT']
 
-    def chain(self, start: OpenLink | None = None) -> Link:
-        start = start or OpenLink(prev=None)
+    def chain_def(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]:
+        start = start or OpenLink(CovDef())
 
         child_start = start.link_down()
         child_close = None
@@ -102,24 +102,65 @@ class Coverpoint(CoverBase):
             child_close = goal.chain(child_start)
             child_start = child_close.link_across()
 
-        bucket_size = 0
-        target_size = 0
-        for _cursor in self.all_axis_value_combinations():
-            target = self.get_goal(_cursor).target
-            if target > 0:
-                target_size += target
-            bucket_size += 1
+        buckets = 0
+        target = 0
+        target_buckets = 0
+        for cursor in self.all_axis_value_combinations():
+            bucket_target = self.get_goal(cursor).target
+            if bucket_target > 0:
+                target += bucket_target
+                target_buckets += 1
+            buckets += 1
 
-        return start.close(self, child_close,
-                           point_size=1,
-                           bucket_size=bucket_size, 
-                           target_size=target_size)
+        link = CovDef(
+            point=1,
+            bucket=buckets, 
+            target=target,
+            target_buckets=target_buckets
+        )
 
-    def serialize_bucket_goals(self):
+        return start.close(self, 
+                           child=child_close,
+                           link=link,
+                           typ=Coverpoint)
+
+    def chain_run(self, start: OpenLink[CovRes] | None = None) -> Link[CovRes]:
+        start = start or OpenLink(CovRes())
+
+        buckets = 0
+        hits = 0
+        hit_buckets = 0
+        full_buckets = 0
+        for cursor in self.all_axis_value_combinations():
+            bucket_target = self.get_goal(cursor).target
+            bucket_hits = self.cvg_hits[cursor]
+
+            if bucket_target > 0:
+                bucket_hits = min(bucket_target, bucket_hits)
+                if bucket_hits > 0:
+                    hit_buckets += 1
+                    if bucket_hits == bucket_target:
+                        full_buckets += 1
+                    hits += bucket_hits
+            buckets += 1
+
+        link = CovRes(
+            point=1,
+            bucket=buckets,
+            hits=hits,
+            hit_buckets=hit_buckets,
+            full_buckets=full_buckets
+        )
+
+        return start.close(self, 
+                           link=link,
+                           typ=Coverpoint)
+
+    def bucket_goals(self):
         for cursor in self.all_axis_value_combinations():
             yield self.get_goal(cursor).name
 
-    def serialize_bucket_hits(self):
+    def bucket_hits(self):
         for cursor in self.all_axis_value_combinations():
             yield self.cvg_hits[cursor]
 
