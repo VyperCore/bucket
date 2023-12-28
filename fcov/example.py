@@ -51,7 +51,7 @@ class MyCoverpoint(Coverpoint):
             return goals.OPTMISTIC_CHEESE
 
     def sample(self, trace):
-        # with cursor is used, so cursor values are cleared each time
+        # 'with cursor' is used, so cursor values are cleared each time
         # cursor can also be manaually cleared by using cursor.clear()
         with self.cursor as cursor:
             cursor.set_cursor(
