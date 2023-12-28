@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from .chain import OpenLink, Link
+from .common.chain import OpenLink, Link
+from .coverchain import CovDef, CovRes
 
 @dataclass
 class GoalItem:  # Better name required
@@ -7,6 +8,7 @@ class GoalItem:  # Better name required
     target: int = 10
     description: str = ""
 
-    def chain(self, start: OpenLink | None = None) -> Link:
-        start = start or OpenLink(prev=None)
-        return start.close(self, goal_size=1)
+    def chain(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]:
+        start = start or OpenLink(CovDef())
+        link = CovDef(goal=1, target=self.target)
+        return start.close(self, link=link, typ=GoalItem)

@@ -2,7 +2,9 @@
 import itertools
 from typing import Iterable, Iterator
 
-from .chain import OpenLink, Link
+from .coverchain import CovDef, CovRes
+
+from .common.chain import OpenLink, Link
 
 
 
@@ -18,17 +20,21 @@ class CoverBase:
     def sample(self, trace):
         raise NotImplementedError("This needs to be implemented by the coverpoint")
 
-    def chain(self, start: OpenLink | None = None) -> Link: ...
+    def chain_def(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]: ...
+
+    def chain_run(self, start: OpenLink[CovRes] | None = None) -> Link[CovRes]: ...
+
     def serialize_point_hits(self) -> Iterator[int]: ...
 
     def export(self):
-        chain = self.chain()
         from .export.sql import Exporter
 
         exporter = Exporter()
-        definition = exporter.write_definition(self, chain)
+        chain_def = self.chain_def()
+        definition = exporter.write_definition(chain_def)
 
-        run = exporter.write_run(self, definition, chain)
+        chain_run = self.chain_run()
+        run = exporter.write_run(definition, chain_run)
         exporter.read_run(run)
 
 class Covergroup(CoverBase):
@@ -108,15 +114,24 @@ class Covergroup(CoverBase):
     def iter_children(self) -> Iterable[CoverBase]:
         yield from itertools.chain(self.coverpoints.values(), self.covergroups.values())
 
-    def chain(self, start: OpenLink | None = None) -> Link:
-        start = start or OpenLink(prev=None)
+    def chain_def(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]:
+        start = start or OpenLink(CovDef())
         child_start = start.link_down()
         child_close = None
         for child in self.iter_children():
-            child_close = child.chain(child_start)
+            child_close = child.chain_def(child_start)
             child_start = child_close.link_across()
-        return start.close(self, child_close, point_size=1)
-    
+        return start.close(self, child=child_close, link=CovDef(point=1), typ=Covergroup)
+
+    def chain_run(self, start: OpenLink[CovRes] | None = None) -> Link[CovRes]:
+        start = start or OpenLink(CovRes())
+        child_start = start.link_down()
+        child_close = None
+        for child in self.iter_children():
+            child_close = child.chain_run(child_start)
+            child_start = child_close.link_across()
+        return start.close(self, child=child_close, link=CovRes(point=1), typ=Covergroup)
+
     def serialize_point_hits(self):
         total_hits = 0
         descendant_hits = []
