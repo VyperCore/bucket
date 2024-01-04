@@ -8,8 +8,19 @@ class Axis:
         self.name = name
         self.values = self.sanitise_values(values)
         self.description = description
+        # print(f"Added {self.name} = {self.description}. Values are {self.values}")
 
-        print(f"Added {self.name} = {self.description}. Values are {self.values}")
+    def identify(self, start: int | None = None) -> int:
+        self.value_start = start or 0
+        self.value_end = self.value_start + len(self.values.keys())
+        return self.value_end
+
+    @classmethod
+    def field_keys(cls):
+        return ("value_start", "value_end", "name", "description")
+
+    def field_values(self):
+        return (self.value_start, self.value_end, self.name, self.description)
 
     def chain(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]:
         start = start or OpenLink(CovDef())
