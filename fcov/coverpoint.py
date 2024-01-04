@@ -1,4 +1,6 @@
-from dataclasses import asdict
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2023 Vypercore. All Rights Reserved
+
 import itertools
 from collections import defaultdict
 from enum import Enum
@@ -11,6 +13,7 @@ from rich.table import Table
 from .common.chain import OpenLink, Link
 from .link import CovDef, CovRes
 from .covergroup import CoverBase
+from .context import CoverageContext
 
 from .axis import Axis
 from .cursor import Cursor
@@ -48,10 +51,9 @@ class Coverpoint(CoverBase):
         # Instance of Cursor class to increment hit count for a bucket
         self.cursor = Cursor(self)
 
-        self.setup()
+        self.setup(ctx=CoverageContext.get())
 
         self.axis_names = [x.name for x in self.axes]
-        # TODO Check if goalsDict only has 1 entry
         goals = SimpleNamespace(**self._goal_dict)
         for cursor in self.all_axis_value_combinations():
             bucket = SimpleNamespace(**dict(zip(self.axis_names, cursor, strict=True)))
@@ -59,7 +61,8 @@ class Coverpoint(CoverBase):
             if goal:
                 self._cvg_goals[cursor] = goal
 
-        self.pos = None
+    def setup(self, ctx: SimpleNamespace):
+        raise NotImplementedError("This needs to be implemented by the coverpoint")
 
     def all_axis_value_combinations(self):
         axis_values = []
@@ -177,18 +180,7 @@ class Coverpoint(CoverBase):
         yield hits
 
     def _debug_coverage(self):
-        def print_fixed_width_columns(data, column_width, header=False):
-            formatted_item = ""
-            for item in data:
-                # Format each item with a fixed width
-                formatted_item += f"| {item!s:{column_width}} "
-            if header:
-                length = len(formatted_item)
-                print("-" * length)
-            print(formatted_item)
-            if header:
-                print("-" * length)
-
+       
         def percentage_hit(hits, goal):
             if goal >= 0:
                 return f"{min((100*hits/goal), 100):.1f}%"

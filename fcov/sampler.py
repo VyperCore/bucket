@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2023 Vypercore. All Rights Reserved
+
 class Sampler:
     """This class sample each coverpoint"""
 
@@ -6,11 +9,15 @@ class Sampler:
 
         # Coverage should be instance of the coverage to be updated
 
-    def sample(self):
+    def sample(self, trace):
         """Go through the coverage tree and recursively call sample, passing in trace"""
-        trace = self.create_trace()
-        self.coverage.sample(trace)
+        processed_trace = self.process_trace(trace)
+        self.coverage.sample(processed_trace)
 
-    def create_trace(self):
-        """Take in all relevent information and put into a structure (eg. dataClass)"""
-        raise NotImplementedError("This needs to be implemented by the testbench")
+    def process_trace(self, trace):
+        '''
+        This function is to modify/preprocess the trace data into
+        more useful for coverage. For now this will just return
+        the trace as it is, but can be adapted as required.
+        '''
+        return trace

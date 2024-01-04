@@ -1,12 +1,13 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2023 Vypercore. All Rights Reserved
 
 import itertools
 from typing import Iterable, Iterator
+from types import SimpleNamespace
+from .context import CoverageContext
 
 from .link import CovDef, CovRes
-
 from .common.chain import OpenLink, Link
-
-
 
 class CoverBase:
     name: str
@@ -53,7 +54,7 @@ class Covergroup(CoverBase):
 
         self.coverpoints = {}
         self.covergroups = {}
-        self.setup()
+        self.setup(ctx=CoverageContext.get())
 
         self.pos = None
 
@@ -90,6 +91,9 @@ class Covergroup(CoverBase):
             return self.coverpoints[key]
         else:
             return super().__getattribute__(key)
+
+    def setup(self, ctx: SimpleNamespace):
+        raise NotImplementedError("This needs to be implemented by the coverpoint")
 
     def print_tree(self, indent=0):
         """Print out coverage hierarch from this covergroup down"""

@@ -1,3 +1,7 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2023 Vypercore. All Rights Reserved
+
+from .context import CoverageContext
 from .covergroup import Covergroup
 from .coverpoint import Coverpoint
 from .sampler import Sampler
@@ -20,7 +24,7 @@ class MyCoverpoint(Coverpoint):
     def __init__(self, name: str, description: str, trigger=None):
         super().__init__(name, description, trigger=None)
 
-    def setup(self):
+    def setup(self, ctx):
         self.add_axis(
             name="my_axis_1",
             values=[0, 1, [2, 3]],
@@ -37,7 +41,6 @@ class MyCoverpoint(Coverpoint):
             description="Range of values for my_axis_3",
         )
 
-        # def add_goals(self):
         self.add_goal("MOULDY_CHEESE", -1, "Not so gouda!")
         self.add_goal("OPTMISTIC_CHEESE", 20, "I brie-live in myself!")
 
@@ -48,7 +51,7 @@ class MyCoverpoint(Coverpoint):
             return goals.OPTMISTIC_CHEESE
 
     def sample(self, trace):
-        # with cursor is used, so cursor values are cleared each time
+        # 'with cursor' is used, so cursor values are cleared each time
         # cursor can also be manaually cleared by using cursor.clear()
         with self.cursor as cursor:
             cursor.set_cursor(
@@ -65,7 +68,7 @@ class MyCoverpoint(Coverpoint):
 
 # covergroups
 class MyCovergroup(Covergroup):
-    def setup(self):
+    def setup(self, ctx):
         self.add_coverpoint(MyCoverpoint(name="my_coverpoint", description="A lovely coverpoint"))
         self.add_coverpoint(
             MyCoverpoint(name="another_coverpoint", description="A rather spiffing coverpoint")
@@ -73,7 +76,7 @@ class MyCovergroup(Covergroup):
 
 
 class MyBigCoverGroup(Covergroup):
-    def setup(self):
+    def setup(self, ctx):
         self.add_covergroup(
             MyCovergroup(name="my_covergroup", description="A group of coverpoints")
         )
@@ -89,6 +92,7 @@ class MySampler(Sampler):
 
         self.random = random.Random(2023)
 
+
     def create_trace(self):
         """Nonsense function"""
         # This should come from monitors, etc
@@ -101,16 +105,18 @@ class MySampler(Sampler):
         return data
 
 
+
 if __name__ == "__main__":
     # testbench
+    with CoverageContext(isa="THIS IS AN ISA"):
+        cvg = MyBigCoverGroup(name="my_big_covergroup", description="A group of stuff")
 
-    cvg = MyBigCoverGroup(name="my_big_covergroup", description="A group of stuff")
-    # cvg.print_tree()
-    # cvg.my_covergroup.print_tree()
+    cvg.print_tree()
+    cvg.my_covergroup.print_tree()
 
     sampler = MySampler(coverage=cvg)
 
     for _ in range(200):
-        sampler.sample()
+        sampler.sample(sampler.create_trace())
 
     cvg.export()
