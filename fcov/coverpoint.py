@@ -9,7 +9,7 @@ from rich.console import Console
 from rich.table import Table
 
 from .common.chain import OpenLink, Link
-from .coverchain import CovDef, CovRes
+from .link import CovDef, CovRes
 from .covergroup import CoverBase
 
 from .axis import Axis
