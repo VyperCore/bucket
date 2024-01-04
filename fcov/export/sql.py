@@ -263,7 +263,6 @@ class Exporter:
             for point, point_hit in zip(point_rows, point_hit_rows):
                 name = f"{point.depth * '| '}{point.name}"
                 desc = point.description
-
                 hits = point_hit.hits
                 target = point.target
                 target_percent = (hits / target) * 100

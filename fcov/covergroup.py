@@ -55,6 +55,8 @@ class Covergroup(CoverBase):
         self.covergroups = {}
         self.setup()
 
+        self.pos = None
+
     def add_coverpoint(self, coverpoint):
         """
         Add a coverpoint instance to the covergroup

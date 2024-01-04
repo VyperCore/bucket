@@ -1,7 +1,9 @@
+from dataclasses import asdict
 import itertools
 from collections import defaultdict
 from enum import Enum
 from types import SimpleNamespace
+from typing import Iterable, Iterator
 
 from rich.console import Console
 from rich.table import Table
@@ -56,6 +58,8 @@ class Coverpoint(CoverBase):
             goal = self.apply_goals(bucket, goals)
             if goal:
                 self._cvg_goals[cursor] = goal
+
+        self.pos = None
 
     def all_axis_value_combinations(self):
         axis_values = []
