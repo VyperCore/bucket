@@ -6,7 +6,7 @@ from typing import Iterable, Iterator
 from types import SimpleNamespace
 from .context import CoverageContext
 
-from .link import CovDef, CovRes
+from .link import CovDef, CovRun
 from .common.chain import OpenLink, Link
 
 class CoverBase:
@@ -23,7 +23,7 @@ class CoverBase:
 
     def chain_def(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]: ...
 
-    def chain_run(self, start: OpenLink[CovRes] | None = None) -> Link[CovRes]: ...
+    def chain_run(self, start: OpenLink[CovRun] | None = None) -> Link[CovRun]: ...
 
     def serialize_point_hits(self) -> Iterator[int]: ...
 
@@ -32,7 +32,7 @@ class CoverBase:
 
         exporter = Exporter()
         chain_def = self.chain_def()
-        definition = exporter.write_definition(chain_def)
+        definition = exporter.write_def(chain_def)
 
         chain_run = self.chain_run()
         run = exporter.write_run(definition, chain_run)
@@ -129,14 +129,14 @@ class Covergroup(CoverBase):
             child_start = child_close.link_across()
         return start.close(self, child=child_close, link=CovDef(point=1), typ=Covergroup)
 
-    def chain_run(self, start: OpenLink[CovRes] | None = None) -> Link[CovRes]:
-        start = start or OpenLink(CovRes())
+    def chain_run(self, start: OpenLink[CovRun] | None = None) -> Link[CovRun]:
+        start = start or OpenLink(CovRun())
         child_start = start.link_down()
         child_close = None
         for child in self.iter_children():
             child_close = child.chain_run(child_start)
             child_start = child_close.link_across()
-        return start.close(self, child=child_close, link=CovRes(point=1), typ=Covergroup)
+        return start.close(self, child=child_close, link=CovRun(point=1), typ=Covergroup)
 
     def serialize_point_hits(self):
         total_hits = 0

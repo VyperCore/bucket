@@ -2,13 +2,14 @@
 # Copyright (c) 2023 Vypercore. All Rights Reserved
 
 from fcov.common.chain import Link
-from ..link import CovDef, CovRes
+from ..link import CovDef, CovRun
 from sqlalchemy import Integer, String, select, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
 
 from ..goal import GoalItem
 
 from ..axis import Axis
+from . import base
 
 from ..covergroup import CoverBase, Covergroup
 from ..coverpoint import Coverpoint
@@ -132,7 +133,7 @@ class PointHitRow(BaseRow):
     full_buckets:     Mapped[int] = mapped_column(Integer)
     
     @classmethod
-    def from_link(cls, run: int, link: Link[CovRes]):
+    def from_link(cls, run: int, link: Link[CovRun]):
         return cls(run=run,
                    start=link.start.point,
                    depth=link.depth,
@@ -152,12 +153,12 @@ class BucketHitRow(BaseRow):
     def from_bucket_hits(cls, run: int, start: int, hits: int):
         return cls(run=run, start=start, hits=hits)
 
-class Exporter:
+class Exporter(base.Exporter[int, int]):
     def __init__(self):
         self.engine = create_engine("sqlite://", echo=True)
         BaseRow.metadata.create_all(self.engine)
 
-    def write_definition(self, chain: Link[CovDef]) -> int:
+    def write_def(self, chain: Link[CovDef]) -> int:
         with Session(self.engine) as session:
             # Insert a source row first
             def_row = DefinitionRow()
@@ -191,7 +192,7 @@ class Exporter:
         
         return definition
 
-    def write_run(self, definition: int, chain: Link[CovRes]) -> int:
+    def write_run(self, definition: int, chain: Link[CovRun]) -> int:
             
         with Session(self.engine) as session:
             # Insert a source row first

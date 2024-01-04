@@ -3,7 +3,7 @@
 
 from dataclasses import dataclass
 from .common.chain import OpenLink, Link
-from .link import CovDef, CovRes
+from .link import CovDef, CovRun
 
 @dataclass
 class GoalItem:  # Better name required

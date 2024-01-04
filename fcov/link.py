@@ -21,7 +21,7 @@ class CovDef:
         return new
 
 @dataclass(kw_only=True)
-class CovRes:
+class CovRun:
     point: int = 0
     bucket: int = 0
     hits: int = 0
