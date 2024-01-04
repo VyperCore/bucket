@@ -13,3 +13,4 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.8"
 rich = "^13.3.4"
+sqlalchemy = "2.0.23"
