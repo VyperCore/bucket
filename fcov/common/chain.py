@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2023 Vypercore. All Rights Reserved
 """
 This file contains utilities to label the bounds of items in a tree structure. 
 
