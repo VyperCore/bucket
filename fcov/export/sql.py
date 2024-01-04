@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2023 Vypercore. All Rights Reserved
 
 from fcov.common.chain import Link
 from ..link import CovDef, CovRes
@@ -225,7 +227,7 @@ class Exporter:
                 Column("Hits %", justify="right", style="cyan", no_wrap=True),
                 Column("Target Buckets", justify="right", style="cyan", no_wrap=True),
                 Column("Hit Buckets", justify="right", style="cyan", no_wrap=True),
-                Column("Full Bucket", justify="right", style="cyan", no_wrap=True),
+                Column("Full Buckets", justify="right", style="cyan", no_wrap=True),
                 Column("Hit %", justify="right", style="cyan", no_wrap=True),
                 Column("Full %", justify="right", style="cyan", no_wrap=True),
             ]

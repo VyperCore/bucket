@@ -11,9 +11,13 @@ class Axis:
         self.name = name
         self.values = self.sanitise_values(values)
         self.description = description
-        # print(f"Added {self.name} = {self.description}. Values are {self.values}")
-
         print(f"Added {self.name}: {self.description}. Values are {self.values}")
+
+    def chain(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]:
+        start = start or OpenLink(CovDef())
+        link = CovDef(axis=1, axis_value=len(self.values.keys()))
+        return start.close(self, link=link, typ=Axis)
+
 
     def sanitise_values(self, values):
         # Take input values and return a dict
