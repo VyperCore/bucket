@@ -119,7 +119,7 @@ class MyBigCoverGroup(Covergroup):
 
 === Sampler (optional)
 
-If your trace infomation requires pre-processing, then you can override the Sampler's 'process_trace() method, while by default will just return the trace object unmodified. 
+If your trace infomation requires pre-processing, then you can override the Sampler's 'process_trace() method, which by default will just return the trace object unmodified. 
 eg.
 ----
 class MySampler(Sampler):
