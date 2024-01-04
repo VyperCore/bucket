@@ -42,9 +42,9 @@ class Cursor:
         # Check for any applied goals
         cursor_goal = self.parent.get_goal(cursor_tuple)
 
-        if cursor_goal.amount > 0:
+        if cursor_goal.target > 0:
             self.parent.increment_hit_count(cursor_tuple)
-        elif cursor_goal.amount < 0:
+        elif cursor_goal.target < 0:
             print(f"Illegal bucket '{self.parent.name}.{cursor_goal.name}' hit!")
             print(f"  Cursor: {dict(zip(self.parent.axis_names, list(cursor_tuple), strict=True))}")
 

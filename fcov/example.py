@@ -119,4 +119,4 @@ if __name__ == "__main__":
     for _ in range(200):
         sampler.sample(sampler.create_trace())
 
-    cvg.export_coverage()
+    cvg.export()
