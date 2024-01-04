@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2023 Vypercore. All Rights Reserved
+
 from dataclasses import dataclass
 from .common.chain import OpenLink, Link
 from .link import CovDef, CovRes

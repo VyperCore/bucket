@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2023 Vypercore. All Rights Reserved
+
 from functools import lru_cache
 
 from .link import CovDef
@@ -10,26 +13,11 @@ class Axis:
         self.description = description
         # print(f"Added {self.name} = {self.description}. Values are {self.values}")
 
-    def identify(self, start: int | None = None) -> int:
-        self.value_start = start or 0
-        self.value_end = self.value_start + len(self.values.keys())
-        return self.value_end
-
-    @classmethod
-    def field_keys(cls):
-        return ("value_start", "value_end", "name", "description")
-
-    def field_values(self):
-        return (self.value_start, self.value_end, self.name, self.description)
-
-    def chain(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]:
-        start = start or OpenLink(CovDef())
-        link = CovDef(axis=1, axis_value=len(self.values.keys()))
-        return start.close(self, link=link, typ=Axis)
+        print(f"Added {self.name}: {self.description}. Values are {self.values}")
 
     def sanitise_values(self, values):
         # Take input values and return a dict
-        # Input values can be in the form of dict, tuple or list
+        # Input values can be in the form of dict, tuple, list or set
         # The return dictionary will have string form of the values as the key
         # and the values (or ranges) as the value.
         if isinstance(values, dict):

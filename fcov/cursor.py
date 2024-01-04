@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2023 Vypercore. All Rights Reserved
+
 class Cursor:
     # This class takes all the axes and their values
     # and inrements the coverage for that cross
