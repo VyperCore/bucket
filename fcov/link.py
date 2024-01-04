@@ -1,10 +1,3 @@
-# @dataclass(kw_only=True)
-# class Master:
-#     points: list["Link[CoverBase]"] = field(default_factory=list)
-#     axes: list["Link[Axis]"] = field(default_factory=list)
-#     goals: list["Link[GoalItem]"] = field(default_factory=list)
-
-
 from dataclasses import dataclass, fields
 from typing import Self
 
