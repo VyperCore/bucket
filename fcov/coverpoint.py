@@ -11,7 +11,7 @@ from rich.console import Console
 from rich.table import Table
 
 from .common.chain import OpenLink, Link
-from .link import CovDef, CovRes
+from .link import CovDef, CovRun
 from .covergroup import CoverBase
 from .context import CoverageContext
 
@@ -131,8 +131,8 @@ class Coverpoint(CoverBase):
                            link=link,
                            typ=Coverpoint)
 
-    def chain_run(self, start: OpenLink[CovRes] | None = None) -> Link[CovRes]:
-        start = start or OpenLink(CovRes())
+    def chain_run(self, start: OpenLink[CovRun] | None = None) -> Link[CovRun]:
+        start = start or OpenLink(CovRun())
 
         buckets = 0
         hits = 0
@@ -151,7 +151,7 @@ class Coverpoint(CoverBase):
                     hits += bucket_hits
             buckets += 1
 
-        link = CovRes(
+        link = CovRun(
             point=1,
             bucket=buckets,
             hits=hits,
