@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2023 Vypercore. All Rights Reserved
+
 from copy import copy
 from types import SimpleNamespace
 

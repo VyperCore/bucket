@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2023 Vypercore. All Rights Reserved
+
 from .context import CoverageContext
 from .covergroup import Covergroup
 from .coverpoint import Coverpoint
@@ -38,7 +41,6 @@ class MyCoverpoint(Coverpoint):
             description="Range of values for my_axis_3",
         )
 
-        # def add_goals(self):
         self.add_goal("MOULDY_CHEESE", -1, "Not so gouda!")
         self.add_goal("OPTMISTIC_CHEESE", 20, "I brie-live in myself!")
 
@@ -49,7 +51,7 @@ class MyCoverpoint(Coverpoint):
             return goals.OPTMISTIC_CHEESE
 
     def sample(self, trace):
-        # with cursor is used, so cursor values are cleared each time
+        # 'with cursor' is used, so cursor values are cleared each time
         # cursor can also be manaually cleared by using cursor.clear()
         with self.cursor as cursor:
             cursor.set_cursor(
