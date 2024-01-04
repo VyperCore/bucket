@@ -2,7 +2,7 @@
 import itertools
 from typing import Iterable, Iterator
 
-from .coverchain import CovDef, CovRes
+from .link import CovDef, CovRes
 
 from .common.chain import OpenLink, Link
 

@@ -1,6 +1,6 @@
 
 from fcov.common.chain import Link
-from ..coverchain import CovDef, CovRes
+from ..link import CovDef, CovRes
 from sqlalchemy import Integer, String, select, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
 

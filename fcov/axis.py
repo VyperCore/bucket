@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from .coverchain import CovDef
+from .link import CovDef
 from .common.chain import OpenLink, Link
 
 class Axis:

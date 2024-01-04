@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from .common.chain import OpenLink, Link
-from .coverchain import CovDef, CovRes
+from .link import CovDef, CovRes
 
 @dataclass
 class GoalItem:  # Better name required
