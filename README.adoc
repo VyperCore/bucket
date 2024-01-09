@@ -8,7 +8,7 @@ This module is to create functional coverpoints in python. This gives several be
 * Vendor independance - easily collect coverage from multiple tools/sources (eg. models, log parsers, etc)
 
 == Documentation:
-Read the documentation here
+Read the documentation here: docs/introadoc
 
 == Support
 This library is being actively built, and is expected change while it matures and key features are added.
