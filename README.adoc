@@ -3,6 +3,7 @@
 
 == About:
 This module is to create functional coverpoints in python. This gives several benefits such as:
+
 * Easy integreation into cocotb and other python testbenches
 * No SV - so no commercial EDA license required
 * Vendor independance - easily collect coverage from multiple tools/sources (eg. models, log parsers, etc)
