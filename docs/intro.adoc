@@ -7,13 +7,6 @@ $ python -m fcov.example
 ----
 
 == About:
-This module is to create functional coverpoints in python. This gives several benefits such as:
-* Easy integreation into cocotb and other python testbenches
-* No SV - so no commercial EDA license required
-* Vendor independance - easily collect coverage from multiple tools/sources (eg. models, log parsers, etc)
-
-
-== More Information:
 
 Below is a breakdown of each part of fcov, with information on how to create coverpoints then sample, export and merge coverage.
 
@@ -23,6 +16,7 @@ A coverpoint consists of one or more axes, which are then crossed. Each possible
 
 Each new coverpoint should inherit from the Coverpoint class, and requires a 'name', 'description' and an optional 'trigger'. (Triggers are to be added soon). 
 
+[source,python]
 ----
 class MyCoverpoint(Coverpoint):
     def __init__(self, name: str, description: str, trigger=None):
@@ -40,6 +34,7 @@ To specify a name, a dictionary should be used in the form {'name': value}
 Alternatively, a list, tuple or set can be passed in and the names will be automatically created.
 Ranges can also be specified be providing a MIN and MAX value in a list in place of a single value. eg. [0,1,2,[3, 9], 10]
 
+[source,python]
 ----
     def setup(self, ctx):
         self.add_axis(
@@ -59,6 +54,7 @@ hits:
 
 To begin, each goal is created during setup():
 
+[source,python]
 ----
         self.add_goal("MOULDY_CHEESE", -1, "Not so gouda!")
         self.add_goal("OPTMISTIC_CHEESE", 20, "I brie-live in myself!")
@@ -67,6 +63,7 @@ To begin, each goal is created during setup():
 If goals are created, then they must be applied to the relevant buckets. To do this the apply_goals() method must be overridden, which will be automatically called at the end of the setup phase. After filtering which buckets are to have a goal applied, the new goal should be returned. The default of 10 hits is otherwise applied. 
 NOTE: The name of the bucket is used, not the original value.
 
+[source,python]
 ----
     def apply_goals(self, bucket, goals):
         if bucket.my_axis_1 == "1" and bucket.my_axis_3 in ["red", "yellow"]:
@@ -83,6 +80,7 @@ To set each axis, 'set_cursor()' is used, with each axis name being assigned a v
 Once all axes have been set, then the cursor can be incremented. If it is a regular bucket, then the hit count will be increased. If it is an IGNORE bucket, no action will be taken, and if it is an ILLEGAL bucket an error will be generated. 
 If multiple values are to be sampled for a given call of a coverpoint, then all axes of the cursor do not need to be re-set. Only the ones which have changed need to be overridden with new values.
 
+[source,python]
 ----
     def sample(self, trace):
         # 'with cursor' is used, so cursor values are cleared each time
@@ -107,6 +105,7 @@ Covergroups are a way to provide hierarchy by grouping coverpoints and other cov
 
 Each covergroup should inherit from the Covergroup class, and requires a 'name' and 'description'
 
+[source,python]
 ----
 class MyBigCoverGroup(Covergroup):
     def setup(self, ctx):
@@ -121,6 +120,8 @@ class MyBigCoverGroup(Covergroup):
 
 If your trace infomation requires pre-processing, then you can override the Sampler's 'process_trace() method, which by default will just return the trace object unmodified. 
 eg.
+
+[source,python]
 ----
 class MySampler(Sampler):
     def __init__(self, coverage):
@@ -140,6 +141,7 @@ TO DO: GET ED TO EXPLAIN CONTEXTS!
 
 A sampler must be initialised with a reference to the top of the coverage heierarchy (the top level covergroup). The sample() method can then be passed a copy of the trace object each time, and will then recursively call each coverpoints sample method. 
 
+[source,python]
 ----
     cvg = MyBigCoverGroup(name="my_toplevel_covergroup", description="All of my coverage")
 
