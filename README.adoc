@@ -4,12 +4,12 @@
 == About:
 This module is to create functional coverpoints in python. This gives several benefits such as:
 
-* Easy integreation into cocotb and other python testbenches
+* Easy integration into cocotb and other python testbenches
 * No SV - so no commercial EDA license required
 * Vendor independance - easily collect coverage from multiple tools/sources (eg. models, log parsers, etc)
 
 == Documentation:
-Read the documentation here: docs/introadoc
+link:docs/intro.adoc[Read the Documentation]
 
 == Support
 This library is being actively built, and is expected change while it matures and key features are added.
