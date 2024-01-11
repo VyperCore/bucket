@@ -3,7 +3,7 @@
 
 from fcov.common.chain import Link
 from ..link import CovDef, CovRun
-from sqlalchemy import Integer, String, select, create_engine
+from sqlalchemy import Integer, String, select, create_engine, URL
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
 
 from ..goal import GoalItem
@@ -11,7 +11,7 @@ from ..goal import GoalItem
 from ..axis import Axis
 from . import base
 
-from ..covergroup import CoverBase, Covergroup
+from ..covergroup import Covergroup
 from ..coverpoint import Coverpoint
 from rich.table import Table, Column
 from rich.console import Console
@@ -154,8 +154,9 @@ class BucketHitRow(BaseRow):
         return cls(run=run, start=start, hits=hits)
 
 class Exporter(base.Exporter[int, int]):
-    def __init__(self):
-        self.engine = create_engine("sqlite://", echo=True)
+    def __init__(self, db_path):
+        url = f"sqlite:///{db_path}"
+        self.engine = create_engine(url, echo=True)
         BaseRow.metadata.create_all(self.engine)
 
     def write_def(self, chain: Link[CovDef]) -> int:
