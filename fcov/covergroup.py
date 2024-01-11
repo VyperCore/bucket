@@ -27,10 +27,7 @@ class CoverBase:
 
     def serialize_point_hits(self) -> Iterator[int]: ...
 
-    def export(self):
-        from .export.sql import Exporter
-
-        exporter = Exporter()
+    def export(self, exporter):
         chain_def = self.chain_def()
         definition = exporter.write_def(chain_def)
 
