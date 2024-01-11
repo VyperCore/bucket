@@ -5,6 +5,7 @@ from .context import CoverageContext
 from .covergroup import Covergroup
 from .coverpoint import Coverpoint
 from .sampler import Sampler
+from .export.sql import Exporter
 
 # TODO
 # - dump coverage at end of test into YAML
@@ -119,4 +120,6 @@ if __name__ == "__main__":
     for _ in range(200):
         sampler.sample(sampler.create_trace())
 
-    cvg.export()
+    exporter = Exporter("my_cov_data")
+
+    cvg.export(exporter)
