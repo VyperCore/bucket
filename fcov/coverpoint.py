@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2023 Vypercore. All Rights Reserved
 
+import hashlib
 import itertools
 from collections import defaultdict
 from enum import Enum
@@ -53,13 +54,17 @@ class Coverpoint(CoverBase):
 
         self.setup(ctx=CoverageContext.get())
 
+        self.sha = hashlib.sha256((self.name+self.description).encode())
         self.axis_names = [x.name for x in self.axes]
         goals = SimpleNamespace(**self._goal_dict)
         for cursor in self.all_axis_value_combinations():
             bucket = SimpleNamespace(**dict(zip(self.axis_names, cursor, strict=True)))
-            goal = self.apply_goals(bucket, goals)
-            if goal:
+            if goal:=self.apply_goals(bucket, goals):
                 self._cvg_goals[cursor] = goal
+            else:
+                goal = self._goal_dict["DEFAULT"]
+            self.sha.update(goal.sha.digest())
+
 
     def setup(self, ctx: SimpleNamespace):
         raise NotImplementedError("This needs to be implemented by the coverpoint")
@@ -123,7 +128,8 @@ class Coverpoint(CoverBase):
             point=1,
             bucket=buckets, 
             target=target,
-            target_buckets=target_buckets
+            target_buckets=target_buckets,
+            sha=self.sha
         )
 
         return start.close(self, 
