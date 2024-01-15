@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2023 Vypercore. All Rights Reserved
 
+import hashlib
 import itertools
 from typing import Iterable, Iterator
 from types import SimpleNamespace
@@ -51,6 +52,7 @@ class Covergroup(CoverBase):
 
         self.coverpoints = {}
         self.covergroups = {}
+        self.sha = hashlib.sha256((self.name+self.description).encode())
         self.setup(ctx=CoverageContext.get())
 
     def add_coverpoint(self, coverpoint):
@@ -122,7 +124,7 @@ class Covergroup(CoverBase):
         for child in self.iter_children():
             child_close = child.chain_def(child_start)
             child_start = child_close.link_across()
-        return start.close(self, child=child_close, link=CovDef(point=1), typ=Covergroup)
+        return start.close(self, child=child_close, link=CovDef(point=1, sha=self.sha), typ=Covergroup)
 
     def chain_run(self, start: OpenLink[CovRun] | None = None) -> Link[CovRun]:
         start = start or OpenLink(CovRun())

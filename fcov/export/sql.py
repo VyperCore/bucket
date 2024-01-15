@@ -5,6 +5,7 @@ from fcov.common.chain import Link
 from ..link import CovDef, CovRun
 from sqlalchemy import Integer, String, select, create_engine, URL
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
+from sqlalchemy.exc import NoResultFound
 
 from ..goal import GoalItem
 
@@ -21,6 +22,7 @@ class BaseRow(DeclarativeBase): ...
 class DefinitionRow(BaseRow):
     __tablename__ = "definition"
     definition:       Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    sha:              Mapped[str] = mapped_column(String(64))
 
 class RunRow(BaseRow):
     __tablename__ = "run"
@@ -160,9 +162,17 @@ class Exporter(base.Exporter[int, int]):
         BaseRow.metadata.create_all(self.engine)
 
     def write_def(self, chain: Link[CovDef]) -> int:
+
         with Session(self.engine) as session:
-            # Insert a source row first
-            def_row = DefinitionRow()
+            # Get the hash
+            sha = chain.end.sha.hexdigest()
+
+            # Check if there is already a definition with that hash
+            if def_row := session.scalars(select(DefinitionRow).where(DefinitionRow.sha==sha)).one_or_none():
+                return def_row.definition
+
+            # Otherwise wirte the definition out
+            def_row = DefinitionRow(sha=sha)
             session.add(def_row)
             session.commit()
             definition = def_row.definition

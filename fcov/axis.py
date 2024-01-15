@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Vypercore. All Rights Reserved
 
 from functools import lru_cache
+import hashlib
 
 from .link import CovDef
 from .common.chain import OpenLink, Link
@@ -11,11 +12,20 @@ class Axis:
         self.name = name
         self.values = self.sanitise_values(values)
         self.description = description
+
+        self.size = 0
+        self.sha = hashlib.sha256((self.name+self.description).encode())
+        for key in self.values.keys():
+            self.size += 1
+            self.sha.update(key.encode())
+
         print(f"Added {self.name}: {self.description}. Values are {self.values}")
 
     def chain(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]:
         start = start or OpenLink(CovDef())
-        link = CovDef(axis=1, axis_value=len(self.values.keys()))
+        link = CovDef(axis=1, 
+                      axis_value=self.size,
+                      sha=self.sha)
         return start.close(self, link=link, typ=Axis)
 
 
