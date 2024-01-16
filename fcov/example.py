@@ -120,8 +120,6 @@ if __name__ == "__main__":
     cvg_a.print_tree()
     cvg_a.my_covergroup.print_tree()
 
-    context_hash = Repo().head.object.hexsha
-
     sampler = MySampler(coverage=cvg_a)
     for _ in range(100):
         sampler.sample(sampler.create_trace())
@@ -130,9 +128,17 @@ if __name__ == "__main__":
     for _ in range(500):
         sampler.sample(sampler.create_trace())
 
+    # Create a context specific hash
+    # This is stored alongside recorded coverage and is used to determine if
+    # coverage is valid to merge.
+    context_hash = Repo().head.object.hexsha
+
+    # Create a reader
+    point_reader = PointReader(context_hash)
+
     # Read the two sets of coverage
-    reading_a = PointReader("").read(cvg_a)
-    reading_b = PointReader("").read(cvg_b)
+    reading_a = point_reader.read(cvg_a)
+    reading_b = point_reader.read(cvg_b)
 
     # Create a local sql database
     sql_accessor = SQLAccessor.File("example_file_store")
@@ -150,4 +156,4 @@ if __name__ == "__main__":
 
     # Output to console
     ConsoleWriter(axes=False, goals=False, points=False).write(reading_a)
-    ConsoleWriter(axes=False, goals=False, points=True).write(merged_reading)
+    ConsoleWriter(axes=False, goals=False, points=False).write(merged_reading)
