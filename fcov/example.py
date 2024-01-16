@@ -1,11 +1,16 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2023 Vypercore. All Rights Reserved
 
+from .rw.merge import MergeReading
+from .rw.console import ConsoleWriter
+from git.repo import Repo
 from .context import CoverageContext
 from .covergroup import Covergroup
 from .coverpoint import Coverpoint
 from .sampler import Sampler
-from .export.sql import Exporter
+
+from .rw.point import PointReader
+from .rw.sql import SQLAccessor
 
 # TODO
 # - dump coverage at end of test into YAML
@@ -110,16 +115,42 @@ class MySampler(Sampler):
 if __name__ == "__main__":
     # testbench
     with CoverageContext(isa="THIS IS AN ISA"):
-        cvg = MyBigCoverGroup(name="my_big_covergroup", description="A group of stuff")
+        cvg_a = MyBigCoverGroup(name="my_big_covergroup", description="A group of stuff")
 
-    cvg.print_tree()
-    cvg.my_covergroup.print_tree()
+    with CoverageContext(isa="THIS IS AN ISA"):
+        cvg_b = MyBigCoverGroup(name="my_big_covergroup", description="A group of stuff")
 
-    sampler = MySampler(coverage=cvg)
+    cvg_a.print_tree()
+    cvg_a.my_covergroup.print_tree()
 
-    for _ in range(200):
+    context_hash = Repo().head.object.hexsha
+
+    sampler = MySampler(coverage=cvg_a)
+    for _ in range(100):
         sampler.sample(sampler.create_trace())
 
-    exporter = Exporter("my_cov_data")
+    sampler = MySampler(coverage=cvg_b)
+    for _ in range(500):
+        sampler.sample(sampler.create_trace())
 
-    cvg.export(exporter)
+    # Read the two sets of coverage
+    reading_a = PointReader("").read(cvg_a)
+    reading_b = PointReader("").read(cvg_b)
+
+    # Create a local sql database
+    sql_accessor = SQLAccessor("cov_data_1")
+
+    # Write each reading into the database
+    rec_ref_a = sql_accessor.write(reading_a)
+    rec_ref_b = sql_accessor.write(reading_b)
+
+    # Read back from sql
+    sql_reading_a = sql_accessor.read(rec_ref_a)
+    sql_reading_b = sql_accessor.read(rec_ref_b)
+
+    # Merge together
+    merged_reading = MergeReading(sql_reading_a, sql_reading_b)
+
+    # Output to console
+    ConsoleWriter(axes=False, goals=False, points=False).write(reading_a)
+    ConsoleWriter(axes=False, goals=False, points=True).write(merged_reading)

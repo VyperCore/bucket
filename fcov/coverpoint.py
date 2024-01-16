@@ -135,7 +135,7 @@ class Coverpoint(CoverBase):
         return start.close(self, 
                            child=child_close,
                            link=link,
-                           typ=Coverpoint)
+                           typ=CoverBase)
 
     def chain_run(self, start: OpenLink[CovRun] | None = None) -> Link[CovRun]:
         start = start or OpenLink(CovRun())
@@ -167,7 +167,7 @@ class Coverpoint(CoverBase):
 
         return start.close(self, 
                            link=link,
-                           typ=Coverpoint)
+                           typ=CoverBase)
 
     def bucket_goals(self):
         for cursor in self.all_axis_value_combinations():
