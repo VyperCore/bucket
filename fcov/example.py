@@ -1,16 +1,13 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2023 Vypercore. All Rights Reserved
 
-from .rw.merge import MergeReading
-from .rw.console import ConsoleWriter
 from git.repo import Repo
 from .context import CoverageContext
 from .covergroup import Covergroup
 from .coverpoint import Coverpoint
 from .sampler import Sampler
 
-from .rw.point import PointReader
-from .rw.sql import SQLAccessor
+from .rw import PointReader, SQLAccessor, MergeReading, ConsoleWriter
 
 # TODO
 # - dump coverage at end of test into YAML
@@ -138,7 +135,7 @@ if __name__ == "__main__":
     reading_b = PointReader("").read(cvg_b)
 
     # Create a local sql database
-    sql_accessor = SQLAccessor("cov_data_1")
+    sql_accessor = SQLAccessor.File("example_file_store")
 
     # Write each reading into the database
     rec_ref_a = sql_accessor.write(reading_a)

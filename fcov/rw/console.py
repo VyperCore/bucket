@@ -1,8 +1,11 @@
-from .base import Reading, Writer
+from .common import Reading, Writer
 from rich.table import Table, Column
 from rich.console import Console
 
 class ConsoleWriter(Writer):
+    '''
+    Write coverage information out to the terminal using Rich.
+    '''
     def __init__(self, axes=True, goals=True, points=True, summary=True):
         self.write_axes = axes
         self.write_goals = goals
@@ -10,7 +13,6 @@ class ConsoleWriter(Writer):
         self.write_summary = summary
 
     def write(self, reading: Reading):
-
         summary_table_columns = [
             Column("Name", justify="left", style="cyan", no_wrap=True),
             Column("Description", justify="left", style="cyan", no_wrap=True),
