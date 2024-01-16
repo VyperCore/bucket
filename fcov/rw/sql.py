@@ -1,12 +1,14 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2023 Vypercore. All Rights Reserved
 
-from contextlib import contextmanager
 from sqlalchemy import Integer, String, select, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
 
-from .base import Accessor, GreedyReading, PointTuple, BucketGoalTuple, AxisTuple, AxisValueTuple, GoalTuple, BucketHitTuple, PointHitTuple, Reader, Reading
+from .common import PuppetReading, PointTuple, BucketGoalTuple, AxisTuple, AxisValueTuple, GoalTuple, BucketHitTuple, PointHitTuple, Reader, Reading, Writer
 
+###############################################################################
+# Table definitions
+###############################################################################
 
 class BaseRow(DeclarativeBase): ...
 
@@ -115,8 +117,14 @@ class BucketHitRow(BaseRow):
     def from_tuple(cls, run: int, tup: BucketHitTuple):
         return cls(run=run, **tup._asdict())
 
+###############################################################################
+# Accessors
+###############################################################################
 
-class SQLWriter:
+class SQLWriter(Writer):
+    '''
+    Write to an SQL database
+    '''
     def __init__(self, engine):
         self.engine = engine
 
@@ -160,27 +168,25 @@ class SQLWriter:
     
 
 
-class SQLReader(Reader, GreedyReading):
+class SQLReader(Reader):
+    '''
+    Read from an SQL database
+    '''
     def __init__(self, engine):
-        GreedyReading.__init__(self)
         self.engine = engine
 
-    def get_def_sha(self):
-        return self._def_sha
-    
-    def get_rec_sha(self):
-        return self._rec_sha
-
     def read(self, rec_ref: int):
+        reading = PuppetReading()
+
         with Session(self.engine) as session:
             rec_st = select(RunRow).where(RunRow.run==rec_ref)
             rec_row = session.scalars(rec_st).one()
-            self._rec_sha = rec_row.sha
+            reading.rec_sha = rec_row.sha
             def_ref = rec_row.definition
 
             def_st = select(DefinitionRow).where(DefinitionRow.definition==def_ref)
             def_row = session.scalars(def_st).one()
-            self._def_sha = def_row.sha
+            reading.def_sha = def_row.sha
 
             point_st = select_tup(PointRow).where(PointRow.definition==def_ref).order_by(PointRow.start, PointRow.depth)
             axis_st = select_tup(AxisRow).where(AxisRow.definition==def_ref).order_by(AxisRow.start)
@@ -189,39 +195,45 @@ class SQLReader(Reader, GreedyReading):
             bucket_goal_st = select_tup(BucketGoalRow).where(BucketGoalRow.definition==def_ref).order_by(BucketGoalRow.start)
 
             for point_row in session.execute(point_st).all():
-                self.points.append(PointTuple(*point_row[1:]))
+                reading.points.append(PointTuple(*point_row[1:]))
 
             for axis_row in session.execute(axis_st).all():
-                self.axes.append(AxisTuple(*axis_row[1:]))
+                reading.axes.append(AxisTuple(*axis_row[1:]))
 
             for axis_value_row in session.execute(axis_value_st).all():
-                self.axis_values.append(AxisValueTuple(*axis_value_row[1:]))
+                reading.axis_values.append(AxisValueTuple(*axis_value_row[1:]))
 
             for goal_row in session.execute(goal_st).all():
-                self.goals.append(GoalTuple(*goal_row[1:]))
+                reading.goals.append(GoalTuple(*goal_row[1:]))
         
             for bucket_goal_row in session.execute(bucket_goal_st).all():
-                self.bucket_goals.append(BucketGoalTuple(*bucket_goal_row[1:]))
+                reading.bucket_goals.append(BucketGoalTuple(*bucket_goal_row[1:]))
 
             point_hit_st = select_tup(PointHitRow).where(PointHitRow.run==rec_ref).order_by(PointHitRow.start, PointHitRow.depth)
             bucket_hit_st = select_tup(BucketHitRow).where(BucketHitRow.run==rec_ref).order_by(BucketHitRow.start)
         
             for point_hit_row in session.execute(point_hit_st).all():
-                self.point_hits.append(PointHitTuple(*point_hit_row[1:]))
+                reading.point_hits.append(PointHitTuple(*point_hit_row[1:]))
 
             for bucket_hit_row in session.execute(bucket_hit_st).all():
-                self.bucket_hits.append(BucketHitTuple(*bucket_hit_row[1:]))
+                reading.bucket_hits.append(BucketHitTuple(*bucket_hit_row[1:]))
 
-        return self
+        return reading
     
-class SQLAccessor(Accessor):
-    def __init__(self, db_path: str):
-        self.engine = create_engine(f"sqlite:///{db_path}", echo=True)
+class SQLAccessor(Reader, Writer):
+    '''
+    Read/Write from/to an SQL database
+    '''
+    def __init__(self, url: str):
+        self.engine = create_engine(url)
         BaseRow.metadata.create_all(self.engine)
+
+    @classmethod
+    def File(cls, path):
+        return cls(f"sqlite:///{path}")
 
     def read(self, rec_ref):
         return SQLReader(self.engine).read(rec_ref)
 
     def write(self, reading: Reading):
         return SQLWriter(self.engine).write(reading)
-
