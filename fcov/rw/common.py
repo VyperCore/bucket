@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2023 Vypercore. All Rights Reserved
+
 from typing import Any, Iterable, NamedTuple, Protocol
 from ..link import CovDef, CovRun
 from ..common.chain import Link

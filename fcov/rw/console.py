@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2023 Vypercore. All Rights Reserved
+
 from .common import Reading, Writer
 from rich.table import Table, Column
 from rich.console import Console
