@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Vypercore. All Rights Reserved
 
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, overload
 from sqlalchemy import Integer, String, select, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
 
@@ -248,8 +248,16 @@ class SQLAccessor(Reader, Writer):
     def write(self, reading: Reading):
         return SQLWriter(self.engine).write(reading)
 
+    @overload
     @classmethod
-    def merge_files(cls, *db_paths: str | Path):
+    def merge_files(cls, db_paths: list[str | Path], /): ...
+    @overload
+    @classmethod
+    def merge_files(cls, *db_paths: str | Path): ...
+    @classmethod
+    def merge_files(cls, *db_paths):
+        if len(db_paths) == 1 and not isinstance(db_paths[0], (str, Path)):
+            db_paths = db_paths[0]
         merged_reading = None
         for db_path in db_paths:
             sql_accessor = cls.File(db_path)
