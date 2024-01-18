@@ -24,6 +24,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+== Roadmap
+There are several features planned but not actively started. These include:
+
+- Coverage filtering to enable only coverpoints of interest
+- Tiered coverage to allow for quicker CIs, more granuality for soak regressions, etc
+- Improved coverage viewer
+
 == Contributions
 
 Please feel free to contribute to the project, following these guidelines:
