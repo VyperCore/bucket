@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2023 Vypercore. All Rights Reserved
 
+from pathlib import Path
+from typing import Iterable
 from sqlalchemy import Integer, String, select, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
 
@@ -220,6 +222,11 @@ class SQLReader(Reader):
 
         return reading
     
+    def read_all(self) -> Iterable[Reading]:
+        with Session(self.engine) as session:
+            for rec_row in session.scalars(select(RunRow)).all():
+                yield self.read(rec_row.run)
+
 class SQLAccessor(Reader, Writer):
     '''
     Read/Write from/to an SQL database
@@ -229,11 +236,14 @@ class SQLAccessor(Reader, Writer):
         BaseRow.metadata.create_all(self.engine)
 
     @classmethod
-    def File(cls, path):
+    def File(cls, path: str | Path):
         return cls(f"sqlite:///{path}")
 
     def read(self, rec_ref):
         return SQLReader(self.engine).read(rec_ref)
+    
+    def read_all(self) -> Iterable[Reading]:
+        yield from SQLReader(self.engine).read_all()
 
     def write(self, reading: Reading):
         return SQLWriter(self.engine).write(reading)
