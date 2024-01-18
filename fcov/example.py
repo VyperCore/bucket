@@ -157,3 +157,8 @@ if __name__ == "__main__":
     # Output to console
     ConsoleWriter(axes=False, goals=False, points=False).write(reading_a)
     ConsoleWriter(axes=False, goals=False, points=False).write(merged_reading)
+
+    # Read all back from sql - note as the db is not removed this will 
+    # acumulate each time this example is run.
+    merged_reading_all = MergeReading(*sql_accessor.read_all())
+    ConsoleWriter(axes=False, goals=False, points=False).write(merged_reading_all)
