@@ -10,7 +10,7 @@ def cli():
 @click.option('--sql-path', 'sql_paths',
               help='Path to an SQL db file, or a directory containing ONLY SQL db files',
               multiple=True,
-              type=click.Path(exists=True, readable=True, path_type=Path))
+              type=click.Path(exists=True, readable=True, path_type=Path, resolve_path=True))
 @click.option('--output',
               help='Path to output the merged SQL db file',
               required=True,
