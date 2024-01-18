@@ -16,24 +16,8 @@ def cli():
               required=True,
               type=click.Path(path_type=Path))
 def merge(sql_paths: tuple[Path], output: Path):
-    sql_files = []
-    for sql_path in sql_paths:
-        if sql_path.is_dir():
-            sql_files += sql_path.iterdir()
-        else:
-            sql_files.append(sql_path)
-
-    merged_reading = None
-    for sql_file in sql_files:
-        sql_accessor = SQLAccessor.File(sql_file)
-        reading_iter = iter(sql_accessor.read_all())
-        if merged_reading is None:
-            if (first_reading := next(reading_iter, None)) is None:   
-                continue
-            merged_reading = MergeReading(first_reading)
-        merged_reading.merge(*reading_iter)
-
     output_accessor = SQLAccessor.File(output)
+    merged_reading = SQLAccessor.merge_files(*sql_paths)
     if merged_reading:
         output_accessor.write(merged_reading)
 

@@ -6,7 +6,7 @@ from typing import Iterable
 from sqlalchemy import Integer, String, select, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
 
-from .common import PuppetReading, PointTuple, BucketGoalTuple, AxisTuple, AxisValueTuple, GoalTuple, BucketHitTuple, PointHitTuple, Reader, Reading, Writer
+from .common import MergeReading, PuppetReading, PointTuple, BucketGoalTuple, AxisTuple, AxisValueTuple, GoalTuple, BucketHitTuple, PointHitTuple, Reader, Reading, Writer
 
 ###############################################################################
 # Table definitions
@@ -247,3 +247,16 @@ class SQLAccessor(Reader, Writer):
 
     def write(self, reading: Reading):
         return SQLWriter(self.engine).write(reading)
+
+    @classmethod
+    def merge_files(cls, *db_paths: str | Path):
+        merged_reading = None
+        for db_path in db_paths:
+            sql_accessor = cls.File(db_path)
+            reading_iter = iter(sql_accessor.read_all())
+            if merged_reading is None:
+                if (first_reading := next(reading_iter, None)) is None:   
+                    continue
+                merged_reading = MergeReading(first_reading)
+            merged_reading.merge(*reading_iter)
+        return merged_reading
