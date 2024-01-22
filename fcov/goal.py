@@ -17,5 +17,5 @@ class GoalItem:  # Better name required
 
     def chain(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]:
         start = start or OpenLink(CovDef())
-        link = CovDef(goal=1, target=self.target, sha=self.sha)
+        link = CovDef(goal=1, sha=self.sha)
         return start.close(self, link=link, typ=GoalItem)

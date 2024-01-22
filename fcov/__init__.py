@@ -5,5 +5,6 @@ from .context import CoverageContext
 from .sampler import Sampler
 from .covergroup import Covergroup
 from .coverpoint import Coverpoint
+from . import rw
 
-assert all((CoverageContext, Sampler, Covergroup, Coverpoint))
+assert all((CoverageContext, Sampler, Covergroup, Coverpoint, rw))
