@@ -33,6 +33,8 @@ There are several features planned but not actively started. These include:
 
 == Contributions
 
+*We will be introducing a contributor licence agreement in the near future. In the meantime, if you want to contribute please get in touch.*
+
 Please feel free to contribute to the project, following these guidelines:
 
 * Please contribute by creating a fork and submitting a pull request.
