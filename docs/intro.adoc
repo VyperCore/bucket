@@ -3,12 +3,12 @@
 ----
 $ poetry install
 $ poetry shell
-$ python -m fcov.example
+$ python -m bucket.example
 ----
 
 == About:
 
-Below is a breakdown of each part of fcov, with information on how to create coverpoints then sample, export and merge coverage.
+Below is a breakdown of each part of Bucket, with information on how to create coverpoints then sample, export and merge coverage.
 
 === Coverpoints
 
