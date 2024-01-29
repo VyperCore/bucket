@@ -3,7 +3,7 @@ requires = ["poetry"]
 build-backend = "poetry.masonry.api"
 
 [tool.poetry]
-name = "fcov"
+name = "bucket"
 version = "0.1"
 description = "Python functional coverage"
 authors = []
