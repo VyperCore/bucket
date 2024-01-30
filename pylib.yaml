@@ -4,4 +4,4 @@
 
 !PyLib
 modules:
-  - ./fcov
+  - ./bucket
