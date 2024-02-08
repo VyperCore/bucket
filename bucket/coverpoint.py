@@ -82,7 +82,7 @@ class Coverpoint(CoverBase):
         # Add axis with values to process later
         # Dicts should be ordered, so keep the order they are installed...
         self.axes.append(Axis(name, values, description))
-
+         
     def add_goal(self, name, target, description):
         formatted_name = name.upper()
         if formatted_name in self._goal_dict:
