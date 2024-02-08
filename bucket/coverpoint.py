@@ -82,73 +82,7 @@ class Coverpoint(CoverBase):
         # Add axis with values to process later
         # Dicts should be ordered, so keep the order they are installed...
         self.axes.append(Axis(name, values, description))
-        
-    def add_one_hot_axis(self, name, description, size=None, display=None, padzero=True):
-        # Creates an axis with one-hot encoding up to the
-        # requested size (in bits). Includes zero.
-        assert size > 0, f"Size must be 1+ for one_hot_axis. Recieved: {size}"
-
-        if display is None:
-            if size < 8:
-                display = 'binary'
-            else :
-                display = 'hexadecimal'
-        
-        one_hot_vals = [0]
-        for i in range(size):
-            one_hot_vals.append(1 << i)
-        
-        if display == 'binary':
-            pad = size if padzero else 0
-            one_hot_dict = {f"0b{v:0{pad}b}":v for v in one_hot_vals}
-        elif display == 'hexadecimal':
-            # Count hexadecimal bits plus underscores
-            pad = (((size-1)//4) + 1 + ((size-1)//16)) if padzero else 0
-            one_hot_dict = {f"0x{v:0{pad}_x}":v for v in one_hot_vals}
-        else:
-            raise Exception(f"Unexpected display type for one_hot_axis: {display}")
-
-        self.axes.append(Axis(name, one_hot_dict, description))
-
-            
-    def add_msb_axis(self, name, description, size=None, display=None, padzero=True):
-        # Creates an axis with one-hot encoding up to the requested size (in bits), 
-        # with the full range of values. Includes zero.
-        assert size > 0, f"Size must be 1+ for msb_axis. Recieved: {size}"
-
-        if display is None:
-            if size < 8:
-                display = 'binary'
-            else:
-                display = 'hexadecimal'
-        
-        msb_vals = [0]
-        for i in range(size):
-            msb_vals.append(1 << i)
-
-        def val_range(msb_val):
-            if msb_val == 0:
-                u = 0
-                l = 0
-            else:
-                u = (msb_val<<1)-1
-                l = (msb_val)
-            return [l,u]
-        
-        if display == 'binary':
-            pad = size if padzero else 0
-            msb_dict = {f"0b{v:0{pad}b}":val_range(v) for v in msb_vals}
-        elif display == 'hexadecimal':
-            # Count hexadecimal bits plus underscores
-            pad = (((size-1)//4) + 1 + ((size-1)//16)) if padzero else 0
-            msb_dict = {f"0x{v:0{pad}_x}":val_range(v) for v in msb_vals}
-        else:
-            raise Exception(f"Unexpected display type for msb_axis: {display}")
-
-        self.axes.append(Axis(name, msb_dict, description))
-        
-
-
+         
     def add_goal(self, name, target, description):
         formatted_name = name.upper()
         if formatted_name in self._goal_dict:

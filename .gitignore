@@ -7,3 +7,4 @@ poetry.lock
 # pyenv
 .python-version
 
+example_file_store
