@@ -30,10 +30,17 @@ def merge(sql_paths: tuple[Path], output: Path):
 @click.option('--goals/--no-goals', default=False)
 @click.option('--points/--no-points', default=False)
 @click.option('--summary/--no-summary', default=True)
-def read(sql_path: Path, axes: bool, goals: bool, points: bool, summary: bool):
+@click.option('--record', default=None, type=click.INT)
+def read(sql_path: Path, axes: bool, goals: bool, points: bool, summary: bool, record: int|None):
+    print(f"{record=}")
     writer = ConsoleWriter(axes=axes, goals=goals, points=points, summary=summary)
-    for reading in SQLAccessor.File(sql_path).read_all():
+    if record is None:
+        for reading in SQLAccessor.File(sql_path).read_all():
+            writer.write(reading)
+    else:
+        reading = SQLAccessor.File(sql_path).read(record)
         writer.write(reading)
+
 
 if __name__ == '__main__':
     cli()
