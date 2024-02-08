@@ -56,7 +56,7 @@ class DogStats(Coverpoint):
 
     def sample(self, trace):
         # 'with cursor' is used, so cursor values are cleared each time
-        # cursor can also be manaually cleared by using cursor.clear()
+        # cursor can also be manually cleared by using cursor.clear()
         with self.cursor as cursor:
             cursor.set_cursor(
                 name=trace['Name'],
@@ -104,7 +104,7 @@ class ChewToysByAge(Coverpoint):
 
     def sample(self, trace):
         # 'with cursor' is used, so cursor values are cleared each time
-        # cursor can also be manaually cleared by using cursor.clear()
+        # cursor can also be manually cleared by using cursor.clear()
 
         dog_age = trace['Age']
         if dog_age < 2:
@@ -153,7 +153,7 @@ class ChewToysByName(Coverpoint):
 
     def sample(self, trace):
         # 'with cursor' is used, so cursor values are cleared each time
-        # cursor can also be manaually cleared by using cursor.clear()
+        # cursor can also be manually cleared by using cursor.clear()
 
         if trace['Name'] not in self.name_group:
             return
