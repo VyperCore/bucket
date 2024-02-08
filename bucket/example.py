@@ -2,10 +2,7 @@
 # Copyright (c) 2023 Vypercore. All Rights Reserved
 
 from git.repo import Repo
-from .context import CoverageContext
-from .covergroup import Covergroup
-from .coverpoint import Coverpoint
-from .sampler import Sampler
+from bucket import CoverageContext, Covergroup, Coverpoint, Sampler, AxisUtils
 
 from .rw import PointReader, SQLAccessor, MergeReading, ConsoleWriter
 
@@ -90,6 +87,12 @@ class ChewToysByAge(Coverpoint):
             description="Types of dog toys",
         )
 
+        self.add_axis(
+            name="favourite_leg",
+            values=AxisUtils.one_hot(width=4),
+            description="This makes no sense to display as one_hot, but here we are"
+        )
+
         self.add_goal("NO_SLIPPERS", -1, "Only puppies chew slippers!")
         self.add_goal("STICK", 50, "Yay sticks!")
 
@@ -115,6 +118,7 @@ class ChewToysByAge(Coverpoint):
             cursor.set_cursor(
                 breed=trace['Breed'],
                 age=age,
+                favourite_leg=trace['Leg']
             )
 
             # For when multiple values might need covering from one trace
@@ -187,6 +191,7 @@ class MySampler(Sampler):
         trace['Weight'] = self.random.randint(5, 50)
         trace['Age'] = self.random.randint(0, 15)
         trace['Name'] = self.random.choice(["Clive", "Derek", "Ethel", "Barbara", "Connie", "Graham"])
+        trace['Leg'] = self.random.choice([1,2,4,8])
 
         return trace
 
@@ -237,14 +242,23 @@ if __name__ == "__main__":
     # Merge together
     merged_reading = MergeReading(sql_reading_a, sql_reading_b)
 
+    # Write merged coverage into the database
+    rec_ref_merged = sql_accessor.write(merged_reading)
+
     # Output to console
+    print("\n-------------------------------------------------------")
     print("This is the coverage with 100 samples:")
+    print(f"To view this coverage in detail please run: python -m bucket read --sql-path example_file_store --points --record {rec_ref_a}")
     ConsoleWriter(axes=False, goals=False, points=False).write(reading_a)
-    print("This is the coverage from 2 regressions. One with 100 samples, and one with 500:")
+    print("\nThis is the coverage from 2 regressions. One with 100 samples, and one with 500:")
+    print(f"To view this coverage in detail please run: python -m bucket read --sql-path example_file_store --points --record {rec_ref_merged}")
     ConsoleWriter(axes=False, goals=False, points=False).write(merged_reading)
 
     # Read all back from sql - note as the db is not removed this will 
-    # acumulate each time this example is run.
+    # acumulate each time this example is run. This will also include
+    # merged data as well as the individual runs. It is meant as an example
+    # of how to use the command
     merged_reading_all = MergeReading(*sql_accessor.read_all())
-    print("This is the coverage from all regressions run so far:")
+    print("\nThis is the coverage from all the regression data so far:")
+    print("(To reset please delete the file 'example_file_store')")
     ConsoleWriter(axes=False, goals=False, points=False).write(merged_reading_all)

@@ -5,6 +5,7 @@ from .context import CoverageContext
 from .sampler import Sampler
 from .covergroup import Covergroup
 from .coverpoint import Coverpoint
+from .axisutils import AxisUtils
 from . import rw
 
-assert all((CoverageContext, Sampler, Covergroup, Coverpoint, rw))
+assert all((CoverageContext, Sampler, Covergroup, Coverpoint, AxisUtils, rw))
