@@ -7,7 +7,7 @@ from .common.chain import OpenLink, Link
 from .link import CovDef, CovRun
 
 @dataclass
-class GoalItem:  # Better name required
+class GoalItem:
     name: str = "DEFAULT"
     target: int = 10
     description: str = ""
