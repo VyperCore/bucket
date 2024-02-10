@@ -7,10 +7,15 @@ from bucket import CoverageContext, Covergroup, Coverpoint, Sampler, AxisUtils
 from .rw import PointReader, SQLAccessor, MergeReading, ConsoleWriter
 
 # This file contains useful reference code (such as example coverpoints,
-# covergroups, etc), as well as some necessary code to get the example working. 
+# covergroups, etc), as well as some necessary code to get the example working
+# outside of a full testbench. 
 
 # Covergroups
 class TopDogs(Covergroup):
+    '''
+    This covergroup is top level covergroup, containing all other covergroups/coverpoints.
+    An instance of this covergroup will be passed to the sampler.
+    '''
     def setup(self, ctx):
         self.add_coverpoint(DogStats(name="doggy_stats", description="Some basic doggy stats"))
         self.add_covergroup(
@@ -18,6 +23,9 @@ class TopDogs(Covergroup):
         )
 
 class DogsAndToys(Covergroup):
+    '''
+    This is another covergroup to group similar coverpoints together.
+    '''
     def setup(self, ctx):
         self.add_coverpoint(ChewToysByAge(name="chew_toys_by_age", description="Preferred chew toys by age"))
         self.add_coverpoint(
@@ -28,29 +36,41 @@ class DogsAndToys(Covergroup):
         )
 
 class DogStats(Coverpoint):
+    '''
+    This is an example coverpoint with 3 axes, each demonstrating a different way of 
+    specifying values to the axis. 
+    '''
     def __init__(self, name: str, description: str):
         super().__init__(name, description)
 
     def setup(self, ctx):
+        # The values passed to this axis are a simple list of str
         self.add_axis(
             name="name",
             values=["Clive", "Derek", "Ethel", "Barbara", "Connie", "Graham"],
             description="All the acceptable dog names",
         )
+        # The values passed to this axes is a list of int
         self.add_axis(
             name="age",
             values=list(range(16)),
             description="Dog age in years",
         )
+        # The values in this axis are named ranges, in a dict
         self.add_axis(
             name="size",
             values={"Small": [0, 10], "medium": [11, 30], "large": [31, 50]},
             description="Rough size estimate from weight",
         )
 
+        # Here we create a new goal, defined as ILLEGAL
+        # If a bucket with this goal applied is hit, when an error will be generated
         self.add_goal("HECKIN_CHONKY", -1, "Puppies can't be this big!")
 
     def apply_goals(self, bucket, goals):
+        # Buckets use names, not values. If you want to compare against a value,
+        # you must first convert the string back to int, etc
+        # Any bucket with no goal assigned, will have the default goal applied
         if int(bucket.age) <= 1 and bucket.size in ["large"]:
             return goals.HECKIN_CHONKY
 
@@ -66,6 +86,10 @@ class DogStats(Coverpoint):
             self.cursor.increment()
 
 class ChewToysByAge(Coverpoint):
+    '''
+    This is another example coverpoint. This one contains an axis demonstrating the use of
+    common axis values provided as part of this library (eg. msb, one_hot)
+    '''
     def __init__(self, name: str, description: str):
         super().__init__(name, description)
 
@@ -198,16 +222,23 @@ class MySampler(Sampler):
 
 
 if __name__ == "__main__":
-    # testbench
+    
+    # Instance two copies of the coverage. Normally only one is required, but this is to
+    # demonstrate merging coverage.
     with CoverageContext(isa="THIS IS AN ISA"):
         cvg_a = TopDogs(name="Dogs", description="Doggy coverage")
 
     with CoverageContext(isa="THIS IS AN ISA"):
         cvg_b = TopDogs(name="Dogs", description="Doggy coverage")
 
+    # print_tree() is a useful function to see the hierarchy of your coverage
+    # You can call it from the top level covergroup, or from another covergroup
+    # within your coverage tree.
     cvg_a.print_tree()
     cvg_a.doggy_coverage.print_tree()
 
+    # Instance 2 samplers. Again, you would only normally have one, but two are used here
+    # to demonstrate merging coverage from multiple regressions/tests. 
     sampler = MySampler(coverage=cvg_a)
     for _ in range(100):
         sampler.sample(sampler.create_trace())
