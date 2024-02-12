@@ -19,8 +19,6 @@ class Axis:
             self.size += 1
             self.sha.update(key.encode())
 
-        print(f"Added {self.name}: {self.description}. Values are {self.values}")
-
     def chain(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]:
         start = start or OpenLink(CovDef())
         link = CovDef(axis=1, 
