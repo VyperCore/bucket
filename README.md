@@ -1,22 +1,21 @@
-= Bucket
+# Bucket
 
 
-== About:
-This module is to create functional coverpoints in python. This gives several benefits such as:
+Bucket is a python library to create nicer functional coverpoints. There are several benefits writing the coverage in python, such as:
 
-* Easy integration into cocotb and other python testbenches
-* No SV - so no commercial EDA license required
+* Easier integration into cocotb and other python testbenches
+* No commercial EDA license required
 * Vendor independence - easily collect coverage from multiple tools/sources (eg. models, log parsers, etc)
 
-== Documentation:
-link:docs/intro.adoc[Read the Documentation]
+## Documentation:
+[Read the Documentation](docs/index.md)
 
-== Support
-This library is being actively built, and is expected change while it matures and key features are added.
+## Support
+This library is being actively built, and is expected to change while it matures and key features are added.
 We are not providing external support for use of this library, however we are aiming to make it as easy to use as possible. 
 
 As per the licence: 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
@@ -24,16 +23,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-== Roadmap
+## Roadmap
 There are several features planned but not actively started. These include:
 
 - Coverage filtering to enable only coverpoints of interest
 - Tiered coverage to allow for quicker CIs, more granuality for soak regressions, etc
 - Improved coverage viewer
+- Track which testcases contribute to coverage
+- Speed optimisations
 
-== Contributions
+## Contributions
 
-*We will be introducing a contributor licence agreement in the near future. In the meantime, if you want to contribute please get in touch.*
+**We will be introducing a contributor licence agreement in the near future. In the meantime, if you want to contribute please get in touch.**
 
 Please feel free to contribute to the project, following these guidelines:
 

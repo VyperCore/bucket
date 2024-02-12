@@ -2,15 +2,18 @@
 # Copyright (c) 2023 Vypercore. All Rights Reserved
 
 class Sampler:
-    """This class sample each coverpoint"""
+    '''
+    This class takes a reference to the top of of the coverage tree
+    - process_trace() can be overridden if trace data needs modifying before covering.
+    - sample() calls sample in each active covergroup/coverpoint
+    '''
 
     def __init__(self, coverage):
+        # Coverage should be instance of the coverage to be updated
         self.coverage = coverage
 
-        # Coverage should be instance of the coverage to be updated
-
     def sample(self, trace):
-        """Go through the coverage tree and recursively call sample, passing in trace"""
+        '''Go through the coverage tree and recursively call sample, passing in trace'''
         processed_trace = self.process_trace(trace)
         self.coverage.sample(processed_trace)
 
