@@ -10,7 +10,7 @@ This page describes how to use Bucket to create coverpoints, sample data and mer
 
 ## Coverpoints
 
-A coverpoint consists of one or more axes, which are then crossed. Each possible combination of the axes values is called a bucket. Each bucket has a default goal of 10 hits, which can be modified as required, or can be made illegal or ignored. 
+A coverpoint consists of one or more axes, which are then crossed. Each possible combination of the axes values is called a bucket. Each bucket has a default goal with a target of 10 hits, which can be modified as required, or can be made illegal or ignored. 
 
 Each new coverpoint should inherit from the Coverpoint class, and requires a 'name' and a 'description'. 
 
@@ -48,21 +48,21 @@ The example below shows an axis being added with five buckets. Four of the bucke
 
 ----
 
-Goals can be optionally used to name buckets or to define ILLEGAL, IGNORE and modified hit counts. `add_goal` requires a name, number of hits and a description.
+Goals can be optionally used to name buckets or to define ILLEGAL, IGNORE and modified hit counts. `add_goal` requires a name, target hit count and a description.
 
 | Parameter | Type | Description |
 | --- | --- | ---|
 | name | str | Should be all caps, no spaces. It should also be uniquely named where possible |
-| hits | int | Amount to set goal to. Some special values are accepted (See below)|
+| hits | int | Target number of hits to saturate the bucket(s). Some special values are accepted (See below)|
 | description | str | A short description of the goal aim |
 <br>
 
 `ILLEGAL` and `IGNORE` goals can be configured by using special values. 
 | Value | Descrpition |
 | --- | --- |
-| 1+ | Modify the number of hits required to saturate this bucket(s) |
-| 0 | Ignore. No coverage will be collected for this bucket(s) |
-| -1 | Illegal. Bucket(s) will generate an error if is hit |
+| 1+ | Target number of hits to saturate the bucket(s) |
+| 0 | Ignore. No coverage will be collected for the bucket(s) |
+| -1 | Illegal. Bucket(s) will generate an error if hit |
 
 <br>
 Each goal is created during setup(), normally after the axes have been defined. Below, one goal has been made ILLEGAL, while the other has increased the number of hits required to 20.
