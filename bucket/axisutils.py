@@ -39,7 +39,7 @@ class AxisUtils:
         return one_hot_dict
 
 
-    def msb(width:int=None, display_bin:bool=False, display_hex:bool=False, pad_zero:bool=True):
+    def msb(width:int=None, display_bin:bool=False, display_hex:bool=False, pad_zero:bool=True, include_max=False):
         '''
         Creates an axis with one-hot encoding up to the requested width (in bits), with the
         full range of values. Includes zero. Bucket name will display in binary/hexadecimal 
@@ -50,11 +50,12 @@ class AxisUtils:
             display_bin: Override bucket name to display as binary (Default: False)
             display_hex: Override bucket name to display as hexadecimal (Default: False)
             pad_zero: Pad bucket name with leading zeroes. (Default: True)
+            include_maxX: Include all-ones (Default: False)
 
             Returns: Dict of {bucket_name: value_range}
 
         '''
-        assert width > 0, f"Width must be 1+ for msb_axis. Recieved: {width}"
+        assert width > 1, f"Width must be 2+ for msb_axis. Recieved: {width}"
         assert not (display_bin and display_hex), f"Either display_bin OR display_hex may be set for msb"
 
         if not (display_bin or display_hex):
@@ -63,17 +64,28 @@ class AxisUtils:
             else:
                 display_hex = True
         
+        if include_max:
+            max_val = (1<<width) - 1
+        
         msb_vals = [0]
         for i in range(width):
             msb_vals.append(1 << i)
+        if include_max:
+            msb_vals.append(max_val)
 
         def val_range(msb_val):
             if msb_val == 0:
                 u = 0
                 l = 0
+            elif include_max and (msb_val == max_val):
+                u = max_val
+                l = max_val
             else:
-                u = (msb_val<<1)-1
-                l = (msb_val)
+                if include_max and (msb_val == 1 << (width-1)):
+                    u = (msb_val<<1)-2
+                else: 
+                    u = (msb_val<<1)-1
+                l = msb_val
             return [l,u]
         
         if display_bin:
