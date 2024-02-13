@@ -17,7 +17,7 @@ from .covergroup import CoverBase
 from .context import CoverageContext
 
 from .axis import Axis
-from .cursor import Cursor
+from .bucket import Bucket
 from .goal import GoalItem
 from .triggers import CoverageTriggers
 
@@ -49,18 +49,18 @@ class Coverpoint(CoverBase):
         self._goal_dict = {"DEFAULT": GoalItem()}
         # Dictionary of goals for each bucket
         self._cvg_goals = {}
-        # Instance of Cursor class to increment hit count for a bucket
-        self.cursor = Cursor(self)
+        # Instance of Bucket class to increment hit count for a bucket
+        self.bucket = Bucket(self)
 
         self.setup(ctx=CoverageContext.get())
 
         self.sha = hashlib.sha256((self.name+self.description).encode())
         self.axis_names = [x.name for x in self.axes]
         goals = SimpleNamespace(**self._goal_dict)
-        for cursor in self.all_axis_value_combinations():
-            bucket = SimpleNamespace(**dict(zip(self.axis_names, cursor, strict=True)))
+        for bucket in self.all_axis_value_combinations():
+            bucket = SimpleNamespace(**dict(zip(self.axis_names, bucket, strict=True)))
             if goal:=self.apply_goals(bucket, goals):
-                self._cvg_goals[cursor] = goal
+                self._cvg_goals[bucket] = goal
             else:
                 goal = self._goal_dict["DEFAULT"]
             self.sha.update(goal.sha.digest())
@@ -75,8 +75,8 @@ class Coverpoint(CoverBase):
             axis_values.append(list(axis.values.keys()))
         yield from itertools.product(*axis_values)
 
-    def increment_hit_count(self, cursor, hits=1):
-        self.cvg_hits[cursor] += hits
+    def increment_hit_count(self, bucket, hits=1):
+        self.cvg_hits[bucket] += hits
 
     def add_axis(self, name, values, description):
         # Add axis with values to process later
@@ -94,9 +94,9 @@ class Coverpoint(CoverBase):
             return self._goal_dict["DEFAULT"]
         raise NotImplementedError("This needs to be implemented by the coverpoint")
 
-    def get_goal(self, cursor):
-        if cursor in self._cvg_goals:
-            return self._cvg_goals[cursor]
+    def get_goal(self, bucket):
+        if bucket in self._cvg_goals:
+            return self._cvg_goals[bucket]
         else:
             return self._goal_dict['DEFAULT']
 
@@ -117,8 +117,8 @@ class Coverpoint(CoverBase):
         buckets = 0
         target = 0
         target_buckets = 0
-        for cursor in self.all_axis_value_combinations():
-            bucket_target = self.get_goal(cursor).target
+        for bucket in self.all_axis_value_combinations():
+            bucket_target = self.get_goal(bucket).target
             if bucket_target > 0:
                 target += bucket_target
                 target_buckets += 1
@@ -144,9 +144,9 @@ class Coverpoint(CoverBase):
         hits = 0
         hit_buckets = 0
         full_buckets = 0
-        for cursor in self.all_axis_value_combinations():
-            bucket_target = self.get_goal(cursor).target
-            bucket_hits = self.cvg_hits[cursor]
+        for bucket in self.all_axis_value_combinations():
+            bucket_target = self.get_goal(bucket).target
+            bucket_hits = self.cvg_hits[bucket]
 
             if bucket_target > 0:
                 bucket_hits = min(bucket_target, bucket_hits)
@@ -170,19 +170,19 @@ class Coverpoint(CoverBase):
                            typ=CoverBase)
 
     def bucket_goals(self):
-        for cursor in self.all_axis_value_combinations():
-            yield self.get_goal(cursor).name
+        for bucket in self.all_axis_value_combinations():
+            yield self.get_goal(bucket).name
 
     def bucket_hits(self):
-        for cursor in self.all_axis_value_combinations():
-            yield self.cvg_hits[cursor]
+        for bucket in self.all_axis_value_combinations():
+            yield self.cvg_hits[bucket]
 
     def serialize_point_hits(self):
         hits = 0
-        for cursor in self.all_axis_value_combinations():
-            target = self.get_goal(cursor).target
+        for bucket in self.all_axis_value_combinations():
+            target = self.get_goal(bucket).target
             if target > 0:
-                hits += min(target, self.cvg_hits[cursor])
+                hits += min(target, self.cvg_hits[bucket])
         yield hits
 
     def _debug_coverage(self):
@@ -207,11 +207,11 @@ class Coverpoint(CoverBase):
             table.add_column(header, justify="right", style="cyan", no_wrap=True)
 
         # Iterate over all buckets (even if unhit):
-        for cursor in self.all_axis_value_combinations():
-            hits = self.cvg_hits[cursor]
-            goal = self.get_goal(cursor)
+        for bucket in self.all_axis_value_combinations():
+            hits = self.cvg_hits[bucket]
+            goal = self.get_goal(bucket)
             data = [
-                *list(cursor),
+                *list(bucket),
                 str(hits),
                 str(goal.target),
                 percentage_hit(hits, goal.target),
