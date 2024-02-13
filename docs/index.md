@@ -48,28 +48,22 @@ The example below shows an axis being added with five buckets. Four of the bucke
 
 ----
 
-Goals can be optionally used to name buckets or to define ILLEGAL, IGNORE and modified hit counts. `add_goal` requires a name, target hit count and a description.
+Goals can be optionally used to name buckets or to define ILLEGAL, IGNORE and modified hit counts. `add_goal` requires a name and a description. It can optionally include a new target hit count, or define the bucket(s) as ignore or illegal. If no target is provided, a default of 10 is currently used. 
 
 | Parameter | Type | Description |
 | --- | --- | ---|
 | name | str | Should be all caps, no spaces. It should also be uniquely named where possible |
-| hits | int | Target number of hits to saturate the bucket(s). Some special values are accepted (See below)|
 | description | str | A short description of the goal aim |
-<br>
-
-`ILLEGAL` and `IGNORE` goals can be configured by using special values. 
-| Value | Descrpition |
-| --- | --- |
-| 1+ | Target number of hits to saturate the bucket(s) |
-| 0 | Ignore. No coverage will be collected for the bucket(s) |
-| -1 | Illegal. Bucket(s) will generate an error if hit |
+| \[target\] | int | Target number of hits to saturate the bucket(s) |
+| \[illegal\] | bool | Illegal. Bucket(s) will generate an error if hit |
+| \[ignore\] | bool | Ignore. No coverage will be collected for the bucket(s) |
 
 <br>
 Each goal is created during setup(), normally after the axes have been defined. Below, one goal has been made ILLEGAL, while the other has increased the number of hits required to 20.
 
 ``` Python
-        self.add_goal("MOULDY_CHEESE", -1, "Not so gouda!")
-        self.add_goal("OPTMISTIC_CHEESE", 20, "I brie-live in myself!")
+        self.add_goal("MOULDY_CHEESE", "Not so gouda!", illegal=True)
+        self.add_goal("OPTMISTIC_CHEESE", "I brie-live in myself!", target=20)
 ```
 
 If goals have been created, then they must be applied to the relevant buckets. To do this the `apply_goals()` method must be overridden, which will be automatically called at the end of the setup phase. After filtering which buckets are to have a goal applied, the new goal should be returned. A default of 10 hits is otherwise applied. 
