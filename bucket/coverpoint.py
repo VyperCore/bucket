@@ -83,10 +83,22 @@ class Coverpoint(CoverBase):
         # Dicts should be ordered, so keep the order they are installed...
         self.axes.append(Axis(name, values, description))
          
-    def add_goal(self, name, target, description):
+    def add_goal(self, name, description, illegal=False, ignore=False, target=None):
         formatted_name = name.upper()
         if formatted_name in self._goal_dict:
             raise Exception(f'Goal "{formatted_name}" already defined for this coverpoint')
+        
+        assert sum(illegal, ignore, (target is not None)) <= 1,
+            f"Only one option may be chosen: illegal, ignore or target"
+        
+        if illegal:
+            target = -1
+        elif ignore:
+            target = 0
+        elif target is not None:
+            # This shouldn't be hardcoded, something that can be overridden would be good
+            target = 10
+
         self._goal_dict[formatted_name] = GoalItem(name, target, description)
 
     def apply_goals(self, bucket=None, goals=None):

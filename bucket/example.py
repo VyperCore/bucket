@@ -65,7 +65,7 @@ class DogStats(Coverpoint):
 
         # Here we create a new goal, defined as ILLEGAL
         # If a bucket with this goal applied is hit, when an error will be generated
-        self.add_goal("HECKIN_CHONKY", -1, "Puppies can't be this big!")
+        self.add_goal("HECKIN_CHONKY", "Puppies can't be this big!", illegal=True)
 
     def apply_goals(self, bucket, goals):
         # Buckets use names, not values. If you want to compare against a value,
@@ -117,8 +117,8 @@ class ChewToysByAge(Coverpoint):
             description="This makes no sense to display as one_hot, but here we are"
         )
 
-        self.add_goal("NO_SLIPPERS", -1, "Only puppies chew slippers!")
-        self.add_goal("STICK", 50, "Yay sticks!")
+        self.add_goal("NO_SLIPPERS", "Only puppies chew slippers!", illegal=True)
+        self.add_goal("STICK", "Yay sticks!", target=50)
 
     def apply_goals(self, bucket, goals):
         if bucket.age != "Puppy" and bucket.favourite_toy in ["slipper"]:
