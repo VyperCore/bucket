@@ -75,15 +75,15 @@ class DogStats(Coverpoint):
             return goals.HECKIN_CHONKY
 
     def sample(self, trace):
-        # 'with cursor' is used, so cursor values are cleared each time
-        # cursor can also be manually cleared by using cursor.clear()
-        with self.cursor as cursor:
-            cursor.set_cursor(
+        # 'with bucket' is used, so bucket values are cleared each time
+        # bucket can also be manually cleared by using bucket.clear()
+        with self.bucket as bucket:
+            bucket.set_bucket(
                 name=trace['Name'],
                 age=trace['Age'],
                 size=trace['Weight']
             )
-            self.cursor.increment()
+            self.bucket.hit()
 
 class ChewToysByAge(Coverpoint):
     '''
@@ -127,8 +127,8 @@ class ChewToysByAge(Coverpoint):
             return goals.STICK
 
     def sample(self, trace):
-        # 'with cursor' is used, so cursor values are cleared each time
-        # cursor can also be manually cleared by using cursor.clear()
+        # 'with bucket' is used, so bucket values are cleared each time
+        # bucket can also be manually cleared by using bucket.clear()
 
         dog_age = trace['Age']
         if dog_age < 2:
@@ -138,8 +138,8 @@ class ChewToysByAge(Coverpoint):
         else:
             age = 'Adult'
 
-        with self.cursor as cursor:
-            cursor.set_cursor(
+        with self.bucket as bucket:
+            bucket.set_bucket(
                 breed=trace['Breed'],
                 age=age,
                 favourite_leg=trace['Leg']
@@ -148,8 +148,8 @@ class ChewToysByAge(Coverpoint):
             # For when multiple values might need covering from one trace
             # Only need to set the axes that change
             for toy in range(len(trace['Chew_toy'])):
-                cursor.set_cursor(favourite_toy=trace['Chew_toy'][toy])
-                cursor.increment()
+                bucket.set_bucket(favourite_toy=trace['Chew_toy'][toy])
+                bucket.hit()
 
 
 
@@ -176,14 +176,14 @@ class ChewToysByName(Coverpoint):
         )
 
     def sample(self, trace):
-        # 'with cursor' is used, so cursor values are cleared each time
-        # cursor can also be manually cleared by using cursor.clear()
+        # 'with bucket' is used, so bucket values are cleared each time
+        # bucket can also be manually cleared by using bucket.clear()
 
         if trace['Name'] not in self.name_group:
             return
         
-        with self.cursor as cursor:
-            cursor.set_cursor(
+        with self.bucket as bucket:
+            bucket.set_bucket(
                 breed=trace['Breed'],
                 name=trace['Name'],
             )
@@ -191,8 +191,8 @@ class ChewToysByName(Coverpoint):
             # For when multiple values might need covering from one trace
             # Only need to set the axes that change
             for toy in range(len(trace['Chew_toy'])):
-                cursor.set_cursor(favourite_toy=trace['Chew_toy'][toy])
-                cursor.increment()
+                bucket.set_bucket(favourite_toy=trace['Chew_toy'][toy])
+                bucket.hit()
 
 
 # Sampler
