@@ -22,11 +22,10 @@ class CoverBase:
     def sample(self, trace):
         raise NotImplementedError("This needs to be implemented by the coverpoint")
 
-    def chain_def(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]: ...
+    def _chain_def(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]: ...
 
-    def chain_run(self, start: OpenLink[CovRun] | None = None) -> Link[CovRun]: ...
+    def _chain_run(self, start: OpenLink[CovRun] | None = None) -> Link[CovRun]: ...
 
-    def serialize_point_hits(self) -> Iterator[int]: ...
 
 class Covergroup(CoverBase):
     """This class groups coverpoints together, and adds them to the hierarchy"""
@@ -109,31 +108,20 @@ class Covergroup(CoverBase):
     def iter_children(self) -> Iterable[CoverBase]:
         yield from itertools.chain(self.coverpoints.values(), self.covergroups.values())
 
-    def chain_def(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]:
+    def _chain_def(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]:
         start = start or OpenLink(CovDef())
         child_start = start.link_down()
         child_close = None
         for child in self.iter_children():
-            child_close = child.chain_def(child_start)
+            child_close = child._chain_def(child_start)
             child_start = child_close.link_across()
         return start.close(self, child=child_close, link=CovDef(point=1, sha=self.sha), typ=CoverBase)
 
-    def chain_run(self, start: OpenLink[CovRun] | None = None) -> Link[CovRun]:
+    def _chain_run(self, start: OpenLink[CovRun] | None = None) -> Link[CovRun]:
         start = start or OpenLink(CovRun())
         child_start = start.link_down()
         child_close = None
         for child in self.iter_children():
-            child_close = child.chain_run(child_start)
+            child_close = child._chain_run(child_start)
             child_start = child_close.link_across()
         return start.close(self, child=child_close, link=CovRun(point=1), typ=CoverBase)
-
-    def serialize_point_hits(self):
-        total_hits = 0
-        descendant_hits = []
-        for child in self.iter_children():
-            child_hits, *grandchild_hits = list(child.serialize_point_hits())
-            total_hits += child_hits
-            descendant_hits.append(child_hits)
-            descendant_hits += grandchild_hits
-        yield total_hits
-        yield from descendant_hits

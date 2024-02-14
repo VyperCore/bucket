@@ -48,28 +48,22 @@ The example below shows an axis being added with five buckets. Four of the bucke
 
 ----
 
-Goals can be optionally used to name buckets or to define ILLEGAL, IGNORE and modified hit counts. `add_goal` requires a name, target hit count and a description.
+Goals can be optionally used to name buckets or to define ILLEGAL, IGNORE and modified hit counts. `add_goal` requires a name and a description. It can optionally include a new target hit count, or define the bucket(s) as ignore or illegal. If no target is provided, a default of 10 is currently used. 
 
 | Parameter | Type | Description |
 | --- | --- | ---|
 | name | str | Should be all caps, no spaces. It should also be uniquely named where possible |
-| hits | int | Target number of hits to saturate the bucket(s). Some special values are accepted (See below)|
 | description | str | A short description of the goal aim |
-<br>
-
-`ILLEGAL` and `IGNORE` goals can be configured by using special values. 
-| Value | Descrpition |
-| --- | --- |
-| 1+ | Target number of hits to saturate the bucket(s) |
-| 0 | Ignore. No coverage will be collected for the bucket(s) |
-| -1 | Illegal. Bucket(s) will generate an error if hit |
+| \[target\] | int | Target number of hits to saturate the bucket(s) |
+| \[illegal\] | bool | Illegal. Bucket(s) will generate an error if hit |
+| \[ignore\] | bool | Ignore. No coverage will be collected for the bucket(s) |
 
 <br>
 Each goal is created during setup(), normally after the axes have been defined. Below, one goal has been made ILLEGAL, while the other has increased the number of hits required to 20.
 
 ``` Python
-        self.add_goal("MOULDY_CHEESE", -1, "Not so gouda!")
-        self.add_goal("OPTMISTIC_CHEESE", 20, "I brie-live in myself!")
+        self.add_goal("MOULDY_CHEESE", "Not so gouda!", illegal=True)
+        self.add_goal("OPTMISTIC_CHEESE", "I brie-live in myself!", target=20)
 ```
 
 If goals have been created, then they must be applied to the relevant buckets. To do this the `apply_goals()` method must be overridden, which will be automatically called at the end of the setup phase. After filtering which buckets are to have a goal applied, the new goal should be returned. A default of 10 hits is otherwise applied. 
@@ -84,22 +78,22 @@ NOTE: The **name** of the bucket is used, not the original value. For strings th
 ```
 ---
 <br>
-Finally, a `sample()` method needs to be defined. This uses a cursor to point to a particular cross of axis values, which will have its hit count increased (if applicable).
+Finally, a `sample()` method needs to be defined. This sets a bucket with a particular cross of axis values, which will have its hit count increased (if applicable).
 
 A trace object can be of any type, but is intended to be a class containing all information to be covered (from a monitor, model, etc). Each coverpoint can then sample the relevant information. This could be as simple as directly assigning values to each axis, processing the values into something more useful and/or storing values for the next time the coverpoint is called. 
 
-To set each axis, `set_cursor()` is used, with each axis name being assigned a value/named-value. (eg. If the values `[0,1,2]` were given the names `[red,green,blue]` then either `0` or `red` could be assigned to the cursor). Once all axes have been set, then the cursor can be incremented. If it is a regular bucket, then the hit count will be increased. If it is an IGNORE bucket, no action will be taken, and if it is an ILLEGAL bucket an error will be generated. 
+`set_axes()` is used to assign each axis a value/named-value. (eg. If the values `[0,1,2]` were given the names `[red,green,blue]` then either `0` or `red` could be assigned to the bucket). Once all axes have been set, then the bucket hit count can be incremented. If it is a regular bucket, then the hit count will be increased. If it is an IGNORE bucket, no action will be taken, and if it is an ILLEGAL bucket an error will be generated. 
 
-> **NOTE: The cursor should have every axis of the coverpoint set to a valid value when increment is called. Attempting to sample while not setting the cursor correctly will result in an error. (This is because the increment function won't know which exact cross of axis values to count as hit).**
+> **NOTE: The bucket should have every axis of the coverpoint assigned a valid value when hit() is called. Attempting to sample while not setting the bucket correctly will result in an error. (This is because the hit() function won't know which exact combination of axis values to count as hit).**
 
-If multiple values are to be sampled for a given call of a coverpoint, then all axes of the cursor do not need to be re-set. Only the ones which have changed need to be overridden with new values.
+If multiple values are to be sampled for a given call of a coverpoint, then all axis values of the bucket do not need to be re-set. Only the ones which have changed need to be overridden with new values.
 
 ``` Python
     def sample(self, trace):
-        # 'with cursor' is used, so cursor values are cleared each time.
-        # cursor can also be manaually cleared by using cursor.clear()
-        with self.cursor as cursor:
-            cursor.set_cursor(
+        # 'with bucket' is used, so bucket values are cleared each time.
+        # bucket can also be manaually cleared by using bucket.clear()
+        with self.bucket as bucket:
+            bucket.set_axes(
                 my_axis_1=trace.monitor_a.interface_b.signal,
                 my_axis_2=trace.instruction.operand.type,
             )
@@ -107,8 +101,8 @@ If multiple values are to be sampled for a given call of a coverpoint, then all 
             # For when multiple values might need covering from one trace
             # Only need to re-set the axes that change
             for gpr in range(len(trace.registers_accessed)):
-                cursor.set_cursor(my_axis_3=trace.registers[gpr])
-                cursor.increment()
+                bucket.set_axes(my_axis_3=trace.registers[gpr])
+                bucket.hit()
 ```
 ---
 <br>

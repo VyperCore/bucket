@@ -17,7 +17,7 @@ from .covergroup import CoverBase
 from .context import CoverageContext
 
 from .axis import Axis
-from .cursor import Cursor
+from .bucket import Bucket
 from .goal import GoalItem
 from .triggers import CoverageTriggers
 
@@ -29,7 +29,41 @@ class GOAL(Enum):
 
 
 class Coverpoint(CoverBase):
-    # coverpoints_by_trigger = defaultdict(set)
+    bucket: Bucket
+    '''
+    This Bucket class is used for incrementing the hit count on a given bucket.
+
+    Example 1 (using 'with' to clear the bucket after each use)::
+        
+        
+        with self.bucket as bucket:
+            bucket.set_axes(
+                name=trace['Name'],
+                age=trace['Age'],
+                size=trace['Weight']
+            )
+            bucket.hit()
+
+    Example 2 (Showing how the bucket axes can be set multiple times, and old values retained)::
+
+            self.bucket.clear()
+            self.bucket.set_axes(
+                name=trace['Name'],
+                age=trace['Age'],
+            )
+            for toy in trace['Toys']:
+                bucket.set_axes(toy = toy)
+                self.bucket.hit()
+
+    Example 3 (demonstrating passing in all axis values into hit, rather than calling set_axes)::
+
+            self.bucket.hit(
+                name=trace['Name'],
+                age=trace['Age'],
+                size=trace['Weight']
+            )
+
+    '''
 
     def __init__(self, name: str, description: str, trigger=None):
         self.name = name
@@ -49,18 +83,18 @@ class Coverpoint(CoverBase):
         self._goal_dict = {"DEFAULT": GoalItem()}
         # Dictionary of goals for each bucket
         self._cvg_goals = {}
-        # Instance of Cursor class to increment hit count for a bucket
-        self.cursor = Cursor(self)
+        # Instance of Bucket class to increment hit count for a bucket
+        self.bucket = Bucket(self)
 
         self.setup(ctx=CoverageContext.get())
 
         self.sha = hashlib.sha256((self.name+self.description).encode())
         self.axis_names = [x.name for x in self.axes]
         goals = SimpleNamespace(**self._goal_dict)
-        for cursor in self.all_axis_value_combinations():
-            bucket = SimpleNamespace(**dict(zip(self.axis_names, cursor, strict=True)))
+        for combination in self._all_axis_value_combinations():
+            bucket = SimpleNamespace(**dict(zip(self.axis_names, combination, strict=True)))
             if goal:=self.apply_goals(bucket, goals):
-                self._cvg_goals[cursor] = goal
+                self._cvg_goals[combination] = goal
             else:
                 goal = self._goal_dict["DEFAULT"]
             self.sha.update(goal.sha.digest())
@@ -69,24 +103,37 @@ class Coverpoint(CoverBase):
     def setup(self, ctx: SimpleNamespace):
         raise NotImplementedError("This needs to be implemented by the coverpoint")
 
-    def all_axis_value_combinations(self):
+    def _all_axis_value_combinations(self):
         axis_values = []
         for axis in self.axes:
             axis_values.append(list(axis.values.keys()))
         yield from itertools.product(*axis_values)
 
-    def increment_hit_count(self, cursor, hits=1):
-        self.cvg_hits[cursor] += hits
+    def _increment_hit_count(self, bucket, hits=1):
+        self.cvg_hits[bucket] += hits
 
     def add_axis(self, name, values, description):
         # Add axis with values to process later
         # Dicts should be ordered, so keep the order they are installed...
         self.axes.append(Axis(name, values, description))
          
-    def add_goal(self, name, target, description):
+    def add_goal(self, name, description, illegal=False, ignore=False, target=None):
         formatted_name = name.upper()
         if formatted_name in self._goal_dict:
             raise Exception(f'Goal "{formatted_name}" already defined for this coverpoint')
+        
+        assert sum([illegal, ignore, (target is not None)]) <= 1, f"Only one option may be chosen: illegal, ignore or target"
+        
+        assert target is None or target > 0, f"If target is supplied, it must be 1+"
+        
+        if illegal:
+            target = -1
+        elif ignore:
+            target = 0
+        elif target is None:
+            # This shouldn't be hardcoded, something that can be overridden would be good
+            target = 10
+
         self._goal_dict[formatted_name] = GoalItem(name, target, description)
 
     def apply_goals(self, bucket=None, goals=None):
@@ -94,13 +141,13 @@ class Coverpoint(CoverBase):
             return self._goal_dict["DEFAULT"]
         raise NotImplementedError("This needs to be implemented by the coverpoint")
 
-    def get_goal(self, cursor):
-        if cursor in self._cvg_goals:
-            return self._cvg_goals[cursor]
+    def _get_goal(self, bucket):
+        if bucket in self._cvg_goals:
+            return self._cvg_goals[bucket]
         else:
             return self._goal_dict['DEFAULT']
 
-    def chain_def(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]:
+    def _chain_def(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]:
         start = start or OpenLink(CovDef())
 
         child_start = start.link_down()
@@ -117,8 +164,8 @@ class Coverpoint(CoverBase):
         buckets = 0
         target = 0
         target_buckets = 0
-        for cursor in self.all_axis_value_combinations():
-            bucket_target = self.get_goal(cursor).target
+        for bucket in self._all_axis_value_combinations():
+            bucket_target = self._get_goal(bucket).target
             if bucket_target > 0:
                 target += bucket_target
                 target_buckets += 1
@@ -137,16 +184,16 @@ class Coverpoint(CoverBase):
                            link=link,
                            typ=CoverBase)
 
-    def chain_run(self, start: OpenLink[CovRun] | None = None) -> Link[CovRun]:
+    def _chain_run(self, start: OpenLink[CovRun] | None = None) -> Link[CovRun]:
         start = start or OpenLink(CovRun())
 
         buckets = 0
         hits = 0
         hit_buckets = 0
         full_buckets = 0
-        for cursor in self.all_axis_value_combinations():
-            bucket_target = self.get_goal(cursor).target
-            bucket_hits = self.cvg_hits[cursor]
+        for bucket in self._all_axis_value_combinations():
+            bucket_target = self._get_goal(bucket).target
+            bucket_hits = self.cvg_hits[bucket]
 
             if bucket_target > 0:
                 bucket_hits = min(bucket_target, bucket_hits)
@@ -169,21 +216,13 @@ class Coverpoint(CoverBase):
                            link=link,
                            typ=CoverBase)
 
-    def bucket_goals(self):
-        for cursor in self.all_axis_value_combinations():
-            yield self.get_goal(cursor).name
+    def _bucket_goals(self):
+        for bucket in self._all_axis_value_combinations():
+            yield self._get_goal(bucket).name
 
-    def bucket_hits(self):
-        for cursor in self.all_axis_value_combinations():
-            yield self.cvg_hits[cursor]
-
-    def serialize_point_hits(self):
-        hits = 0
-        for cursor in self.all_axis_value_combinations():
-            target = self.get_goal(cursor).target
-            if target > 0:
-                hits += min(target, self.cvg_hits[cursor])
-        yield hits
+    def _bucket_hits(self):
+        for bucket in self._all_axis_value_combinations():
+            yield self.cvg_hits[bucket]
 
     def _debug_coverage(self):
        
@@ -207,11 +246,11 @@ class Coverpoint(CoverBase):
             table.add_column(header, justify="right", style="cyan", no_wrap=True)
 
         # Iterate over all buckets (even if unhit):
-        for cursor in self.all_axis_value_combinations():
-            hits = self.cvg_hits[cursor]
-            goal = self.get_goal(cursor)
+        for bucket in self._all_axis_value_combinations():
+            hits = self.cvg_hits[bucket]
+            goal = self._get_goal(bucket)
             data = [
-                *list(cursor),
+                *list(bucket),
                 str(hits),
                 str(goal.target),
                 percentage_hit(hits, goal.target),
