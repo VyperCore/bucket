@@ -88,14 +88,15 @@ class Coverpoint(CoverBase):
         if formatted_name in self._goal_dict:
             raise Exception(f'Goal "{formatted_name}" already defined for this coverpoint')
         
-        assert sum(illegal, ignore, (target is not None)) <= 1,
-            f"Only one option may be chosen: illegal, ignore or target"
+        assert sum(illegal, ignore, (target is not None)) <= 1, f"Only one option may be chosen: illegal, ignore or target"
+        
+        assert target is None or target > 0, f"If target is supplied, it must be 1+"
         
         if illegal:
             target = -1
         elif ignore:
             target = 0
-        elif target is not None:
+        elif target is None:
             # This shouldn't be hardcoded, something that can be overridden would be good
             target = 10
 
