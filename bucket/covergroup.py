@@ -26,7 +26,6 @@ class CoverBase:
 
     def _chain_run(self, start: OpenLink[CovRun] | None = None) -> Link[CovRun]: ...
 
-    def serialize_point_hits(self) -> Iterator[int]: ...
 
 class Covergroup(CoverBase):
     """This class groups coverpoints together, and adds them to the hierarchy"""
@@ -126,14 +125,3 @@ class Covergroup(CoverBase):
             child_close = child._chain_run(child_start)
             child_start = child_close.link_across()
         return start.close(self, child=child_close, link=CovRun(point=1), typ=CoverBase)
-
-    def serialize_point_hits(self):
-        total_hits = 0
-        descendant_hits = []
-        for child in self.iter_children():
-            child_hits, *grandchild_hits = list(child.serialize_point_hits())
-            total_hits += child_hits
-            descendant_hits.append(child_hits)
-            descendant_hits += grandchild_hits
-        yield total_hits
-        yield from descendant_hits
