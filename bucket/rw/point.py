@@ -17,7 +17,7 @@ class PointReader(Reader):
     def read(self, point):
         reading = PuppetReading()
 
-        chain = point.chain_def()
+        chain = point._chain_def()
         reading.def_sha = chain.end.sha.hexdigest()
         reading.rec_sha = self._rec_sha
         for point_link in sorted(chain.index.iter(CoverBase), key=lambda l:(l.start.point,l.depth)):
@@ -27,7 +27,7 @@ class PointReader(Reader):
                 start = point_link.start.bucket
                 goal_start = point_link.start.goal
                 goal_offsets = {k:i for i,k in enumerate(point_link.item._goal_dict.keys())}
-                for offset, goal in enumerate(point_link.item.bucket_goals()):
+                for offset, goal in enumerate(point_link.item._bucket_goals()):
                     bg_tuple = BucketGoalTuple(start=(start+offset), goal=(goal_start+goal_offsets[goal]))
                     reading.bucket_goals.append(bg_tuple)
     
@@ -43,14 +43,14 @@ class PointReader(Reader):
             reading.goals.append(GoalTuple.from_link(goal_link))
 
         self.point = point
-        chain = self.point.chain_run()
+        chain = self.point._chain_run()
 
         for point_link in sorted(chain.index.iter(CoverBase), key=lambda l:(l.start.point,l.depth)):
             reading.point_hits.append(PointHitTuple.from_link(point_link))
             
             if isinstance(point_link.item, Coverpoint):
                 start = point_link.start.bucket
-                for offset, hits in enumerate(point_link.item.bucket_hits()):
+                for offset, hits in enumerate(point_link.item._bucket_hits()):
                     bh_tuple = BucketHitTuple(start=(start+offset), hits=hits)
                     reading.bucket_hits.append(bh_tuple)
 

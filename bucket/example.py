@@ -75,10 +75,8 @@ class DogStats(Coverpoint):
             return goals.HECKIN_CHONKY
 
     def sample(self, trace):
-        # 'with bucket' is used, so bucket values are cleared each time
-        # bucket can also be manually cleared by using bucket.clear()
-        with self.bucket as bucket:
-            bucket.set_bucket(
+            self.bucket.clear()
+            self.bucket.set_axes(
                 name=trace['Name'],
                 age=trace['Age'],
                 size=trace['Weight']
@@ -139,7 +137,7 @@ class ChewToysByAge(Coverpoint):
             age = 'Adult'
 
         with self.bucket as bucket:
-            bucket.set_bucket(
+            bucket.set_axes(
                 breed=trace['Breed'],
                 age=age,
                 favourite_leg=trace['Leg']
@@ -148,7 +146,7 @@ class ChewToysByAge(Coverpoint):
             # For when multiple values might need covering from one trace
             # Only need to set the axes that change
             for toy in range(len(trace['Chew_toy'])):
-                bucket.set_bucket(favourite_toy=trace['Chew_toy'][toy])
+                bucket.set_axes(favourite_toy=trace['Chew_toy'][toy])
                 bucket.hit()
 
 
@@ -183,7 +181,7 @@ class ChewToysByName(Coverpoint):
             return
         
         with self.bucket as bucket:
-            bucket.set_bucket(
+            bucket.set_axes(
                 breed=trace['Breed'],
                 name=trace['Name'],
             )
@@ -191,7 +189,7 @@ class ChewToysByName(Coverpoint):
             # For when multiple values might need covering from one trace
             # Only need to set the axes that change
             for toy in range(len(trace['Chew_toy'])):
-                bucket.set_bucket(favourite_toy=trace['Chew_toy'][toy])
+                bucket.set_axes(favourite_toy=trace['Chew_toy'][toy])
                 bucket.hit()
 
 

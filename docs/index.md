@@ -82,7 +82,7 @@ Finally, a `sample()` method needs to be defined. This sets a bucket with a part
 
 A trace object can be of any type, but is intended to be a class containing all information to be covered (from a monitor, model, etc). Each coverpoint can then sample the relevant information. This could be as simple as directly assigning values to each axis, processing the values into something more useful and/or storing values for the next time the coverpoint is called. 
 
-`set_bucket()` is used to assign each axis a value/named-value. (eg. If the values `[0,1,2]` were given the names `[red,green,blue]` then either `0` or `red` could be assigned to the bucket). Once all axes have been set, then the bucket hit count can be incremented. If it is a regular bucket, then the hit count will be increased. If it is an IGNORE bucket, no action will be taken, and if it is an ILLEGAL bucket an error will be generated. 
+`set_axes()` is used to assign each axis a value/named-value. (eg. If the values `[0,1,2]` were given the names `[red,green,blue]` then either `0` or `red` could be assigned to the bucket). Once all axes have been set, then the bucket hit count can be incremented. If it is a regular bucket, then the hit count will be increased. If it is an IGNORE bucket, no action will be taken, and if it is an ILLEGAL bucket an error will be generated. 
 
 > **NOTE: The bucket should have every axis of the coverpoint assigned a valid value when hit() is called. Attempting to sample while not setting the bucket correctly will result in an error. (This is because the hit() function won't know which exact combination of axis values to count as hit).**
 
@@ -93,7 +93,7 @@ If multiple values are to be sampled for a given call of a coverpoint, then all 
         # 'with bucket' is used, so bucket values are cleared each time.
         # bucket can also be manaually cleared by using bucket.clear()
         with self.bucket as bucket:
-            bucket.set_bucket(
+            bucket.set_axes(
                 my_axis_1=trace.monitor_a.interface_b.signal,
                 my_axis_2=trace.instruction.operand.type,
             )
@@ -101,7 +101,7 @@ If multiple values are to be sampled for a given call of a coverpoint, then all 
             # For when multiple values might need covering from one trace
             # Only need to re-set the axes that change
             for gpr in range(len(trace.registers_accessed)):
-                bucket.set_bucket(my_axis_3=trace.registers[gpr])
+                bucket.set_axes(my_axis_3=trace.registers[gpr])
                 bucket.hit()
 ```
 ---
