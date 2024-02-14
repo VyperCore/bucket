@@ -224,14 +224,6 @@ class Coverpoint(CoverBase):
         for bucket in self._all_axis_value_combinations():
             yield self.cvg_hits[bucket]
 
-    def serialize_point_hits(self):
-        hits = 0
-        for bucket in self._all_axis_value_combinations():
-            target = self._get_goal(bucket).target
-            if target > 0:
-                hits += min(target, self.cvg_hits[bucket])
-        yield hits
-
     def _debug_coverage(self):
        
         def percentage_hit(hits, goal):
