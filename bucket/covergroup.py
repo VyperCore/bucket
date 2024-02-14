@@ -22,9 +22,9 @@ class CoverBase:
     def sample(self, trace):
         raise NotImplementedError("This needs to be implemented by the coverpoint")
 
-    def chain_def(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]: ...
+    def _chain_def(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]: ...
 
-    def chain_run(self, start: OpenLink[CovRun] | None = None) -> Link[CovRun]: ...
+    def _chain_run(self, start: OpenLink[CovRun] | None = None) -> Link[CovRun]: ...
 
     def serialize_point_hits(self) -> Iterator[int]: ...
 
@@ -109,21 +109,21 @@ class Covergroup(CoverBase):
     def iter_children(self) -> Iterable[CoverBase]:
         yield from itertools.chain(self.coverpoints.values(), self.covergroups.values())
 
-    def chain_def(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]:
+    def _chain_def(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]:
         start = start or OpenLink(CovDef())
         child_start = start.link_down()
         child_close = None
         for child in self.iter_children():
-            child_close = child.chain_def(child_start)
+            child_close = child._chain_def(child_start)
             child_start = child_close.link_across()
         return start.close(self, child=child_close, link=CovDef(point=1, sha=self.sha), typ=CoverBase)
 
-    def chain_run(self, start: OpenLink[CovRun] | None = None) -> Link[CovRun]:
+    def _chain_run(self, start: OpenLink[CovRun] | None = None) -> Link[CovRun]:
         start = start or OpenLink(CovRun())
         child_start = start.link_down()
         child_close = None
         for child in self.iter_children():
-            child_close = child.chain_run(child_start)
+            child_close = child._chain_run(child_start)
             child_start = child_close.link_across()
         return start.close(self, child=child_close, link=CovRun(point=1), typ=CoverBase)
 

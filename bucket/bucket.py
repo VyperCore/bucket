@@ -3,7 +3,9 @@
 
 class Bucket:
     '''
-    This class is used for incrementing the hit count on a given bucket
+    This class is used for incrementing the hit count on a given bucket. 
+    This is meant to be used within the coverpoint as self.bucket.
+    See coverpoint.py or example.py for how to use
     '''
 
     def __init__(
@@ -31,12 +33,16 @@ class Bucket:
         # 'with' allows the bucket to be wiped after use
         self.clear()
 
-    def hit(self):
+    def hit(self, **kwargs):
         '''
         This function will attempt to increment the hit count for the combination of axis
         values specified. All axes need to have been set to a valid value, if not an error
         will be generated.
         '''
+
+        # If axis values are passed in, set axes
+        self.set_axes(**kwargs)
+
         assert len(self.axis_values) == len(
             self.parent.axes
         ), "Incorrect number of axes have been set"
@@ -51,18 +57,19 @@ class Bucket:
         # make it a tuple, increment cvg_hits
         axis_value_tuple = tuple(axis_value_list)
         # Check for any applied goals
-        bucket_goal = self.parent.get_goal(axis_value_tuple)
+        bucket_goal = self.parent._get_goal(axis_value_tuple)
 
         # If the bucket goal is defined as IGNORE, nothing happens.
         # If the bucket goal is defined as ILLEGAL, an error is printed out
         # Else the bucket hit count is incremented
         if bucket_goal.target > 0:
-            self.parent.increment_hit_count(axis_value_tuple)
+            self.parent._increment_hit_count(axis_value_tuple)
         elif bucket_goal.target < 0:
             print(f"Illegal bucket '{self.parent.name}.{bucket_goal.name}' hit!")
             print(f"  Bucket: {dict(zip(self.parent.axis_names, list(axis_value_tuple), strict=True))}")
 
-    def set_bucket(self, **kwargs):
-        # Update dictionary of axis values
-        # Overwrite existing axis values if same key set again
+    def set_axes(self, **kwargs):
+        '''
+        Update dictionary of axis values, overwriting existing axis values if same key is set again
+        '''
         self.axis_values |= kwargs
