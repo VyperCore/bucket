@@ -88,7 +88,7 @@ class ConsoleWriter(Writer):
 
                 point_bucket_goals = reading.iter_bucket_goals(point.bucket_start, point.bucket_end)
                 point_bucket_hits = reading.iter_bucket_hits(point.bucket_start, point.bucket_end)
-
+                
                 for bucket_goal, bucket_hit in zip(point_bucket_goals, point_bucket_hits):
                     goal = goals[bucket_goal.goal]
                     hits = bucket_hit.hits
@@ -101,9 +101,20 @@ class ConsoleWriter(Writer):
 
                     bucket_columns = []
 
+                    # Find the offset of the bucket within the coverpoint
                     offset = (bucket_goal.start - point.bucket_start)
-                    for (axis_offset, axis_size) in axis_offset_sizes:
-                        bucket_columns.append(axis_values[axis_offset + (offset % axis_size)].value)
+
+                    # We have a flat list of buckets ordered such that the right most column
+                    # changes first i.e.:
+                    #   0 0
+                    #   0 1
+                    #   1 0
+                    #   1 1
+                    # Go through the axes from right to left and select the values for this bucket,
+                    # we use //= to align the selected values for an axis to within its
+                    # range.
+                    for (axis_offset, axis_size) in axis_offset_sizes.reverse():
+                        bucket_columns.insert(0, axis_values[axis_offset + (offset % axis_size)].value)
                         offset //= axis_size
 
                     bucket_columns += [str(hits), str(target), target_percent, goal.name, goal.description]
