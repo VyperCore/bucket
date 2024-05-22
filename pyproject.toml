@@ -8,7 +8,7 @@ version = "0.1"
 description = "Python functional coverage"
 authors = []
 license = "MIT"
-readme = "README.adoc"
+readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"
