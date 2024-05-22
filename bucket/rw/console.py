@@ -88,7 +88,6 @@ class ConsoleWriter(Writer):
 
                 point_bucket_goals = reading.iter_bucket_goals(point.bucket_start, point.bucket_end)
                 point_bucket_hits = reading.iter_bucket_hits(point.bucket_start, point.bucket_end)
-                
                 for bucket_goal, bucket_hit in zip(point_bucket_goals, point_bucket_hits):
                     goal = goals[bucket_goal.goal]
                     hits = bucket_hit.hits
@@ -104,15 +103,32 @@ class ConsoleWriter(Writer):
                     # Find the offset of the bucket within the coverpoint
                     offset = (bucket_goal.start - point.bucket_start)
 
-                    # We have a flat list of buckets ordered such that the right most column
-                    # changes first i.e.:
-                    #   0 0
-                    #   0 1
-                    #   1 0
-                    #   1 1
-                    # Go through the axes from right to left and select the values for this bucket,
-                    # we use //= to align the selected values for an axis to within its
-                    # range.
+                    # We're now getting the axis values from the bucket index. 
+                    # 
+                    # The axis values are in a flat list ordered by axis:
+                    # 
+                    #   axis_value | axis  value_in_axis
+                    #   0          | 0     0
+                    #   1          | 0     1
+                    #   2          | 0     2
+                    #   3          | 1     0
+                    #   4          | 1     1
+                    # 
+                    # The buckets are in a flat list ordered by axis combination, such that the last
+                    # axis changes most frequently.
+                    # 
+                    #   bucket | axis_0 axis_1
+                    #   0      | 0      0
+                    #   1      | 0      1
+                    #   2      | 1      0
+                    #   3      | 1      1
+                    #   4      | 2      0
+                    #   5      | 2      1
+                    # 
+                    # To find the axis value for each axis from the bucket, we go through the axes
+                    # from last to first, finding the axis position and size within the axis values,
+                    # and the bucket index offset within each axis. # The '%' and '//=' operators here 
+                    # are used to align the offset within the values for an axis.
                     for (axis_offset, axis_size) in axis_offset_sizes.reverse():
                         bucket_columns.insert(0, axis_values[axis_offset + (offset % axis_size)].value)
                         offset //= axis_size
