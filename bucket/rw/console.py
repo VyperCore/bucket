@@ -75,6 +75,7 @@ class ConsoleWriter(Writer):
                 axis_offset_sizes.append((axis.value_start, axis.value_end-axis.value_start))
                 axis_table.add_row(axis.name, axis.description)
                 axis_titles.append(axis.name)
+            axis_offset_sizes.reverse()
 
             if self.write_goals:
                 goal_table = Table("Name", "Description", "Target", title=f"{point.name} - Goals")
@@ -129,7 +130,7 @@ class ConsoleWriter(Writer):
                     # from last to first, finding the axis position and size within the axis values,
                     # and the bucket index offset within each axis. # The '%' and '//=' operators here 
                     # are used to align the offset within the values for an axis.
-                    for (axis_offset, axis_size) in axis_offset_sizes.reverse():
+                    for (axis_offset, axis_size) in axis_offset_sizes:
                         bucket_columns.insert(0, axis_values[axis_offset + (offset % axis_size)].value)
                         offset //= axis_size
 
