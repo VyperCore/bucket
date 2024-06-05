@@ -119,9 +119,9 @@ class ChewToysByAge(Coverpoint):
         self.add_goal("STICK", "Yay sticks!", target=50)
 
     def apply_goals(self, bucket, goals):
-        if bucket.age != "Puppy" and bucket.favourite_toy in ["slipper"]:
+        if bucket.age != "Puppy" and bucket.favourite_toy in ["Slipper"]:
             return goals.NO_SLIPPERS
-        elif bucket.favourite_toy == "stick":
+        elif bucket.favourite_toy == "Stick":
             return goals.STICK
 
     def sample(self, trace):
@@ -172,6 +172,12 @@ class ChewToysByName(Coverpoint):
             values=["Slipper", "Ball", "Stick", "Ring"],
             description="Types of dog toys",
         )
+
+        self.add_goal("WEIRDO_DOG", "Dogs named Barbara can't be trusted", ignore=True)
+
+    def apply_goals(self, bucket, goals):
+        if bucket.breed == "Border Collie" and bucket.name in ["Barbara"]:
+            return goals.WEIRDOS
 
     def sample(self, trace):
         # 'with bucket' is used, so bucket values are cleared each time
@@ -290,4 +296,4 @@ if __name__ == "__main__":
     merged_reading_all = MergeReading(*sql_accessor.read_all())
     print("\nThis is the coverage from all the regression data so far:")
     print("(To reset please delete the file 'example_file_store')")
-    ConsoleWriter(axes=False, goals=False, points=False).write(merged_reading_all)
+    ConsoleWriter(axes=False, goals=False, points=False).write(reading_a)
