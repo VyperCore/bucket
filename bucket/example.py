@@ -296,4 +296,4 @@ if __name__ == "__main__":
     merged_reading_all = MergeReading(*sql_accessor.read_all())
     print("\nThis is the coverage from all the regression data so far:")
     print("(To reset please delete the file 'example_file_store')")
-    ConsoleWriter(axes=False, goals=False, points=False).write(reading_a)
+    ConsoleWriter(axes=False, goals=False, points=False).write(merged_reading_all)

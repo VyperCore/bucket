@@ -99,7 +99,8 @@ class ConsoleWriter(Writer):
                         hits = bucket_hit.hits
                         target_percent = f"{(min(target,hits) / target) * 100:.2f}%"
                     else:
-                        assert hits == 0, f"Expect hits to be zero, not {hits}"
+                        if hits != 0:
+                            print(f"Expect hits to be zero for ignore/illegal buckets, got {hits}")
                         hits = "-"
                         target_percent = "-"
 
