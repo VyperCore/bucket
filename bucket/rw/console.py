@@ -84,19 +84,24 @@ class ConsoleWriter(Writer):
                     goal_table.add_row(goal.name, goal.description, str(goal.target))
 
             if self.write_points:
-                point_table = Table(*(axis_titles + point_table_base_columns), title=f"{point.name} - {point.description}")
+                standard_columns = [c.copy() for c in point_table_base_columns]
+                point_table = Table(*(axis_titles + standard_columns), title=f"{point.name} - {point.description}")
                 point_tables.append(point_table)
 
                 point_bucket_goals = reading.iter_bucket_goals(point.bucket_start, point.bucket_end)
                 point_bucket_hits = reading.iter_bucket_hits(point.bucket_start, point.bucket_end)
                 for bucket_goal, bucket_hit in zip(point_bucket_goals, point_bucket_hits):
                     goal = goals[bucket_goal.goal]
-                    hits = bucket_hit.hits
+                    
                     target = goal.target
 
                     if target > 0:
+                        hits = bucket_hit.hits
                         target_percent = f"{(min(target,hits) / target) * 100:.2f}%"
                     else:
+                        if hits != 0:
+                            print(f"Expect hits to be zero for ignore/illegal buckets, got {hits}")
+                        hits = "-"
                         target_percent = "-"
 
                     bucket_columns = []
@@ -135,7 +140,6 @@ class ConsoleWriter(Writer):
                         offset //= axis_size
 
                     bucket_columns += [str(hits), str(target), target_percent, goal.name, goal.description]
-
                     point_table.add_row(*bucket_columns)
 
         console = Console()
