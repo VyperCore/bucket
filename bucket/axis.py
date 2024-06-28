@@ -55,7 +55,7 @@ class Axis:
             ), f'Values provided for axis "{self.name}" \
                 are incorrectly formatted: {values}'
 
-        return values_dict
+        return dict(sorted(values_dict.items()))
 
     @lru_cache(maxsize=128)  # noqa: B019
     def get_named_value(self, value):

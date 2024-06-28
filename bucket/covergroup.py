@@ -106,6 +106,9 @@ class Covergroup(CoverBase):
             cg.sample(trace)
 
     def iter_children(self) -> Iterable[CoverBase]:
+        self.coverpoints = dict(sorted(self.coverpoints.items()))
+        self.covergroups = dict(sorted(self.covergroups.items()))
+
         yield from itertools.chain(self.coverpoints.values(), self.covergroups.values())
 
     def _chain_def(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]:
