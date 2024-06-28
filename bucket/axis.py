@@ -33,10 +33,10 @@ class Axis:
         # The return dictionary will have string form of the values as the key
         # and the values (or ranges) as the value.
         if isinstance(values, dict):
-            values_dict = values
+            values_dict = dict(sorted(values.items()))
         elif isinstance(values, list | tuple | set):
             values_dict = {}
-            for v in values:
+            for v in sorted(values):
                 if isinstance(v, list | tuple | set):
                     assert len(v) == 2, f"length of min-max is not 2. Length was {len(v)}: ({v})"
                     sorted_v = sorted(v)
