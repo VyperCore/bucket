@@ -33,10 +33,10 @@ class Axis:
         # The return dictionary will have string form of the values as the key
         # and the values (or ranges) as the value.
         if isinstance(values, dict):
-            values_dict = dict(sorted(values.items()))
+            values_dict = values
         elif isinstance(values, list | tuple | set):
             values_dict = {}
-            for v in sorted(values):
+            for v in values:
                 if isinstance(v, list | tuple | set):
                     assert len(v) == 2, f"length of min-max is not 2. Length was {len(v)}: ({v})"
                     sorted_v = sorted(v)
@@ -55,7 +55,7 @@ class Axis:
             ), f'Values provided for axis "{self.name}" \
                 are incorrectly formatted: {values}'
 
-        return values_dict
+        return dict(sorted(values_dict.items()))
 
     @lru_cache(maxsize=128)  # noqa: B019
     def get_named_value(self, value):
