@@ -8,7 +8,7 @@ from .link import CovDef
 from .common.chain import OpenLink, Link
 
 class Axis:
-    def __init__(self, name, values, description):
+    def __init__(self, name:str, values:dict|list|set|tuple, description:str):
         self.name = name
         self.values = self.sanitise_values(values)
         self.description = description
@@ -27,11 +27,13 @@ class Axis:
         return start.close(self, link=link, typ=Axis)
 
 
-    def sanitise_values(self, values):
-        # Take input values and return a dict
-        # Input values can be in the form of dict, tuple, list or set
-        # The return dictionary will have string form of the values as the key
-        # and the values (or ranges) as the value.
+    def sanitise_values(self, values:dict|list|set|tuple):
+        '''
+        Take input values and return a dict
+        Input values can be in the form of dict, tuple, list or set
+        The return dictionary will have string form of the values as the key
+        and the values (or ranges) as the value.
+        '''
         if isinstance(values, dict):
             values_dict = values
         elif isinstance(values, list | tuple | set):
@@ -58,7 +60,10 @@ class Axis:
         return dict(sorted(values_dict.items()))
 
     @lru_cache(maxsize=128)  # noqa: B019
-    def get_named_value(self, value):
+    def get_named_value(self, value:str|int):
+        '''
+        Retrieve the name of the value/range for a given value
+        '''
         if (value_str := str(value)) in self.values:
             return value_str
         else:

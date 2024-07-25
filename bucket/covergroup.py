@@ -9,6 +9,7 @@ from .context import CoverageContext
 
 from .link import CovDef, CovRun
 from .common.chain import OpenLink, Link
+from .coverpoint import Coverpoint
 
 class CoverBase:
     name: str
@@ -30,7 +31,7 @@ class CoverBase:
 class Covergroup(CoverBase):
     """This class groups coverpoints together, and adds them to the hierarchy"""
 
-    def __init__(self, name, description):
+    def __init__(self, name:str, description:str):
         """
         Parameters:
             name: Name of covergroup
@@ -46,7 +47,7 @@ class Covergroup(CoverBase):
         self.sha = hashlib.sha256((self.name+self.description).encode())
         self.setup(ctx=CoverageContext.get())
 
-    def add_coverpoint(self, coverpoint):
+    def add_coverpoint(self, coverpoint:Coverpoint):
         """
         Add a coverpoint instance to the covergroup
         Parameters:
@@ -58,7 +59,7 @@ class Covergroup(CoverBase):
 
         self.coverpoints[coverpoint.name] = coverpoint
 
-    def add_covergroup(self, covergroup):
+    def add_covergroup(self, covergroup:'Covergroup'):
         """
         Add a covergroup instance to the covergroup
         Parameters:
@@ -69,7 +70,7 @@ class Covergroup(CoverBase):
 
         self.covergroups[covergroup.name] = covergroup
 
-    def __getattr__(self, key):
+    def __getattr__(self, key:str):
         '''
         Allow reference to child covergroups and coverpoints using <parent>.<child>
         '''
@@ -83,7 +84,7 @@ class Covergroup(CoverBase):
     def setup(self, ctx: SimpleNamespace):
         raise NotImplementedError("This needs to be implemented by the coverpoint")
 
-    def print_tree(self, indent=0):
+    def print_tree(self, indent:int=0):
         """Print out coverage hierarch from this covergroup down"""
         if indent == 0:
             print("COVERAGE_TREE")
@@ -98,7 +99,7 @@ class Covergroup(CoverBase):
             cg.print_tree(indent + 1)
 
     def sample(self, trace):
-        """Call sample on all sub-groups and coverpoints, passing in trace"""
+        """Call sample on all sub-groups and coverpoints, passing in trace object"""
         for cp in self.coverpoints.values():
             cp.sample(trace)
 

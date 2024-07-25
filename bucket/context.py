@@ -7,7 +7,7 @@ from types import SimpleNamespace
 class ContextBase:
     _stack: list["SimpleNamespace"] = [SimpleNamespace()]
     
-    def __init__(self, replace=False, overlay=True, **kwargs):
+    def __init__(self, replace:bool=False, overlay:bool=True, **kwargs):
         if overlay:
             self.data = copy(self._stack[-1])
             for k, v in kwargs.items():
