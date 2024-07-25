@@ -56,7 +56,8 @@ class DogStats(Coverpoint):
             values=list(range(16)),
             description="Dog age in years",
         )
-        # The values in this axis are named ranges, in a dict
+        # The values in this axis are named ranges, in a dict.
+        # Single values and ranges can be mixed in a dict
         self.add_axis(
             name="size",
             values={"Small": [0, 10], "medium": [11, 30], "large": [31, 50]},
@@ -68,7 +69,7 @@ class DogStats(Coverpoint):
         self.add_goal("HECKIN_CHONKY", "Puppies can't be this big!", illegal=True)
 
     def apply_goals(self, bucket, goals):
-        # Buckets use names, not values. If you want to compare against a value,
+        # Buckets use str names, not values. If you want to compare against a value,
         # you must first convert the string back to int, etc
         # Any bucket with no goal assigned, will have the default goal applied
         if int(bucket.age) <= 1 and bucket.size in ["large"]:
