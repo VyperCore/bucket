@@ -129,7 +129,7 @@ class Coverpoint(CoverBase):
 
     def add_goal(self, name:str, description:str, illegal:bool=False, ignore:bool=False, target:int=None):
         formatted_name = name.upper()
-        assert formatted_name in self._goal_dict, f'Goal "{formatted_name}" already defined for this coverpoint'
+        assert formatted_name not in self._goal_dict, f'Goal "{formatted_name}" already defined for this coverpoint'
         assert sum([illegal, ignore, (target is not None)]) <= 1, "Only one option may be chosen: illegal, ignore or target"
         assert target is None or target > 0, "If target is supplied, it must be 1+"
 

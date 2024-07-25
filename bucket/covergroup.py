@@ -9,7 +9,6 @@ from .context import CoverageContext
 
 from .link import CovDef, CovRun
 from .common.chain import OpenLink, Link
-from .coverpoint import Coverpoint
 
 class CoverBase:
     name: str
@@ -47,7 +46,7 @@ class Covergroup(CoverBase):
         self.sha = hashlib.sha256((self.name+self.description).encode())
         self.setup(ctx=CoverageContext.get())
 
-    def add_coverpoint(self, coverpoint:Coverpoint):
+    def add_coverpoint(self, coverpoint:'Coverpoint'):
         """
         Add a coverpoint instance to the covergroup
         Parameters:
