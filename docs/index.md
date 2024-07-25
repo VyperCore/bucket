@@ -6,7 +6,7 @@ $ poetry shell
 $ python -m bucket.example
 ```
 
-This page describes how to use Bucket to create coverpoints, sample data and merge results. Examples of coverpoints in use can be seen in `example.py`.
+This page describes how to use Bucket to create coverpoints, sample data and merge results. Examples of coverpoints in use can be seen in [example.py](https://github.com/VyperCore/bucket/blob/main/bucket/example.py).
 
 ## Coverpoints
 
