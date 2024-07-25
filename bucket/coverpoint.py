@@ -34,8 +34,7 @@ class Coverpoint(CoverBase):
     This Bucket class is used for incrementing the hit count on a given bucket.
 
     Example 1 (using 'with' to clear the bucket after each use)::
-        
-        
+
         with self.bucket as bucket:
             bucket.set_axes(
                 name=trace['Name'],
@@ -101,31 +100,39 @@ class Coverpoint(CoverBase):
 
 
     def setup(self, ctx: SimpleNamespace):
+        '''
+        This function needs to be implemented for each coverpoint. Axes and goals are added here.
+        See example.py for how to use
+        '''
         raise NotImplementedError("This needs to be implemented by the coverpoint")
 
     def _all_axis_value_combinations(self):
+        '''
+        Iterate over all possible axis value combinations
+        '''
         axis_values = []
         for axis in self.axes:
             axis_values.append(list(axis.values.keys()))
         yield from itertools.product(*axis_values)
 
-    def _increment_hit_count(self, bucket, hits=1):
+    def _increment_hit_count(self, bucket:tuple, hits:int=1):
+        '''
+        Increment hit count for the specified bucket. Default is +1
+        '''
         self.cvg_hits[bucket] += hits
 
-    def add_axis(self, name, values, description):
-        # Add axis with values to process later
-        # Dicts should be ordered, so keep the order they are installed...
+    def add_axis(self, name:str, values:dict|list|set|tuple, description:str):
+        '''
+        Add axis with values to process later
+        '''
         self.axes.append(Axis(name, values, description))
-         
-    def add_goal(self, name, description, illegal=False, ignore=False, target=None):
+
+    def add_goal(self, name:str, description:str, illegal:bool=False, ignore:bool=False, target:int=None):
         formatted_name = name.upper()
-        if formatted_name in self._goal_dict:
-            raise Exception(f'Goal "{formatted_name}" already defined for this coverpoint')
-        
-        assert sum([illegal, ignore, (target is not None)]) <= 1, f"Only one option may be chosen: illegal, ignore or target"
-        
-        assert target is None or target > 0, f"If target is supplied, it must be 1+"
-        
+        assert formatted_name not in self._goal_dict, f'Goal "{formatted_name}" already defined for this coverpoint'
+        assert sum([illegal, ignore, (target is not None)]) <= 1, "Only one option may be chosen: illegal, ignore or target"
+        assert target is None or target > 0, "If target is supplied, it must be 1+"
+
         if illegal:
             target = -1
         elif ignore:
@@ -136,12 +143,20 @@ class Coverpoint(CoverBase):
 
         self._goal_dict[formatted_name] = GoalItem(name, target, description)
 
-    def apply_goals(self, bucket=None, goals=None):
+    def apply_goals(self, bucket:SimpleNamespace=None, goals:SimpleNamespace=None):
+        '''
+        If coverpoint goals are defined, this function must be implemented by the coverpoint.
+        If no goals are defined, then 'DEFAULT' will be applied
+        See example.py for how to use.
+        '''
         if len(self._goal_dict) == 1:
             return self._goal_dict["DEFAULT"]
         raise NotImplementedError("This needs to be implemented by the coverpoint")
 
-    def _get_goal(self, bucket):
+    def _get_goal(self, bucket:tuple):
+        '''
+        Retrieve goal for a given bucket
+        '''
         if bucket in self._cvg_goals:
             return self._cvg_goals[bucket]
         else:
@@ -217,10 +232,16 @@ class Coverpoint(CoverBase):
                            typ=CoverBase)
 
     def _bucket_goals(self):
+        '''
+        Get goals for each bucket
+        '''
         for bucket in self._all_axis_value_combinations():
             yield self._get_goal(bucket).name
 
     def _bucket_hits(self):
+        '''
+        Get hits for each bucket
+        '''
         for bucket in self._all_axis_value_combinations():
             yield self.cvg_hits[bucket]
 

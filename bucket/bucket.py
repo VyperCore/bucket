@@ -3,7 +3,7 @@
 
 class Bucket:
     '''
-    This class is used for incrementing the hit count on a given bucket. 
+    This class is used for incrementing the hit count on a given bucket.
     This is meant to be used within the coverpoint as self.bucket.
     See coverpoint.py or example.py for how to use
     '''

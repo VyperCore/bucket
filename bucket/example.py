@@ -56,7 +56,8 @@ class DogStats(Coverpoint):
             values=list(range(16)),
             description="Dog age in years",
         )
-        # The values in this axis are named ranges, in a dict
+        # The values in this axis are named ranges, in a dict.
+        # Single values and ranges can be mixed in a dict
         self.add_axis(
             name="size",
             values={"Small": [0, 10], "medium": [11, 30], "large": [31, 50]},
@@ -68,7 +69,7 @@ class DogStats(Coverpoint):
         self.add_goal("HECKIN_CHONKY", "Puppies can't be this big!", illegal=True)
 
     def apply_goals(self, bucket, goals):
-        # Buckets use names, not values. If you want to compare against a value,
+        # Buckets use str names, not values. If you want to compare against a value,
         # you must first convert the string back to int, etc
         # Any bucket with no goal assigned, will have the default goal applied
         if int(bucket.age) <= 1 and bucket.size in ["large"]:
@@ -116,18 +117,32 @@ class ChewToysByAge(Coverpoint):
         )
 
         self.add_goal("NO_SLIPPERS", "Only puppies chew slippers!", illegal=True)
+        self.add_goal(
+            "FRONT_LEGS_ONLY",
+            "Only care about seniors who pick their favourite front legs",
+            ignore=True
+        )
         self.add_goal("STICK", "Yay sticks!", target=50)
 
     def apply_goals(self, bucket, goals):
+        # Apply goal if any dog which is not a puppy likes slippers
         if bucket.age != "Puppy" and bucket.favourite_toy in ["Slipper"]:
             return goals.NO_SLIPPERS
+        # Apply goal for senior dogs who chose a favourite back leg
+        elif bucket.age == "Senior" and int(bucket.favourite_leg, base=0) & 0x3:
+            return goals.FRONT_LEGS_ONLY
+        # Apply goal for any time a dog picks stick (if above goals don't apply)
         elif bucket.favourite_toy == "Stick":
             return goals.STICK
+        # Else default goal will be used
 
     def sample(self, trace):
         # 'with bucket' is used, so bucket values are cleared each time
         # bucket can also be manually cleared by using bucket.clear()
 
+        # This could also be achieved by creating the axis with
+        # a dict which specifies ranges for each age group. Then the value
+        # from trace can be set directly without processing here.
         dog_age = trace['Age']
         if dog_age < 2:
             age = 'Puppy'
@@ -177,7 +192,7 @@ class ChewToysByName(Coverpoint):
 
     def apply_goals(self, bucket, goals):
         if bucket.breed == "Border Collie" and bucket.name in ["Barbara"]:
-            return goals.WEIRDOS
+            return goals.WEIRDO_DOG
 
     def sample(self, trace):
         # 'with bucket' is used, so bucket values are cleared each time
