@@ -146,7 +146,7 @@ class MySampler(Sampler):
 
 ## Adding coverage to the testbench
 
-A sampler must be initialised with a reference to the top of the coverage heierarchy (the top level covergroup). The `sample()` method can then be passed a copy of the trace object each time, and will then recursively call each coverpoints sample method. 
+A sampler must be initialised with a reference to the top of the coverage hierarchy (the top level covergroup). The `sample()` method can then be passed a copy of the trace object each time, and will then recursively call each coverpoints sample method. 
 
 ``` Python
     # My testbench
