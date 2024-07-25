@@ -5,7 +5,7 @@ class AxisUtils:
         '''
         Creates an axis with one-hot encoding up to the requested width (in bits). Includes zero. 
         Bucket name will display in binary/hexadecimal automatically based on width.
-        
+
         Parameters:
             width: Number of bits
             display_bin: Override bucket name to display as binary (Default: False)
@@ -23,11 +23,11 @@ class AxisUtils:
                 display_bin = True
             else:
                 display_hex = True
-        
+
         one_hot_vals = [0]
         for i in range(width):
             one_hot_vals.append(1 << i)
-        
+
         if display_bin:
             pad = width if pad_zero else 0
             one_hot_dict = {f"0b{v:0{pad}b}":v for v in one_hot_vals}
@@ -44,7 +44,7 @@ class AxisUtils:
         Creates an axis with one-hot encoding up to the requested width (in bits), with the
         full range of values. Includes zero. Bucket name will display in binary/hexadecimal 
         automatically based on width.
-        
+
         Parameters:
             width: Number of bits
             display_bin: Override bucket name to display as binary (Default: False)
@@ -63,10 +63,10 @@ class AxisUtils:
                 display_bin = True
             else:
                 display_hex = True
-        
+
         if include_max:
             max_val = (1<<width) - 1
-        
+
         msb_vals = [0]
         for i in range(width):
             msb_vals.append(1 << i)
@@ -87,7 +87,7 @@ class AxisUtils:
                     u = (msb_val<<1)-1
                 l = msb_val
             return [l,u]
-        
+
         if display_bin:
             pad = width if pad_zero else 0
             msb_dict = {f"0b{v:0{pad}b}":val_range(v) for v in msb_vals}
