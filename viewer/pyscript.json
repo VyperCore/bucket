@@ -1,0 +1,25 @@
+{
+    "packages": ["sqlalchemy", "rich"],
+    "files": {
+        "/example_file_store.db": "./example_file_store.db",
+        "/bucket/common/chain.py": "./bucket/common/chain.py",
+        "/bucket/rw/__init__.py": "./bucket/rw/__init__.py",
+        "/bucket/rw/common.py": "./bucket/rw/common.py",
+        "/bucket/rw/console.py": "./bucket/rw/console.py",
+        "/bucket/rw/point.py": "./bucket/rw/point.py",
+        "/bucket/rw/sql.py": "./bucket/rw/sql.py",
+        "/bucket/__init__.py": "./bucket/__init__.py",
+        "/bucket/__main__.py": "./bucket/__main__.py",
+        "/bucket/axis.py": "./bucket/axis.py",
+        "/bucket/axisutils.py": "./bucket/axisutils.py",
+        "/bucket/bucket.py": "./bucket/bucket.py",
+        "/bucket/context.py": "./bucket/context.py",
+        "/bucket/covergroup.py": "./bucket/covergroup.py",
+        "/bucket/coverpoint.py": "./bucket/coverpoint.py",
+        "/bucket/example.py": "./bucket/example.py",
+        "/bucket/goal.py": "./bucket/goal.py",
+        "/bucket/link.py": "./bucket/link.py",
+        "/bucket/sampler.py": "./bucket/sampler.py",
+        "/bucket/triggers.py": "./bucket/triggers.py"
+    }
+}
