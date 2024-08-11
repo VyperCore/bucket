@@ -307,7 +307,7 @@ if __name__ == "__main__":
     reading_b = point_reader.read(cvg_b)
 
     # Create a local sql database
-    sql_accessor = SQLAccessor.File("example_file_store")
+    sql_accessor = SQLAccessor.File("example_file_store.db")
 
     # Write each reading into the database
     rec_ref_a = sql_accessor.write(reading_a)
