@@ -16,19 +16,21 @@ const cl = theme.colors;
 
 const sider = {
     props: {
-        collapsible: true,
+        collapsible: false,
         defaultCollapsed: false,
         reverseArrow: false,
-        width: 200,
+        width: 'auto',
         collapsedWidth: 0,
         style: {
             padding: 5,
             borderRightColor: cl.tertiarybg.toString(),
             borderRightWidth: 1,
             borderRightStyle: "solid",
+            maxWidth: 'auto'
         },
         zeroWidthTriggerStyle: {
             background: cl.accentbg.toString(),
+            zIndex: 10
         },
     } as SiderProps,
     search: {
@@ -91,15 +93,16 @@ const body = {
     content: {
         props: {
             style: {
-                // padding: 24,
                 margin: 0,
                 minHeight: 280,
-                // background: cl.secondarybg.toString(),
-                // borderRadius: borderRadiusLG,
+                overflow: 'scroll'
             },
         } as ComponentPropsWithoutRef<"div">,
         table: {
-            props: {} as TableProps,
+            props: {
+                pagination: false,
+                sticky: true,
+            } as TableProps,
         },
     },
 };
@@ -170,6 +173,7 @@ export const antTheme: ThemeConfig = (() => {
                 colorBgContainer: cl.primarybg.toString(),
                 borderColor: cl.secondarybg.toString(),
                 headerBorderRadius: 0,
+                rowHoverBg: cl.secondarybg.toString(),
             },
         },
     };

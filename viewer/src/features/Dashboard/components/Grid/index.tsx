@@ -126,6 +126,7 @@ export default function Grid({ summary, pointData }: GridProps) {
     }
     return (
         <Table
+            { ...view.body.content.table.props }
             columns={columns}
             dataSource={data} /* virtual={true} scroll={{ x: 0, y: 0 }}*/
         />
