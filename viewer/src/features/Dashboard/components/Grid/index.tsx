@@ -114,10 +114,10 @@ export default function Grid({ summary, pointData }: GridProps) {
             let offset = bucket_goal.start - bucket_start;
             for (let axis_idx = axes.length - 1; axis_idx >= 0; axis_idx--) {
                 const axis = axes[axis_idx];
+                const axis_offset = axis.value_start - axis_value_start;
                 const axis_size = axis.value_end - axis.value_start;
                 const axis_value_idx = offset % axis_size;
-                console.log(axis_values, axis_value_idx);
-                datum[axis.name] = axis_values[axis_value_idx].value;
+                datum[axis.name] = axis_values[axis_offset + axis_value_idx].value;
                 offset = Math.floor(offset / axis_size);
             }
 
