@@ -5,7 +5,7 @@ const lightThemeDef = {
     name: "light",
     theme: {
         colors: {
-            primarybg: "#F0F0F0",
+            primarybg: "#F6F6F6",
             secondarybg: "#E0E0E0",
             tertiarybg: "#FFFFFF",
             lowlightbg: "#d7d7d7",
