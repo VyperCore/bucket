@@ -28,7 +28,8 @@ export default abstract class Tree<T = any> {
             children: nodes,
             data: {}
         }
-        this.ancestorsByKey = Tree.mapNodeAncestors([this.root]);
+        this.ancestorsByKey = Tree.mapNodeAncestors(nodes);
+        this.ancestorsByKey[Tree.ROOT] = [this.root];
     }
 
     /**

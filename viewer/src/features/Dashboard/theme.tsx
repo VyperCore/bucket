@@ -102,6 +102,9 @@ const body = {
             props: {
                 pagination: false,
                 sticky: true,
+                size: 'small',
+                tableLayout: 'auto',
+                bordered: true
             } as TableProps,
         },
     },
