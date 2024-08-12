@@ -18,6 +18,8 @@ import { useMemo, useState } from "react";
 import { BreadcrumbItemType } from "antd/lib/breadcrumb/Breadcrumb";
 import treeMock from "./test/mocks/tree";
 import CoverageTree from "./lib/coveragetree";
+import { LayoutOutlined } from "@ant-design/icons";
+import { PointGrid, PointSummaryGrid } from "./lib/coveragegrid";
 const { Header, Content } = Layout;
 
 const ColorModeToggleButton = (props: FloatButtonProps) => {
@@ -175,8 +177,6 @@ export default function Dashboard() {
     const contentViews = tree.getViewsByKey(viewKey);
     const defaultView = contentViews[0];
     const currentContentKey = treeKeyContentKey[viewKey] ?? defaultView.value;
-    const selectedView =
-        contentViews.find((v) => v.value == currentContentKey) ?? defaultView;
 
     const onViewChange = (newView: string | number) => {
         setTreeKeyContentKey({
@@ -186,8 +186,17 @@ export default function Dashboard() {
     };
 
     const selectedViewContent = useMemo(() => {
-        return selectedView.viewFactory();
-    }, [viewKey, currentContentKey]);
+        switch (currentContentKey) {
+            case "Pivot":
+                return <LayoutOutlined />
+            case "Summary":
+                return <PointSummaryGrid tree={tree} node={tree.getNodeByKey(viewKey)} setSelectedTreeKeys={onSelect} />
+            case "Point":
+                return <PointGrid node={tree.getNodeByKey(viewKey)} />
+            default:
+                throw new Error("Invalid view!?")
+        }
+    }, [tree, viewKey, currentContentKey]);
 
     return (
         <ConfigProvider theme={antTheme}>

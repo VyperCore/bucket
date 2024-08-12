@@ -1,12 +1,14 @@
 import { LayoutOutlined, TableOutlined } from "@ant-design/icons";
 import Tree, { TreeKey, TreeNode, View } from "./tree";
-import Grid from "../components/Grid";
+import {PointGrid, PointSummaryGrid} from "./coveragegrid";
 
 export type PointData = {
     reading: Reading;
     point: PointTuple;
     point_hit: PointHitTuple;
 };
+
+export type PointNode = TreeNode<PointData>;
 
 export default class CoverageTree extends Tree<PointData> {
     static fromReadings(readings: Reading[]): CoverageTree {
@@ -34,9 +36,10 @@ export default class CoverageTree extends Tree<PointData> {
                     100 * (point_hit.full_buckets / point.target_buckets);
 
                 const dataNode: TreeNode<PointData> = {
-                    title: `${percentFull.toFixed(1)}%/${percentHit.toFixed(
-                        1,
-                    )}%: ${point.name}`,
+                    // title: `${percentFull.toFixed(1)}%/${percentHit.toFixed(
+                    //     1,
+                    // )}%: ${point.name}`,
+                    title: point.name,
                     key: `${i}-${point.start}-${point.end}`,
                     children: [],
                     data: {
@@ -63,33 +66,24 @@ export default class CoverageTree extends Tree<PointData> {
     }
 
     getViewsByKey(key: TreeKey): View[] {
-        if (key === Tree.ROOT) {
-            return [
-                {
-                    value: "Pivot",
-                    icon: <LayoutOutlined />,
-                    viewFactory: () => <LayoutOutlined />,
-                },
-            ];
-        }
         const node = this.getNodeByKey(key);
         if (node.children?.length) {
             return [
                 {
-                    value: "Grid",
+                    value: "Summary",
                     icon: <TableOutlined />,
                     viewFactory: () => (
-                        <Grid summary={true} pointData={node.data} />
+                        <PointSummaryGrid tree={this} node={node} />
                     ),
                 },
             ];
         } else {
             return [
                 {
-                    value: "Grid",
+                    value: "Point",
                     icon: <TableOutlined />,
                     viewFactory: () => (
-                        <Grid summary={false} pointData={node.data} />
+                        <PointGrid node={node} />
                     ),
                 },
                 {
