@@ -11,7 +11,7 @@ export type PointGridProps = {
 export function PointGrid({node}: PointGridProps) {
     const pointData = node.data;
     const reading = pointData.reading;
-    let columns = [];
+    
     let dataSource: {}[] = [];
     const {
         axis_start,
@@ -37,30 +37,42 @@ export function PointGrid({node}: PointGridProps) {
         pointData.reading.iter_goals(goal_start, goal_end),
     );
 
-    columns.push({
-        title: "Bucket",
-        dataIndex: "key",
-        key: "key",
-    });
-    for (const axis of axes) {
-        columns.push({
-            title: axis.name,
-            dataIndex: axis.name,
-            key: axis.name,
-        });
-    }
-    columns.push(
+    const columns = [
         {
-            title: "Target",
-            dataIndex: "target",
-            key: "target",
+            title: "Bucket",
+            dataIndex: "key",
+            key: "key",
         },
         {
-            title: "Hits",
-            dataIndex: "hits",
-            key: "hits",
+            title: "Axes",
+            children: axes.map(axis => ({
+                title: axis.name,
+                dataIndex: axis.name,
+                key: axis.name,
+            }))
         },
-    );
+        {
+            title: "Goal",
+            children: [
+                {
+                    title: "Name",
+                    dataIndex: "goal_name",
+                    key: "goal_name",
+                },
+                {
+                    title: "Target",
+                    dataIndex: "target",
+                    key: "target",
+                },
+                {
+                    title: "Hits",
+                    dataIndex: "hits",
+                    key: "hits",
+                },
+            ]
+        }
+    ]
+
 
     const bucket_hits = reading.iter_bucket_hits(bucket_start, bucket_end);
     for (const bucket_goal of reading.iter_bucket_goals(
@@ -68,10 +80,12 @@ export function PointGrid({node}: PointGridProps) {
         bucket_end,
     )) {
         const bucket_hit = bucket_hits.next().value;
+        const goal = goals[bucket_goal.goal - goal_start];
         const datum = {
             key: bucket_hit.start,
             hits: bucket_hit.hits,
-            target: goals[bucket_goal.goal - goal_start].target,
+            target: goal.target,
+            goal_name: goal.name
         };
 
         let offset = bucket_goal.start - bucket_start;
