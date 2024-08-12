@@ -18,13 +18,17 @@ export type View = SegmentedLabeledOption & {
 };
 
 export default abstract class Tree<T = any> {
-    private nodes: TreeNode<T>[];
     private ancestorsByKey: { [key: TreeKey]: TreeNode<T>[] };
     public static ROOT = "_ROOT_";
+    private root: TreeNode
 
     constructor(nodes: TreeNode<T>[]) {
-        this.nodes = nodes;
-        this.ancestorsByKey = Tree.mapNodeAncestors(nodes);
+        this.root = {
+            key: Tree.ROOT,
+            children: nodes,
+            data: {}
+        }
+        this.ancestorsByKey = Tree.mapNodeAncestors([this.root]);
     }
 
     /**
@@ -58,7 +62,7 @@ export default abstract class Tree<T = any> {
     }
 
     getRoots(): TreeNode<T>[] {
-        return this.nodes;
+        return this.root.children ?? [];
     }
 
     /**
@@ -71,12 +75,12 @@ export default abstract class Tree<T = any> {
         nodes: TreeNode<T>[] | null = null,
         parent: TreeNode<T> | null = null,
     ): Generator<[TreeNode<T>, TreeNode<T> | null]> {
-        nodes = nodes ?? this.nodes;
+        nodes = nodes ?? this.getRoots();
         for (const node of nodes) {
+            yield [node, parent];
             if (node.children) {
                 yield* this.walk(node.children, node);
             }
-            yield [node, parent];
         }
     }
 
