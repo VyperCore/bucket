@@ -14,6 +14,8 @@ const lightThemeDef = {
             saturatedtxt: "#000000",
             primarytxt: "#222222",
             desaturatedtxt: "#888888",
+            positivebg: "#4bFF4b",
+            negativebg: "#FF4b4b"
         },
     },
 };
@@ -31,6 +33,8 @@ const darkThemeDef: typeof lightThemeDef = {
             saturatedtxt: "#FFFFFF",
             primarytxt: "#CCCCCC",
             desaturatedtxt: "#888888",
+            positivebg: "#2BAA2B",
+            negativebg: "#AA2B2B"
         },
     },
 };
@@ -48,6 +52,8 @@ const oddThemeDef: typeof lightThemeDef = {
             saturatedtxt: "#AAFFFF",
             primarytxt: "#44CCCC",
             desaturatedtxt: "#888888",
+            positivebg: "#ADFF6E",
+            negativebg: "#FFB6B6"
         },
     },
 };
