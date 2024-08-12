@@ -196,7 +196,7 @@ export default function Dashboard() {
             default:
                 throw new Error("Invalid view!?")
         }
-    }, [tree, viewKey, currentContentKey]);
+    }, [viewKey, currentContentKey]);
 
     return (
         <ConfigProvider theme={antTheme}>

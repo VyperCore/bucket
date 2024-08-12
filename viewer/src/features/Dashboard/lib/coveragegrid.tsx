@@ -2,16 +2,64 @@ import CoverageTree, { PointNode } from "./coveragetree";
 import { Table, TableProps } from "antd";
 import { view } from "../theme";
 import { TreeKey } from "./tree";
+import {Theme as ThemeType} from "@/theme";
+import Color from "colorjs.io";
+import Theme from "@/providers/Theme";
 
 export type PointGridProps = {
     node: PointNode;
 };
 
+function getCoverageColumnConfig(theme: ThemeType, columnKey: string) {
+    const good = new Color(theme.theme.colors.positivebg.value);
+    const bad = new Color(theme.theme.colors.negativebg.value);
+    const mix = Color.range(Color.mix(bad, good, 0.2, {space:'hsl'}), 
+                            Color.mix(bad, good, 0.6, {space:'hsl'}),
+                            {space:'hsl'});
+    return {
+        render: (ratio: number) => {
+            if (Number.isNaN(ratio) || Object.is(ratio, -0)) {
+                return '-';
+            } else if (ratio < 0) {
+                return '!!!';
+            }
+            return `${(Math.min(ratio, 1) * 100).toFixed(1)}%`;
+        },
+        onCell: (record: any) => {
+            const ratio = record[columnKey];
+            let backgroundColor = "unset";
+            let fontWeight = "unset";
+            if (ratio >= 1) {
+                // >=1 if target is fully hit
+                backgroundColor = good.toString();
+            } else if (Number.isNaN(ratio) || Object.is(ratio, -0)) {
+                // NaN if target is zero (don't care)
+                // -0 if target is negative (illegal) and not hit
+            } else if (ratio <= 0) {
+                // <0 if target is negative (illegal) and hit
+                backgroundColor = bad.toString();
+                fontWeight = "bold"
+            } else {
+                // 0<x<1 if target is hit but not fully
+                // Interpolate between bad and good, leaving some margin
+                // so full hit and fully missed is distinguishable
+                const clamped = Math.min(Math.max(ratio, 0), 1);
+                backgroundColor = mix(clamped).toString();
+            }
+            return {
+                style: {
+                    backgroundColor,
+                    fontWeight
+                },
+            }
+        }
+    }
+}
+
 
 export function PointGrid({node}: PointGridProps) {
     const pointData = node.data;
     const reading = pointData.reading;
-    
     let dataSource: {}[] = [];
     const {
         axis_start,
@@ -37,7 +85,7 @@ export function PointGrid({node}: PointGridProps) {
         pointData.reading.iter_goals(goal_start, goal_end),
     );
 
-    const columns = [
+    const getColumns = (theme: ThemeType): TableProps['columns'] => [
         {
             title: "Bucket",
             dataIndex: "key",
@@ -69,6 +117,12 @@ export function PointGrid({node}: PointGridProps) {
                     dataIndex: "hits",
                     key: "hits",
                 },
+                {
+                    title: "Hit %",
+                    dataIndex: "hit_ratio",
+                    key: "hit_ratio",
+                    ...getCoverageColumnConfig(theme, "hit_ratio")
+                },
             ]
         }
     ]
@@ -83,8 +137,9 @@ export function PointGrid({node}: PointGridProps) {
         const goal = goals[bucket_goal.goal - goal_start];
         const datum = {
             key: bucket_hit.start,
-            hits: bucket_hit.hits,
             target: goal.target,
+            hits: bucket_hit.hits,
+            hit_ratio: bucket_hit.hits / goal.target,
             goal_name: goal.name
         };
 
@@ -101,10 +156,14 @@ export function PointGrid({node}: PointGridProps) {
         dataSource.push(datum);
     }
 
-    return <Table { ...view.body.content.table.props }
-        columns={columns}
-        dataSource={dataSource}
-    />
+    return <Theme.Consumer>
+        {({ theme }) => {
+            return <Table { ...view.body.content.table.props }
+                columns={getColumns(theme)}
+                dataSource={dataSource}
+            />
+        }}
+    </Theme.Consumer>
 }
 
 export type PointSummaryGridProps = {
@@ -115,16 +174,14 @@ export type PointSummaryGridProps = {
 
 
 export function PointSummaryGrid({tree, node, setSelectedTreeKeys}: PointSummaryGridProps) {
-    const pointData = node.data;
-    const reading = pointData.reading;
-    const columns: TableProps['columns'] = [
+    const getColumns = (theme: ThemeType): TableProps['columns'] => [
         {
             title: "Path",
             dataIndex: "path",
             key: "path",
             render: text => <a>{text}</a>,
             onCell: record => ({
-                onClick: () => setSelectedTreeKeys([record.key]), 
+                onClick: () => setSelectedTreeKeys([record.key]),
             })
         },
         {
@@ -149,7 +206,7 @@ export function PointSummaryGrid({tree, node, setSelectedTreeKeys}: PointSummary
                     title: "Hit %",
                     dataIndex: "hit_ratio",
                     key: "hit_ratio",
-                    render: v => `${(100 * v).toFixed(1)}%`,
+                    ...getCoverageColumnConfig(theme, "hit_ratio")
                 },
             ]
         },
@@ -175,13 +232,13 @@ export function PointSummaryGrid({tree, node, setSelectedTreeKeys}: PointSummary
                     title: "Hit %",
                     dataIndex: "buckets_hit_ratio",
                     key: "buckets_hit_ratio",
-                    render: v => `${(100 * v).toFixed(1)}%`,
+                    ...getCoverageColumnConfig(theme, "buckets_hit_ratio")
                 },
                 {
                     title: "Full %",
                     dataIndex: "buckets_full_ratio",
                     key: "buckets_full_ratio",
-                    render: v => `${(100 * v).toFixed(1)}%`,
+                    ...getCoverageColumnConfig(theme, "buckets_full_ratio")
                 },
             ]
         }
@@ -223,34 +280,12 @@ export function PointSummaryGrid({tree, node, setSelectedTreeKeys}: PointSummary
         });
     }
 
-    // for (const child of gather(node)) {
-    //     const {point, point_hit} = child.data;
-    //     dataSource.push({
-    //         key: `${point.start}-${point.end}`,
-    //         name: point.name,
-    //         desc: point.description,
-    //         target: point.target,
-    //         hits: point_hit.hits,
-    //         target_buckets: point.target_buckets,
-    //         hit_buckets: point_hit.hit_buckets,
-    //     });
-    // }
-
-    // const point_hits = reading.iter_point_hits(start, end, depth);
-    // for (const point of reading.iter_points(start, end, depth)) {
-    //     const point_hit = point_hits.next().value;
-    //     dataSource.push({
-    //         key: `${point.start}-${point.end}`,
-    //         name: point.name,
-    //         desc: point.description,
-    //         target: point.target,
-    //         hits: point_hit.hits,
-    //         target_buckets: point.target_buckets,
-    //         hit_buckets: point_hit.hit_buckets,
-    //     });
-    // }
-    return <Table { ...view.body.content.table.props }
-        columns={columns}
-        dataSource={dataSource}
-    />
+    return <Theme.Consumer>
+        {({ theme }) => {
+            return <Table { ...view.body.content.table.props }
+                columns={getColumns(theme)}
+                dataSource={dataSource}
+            />
+        }}
+    </Theme.Consumer>
 }
