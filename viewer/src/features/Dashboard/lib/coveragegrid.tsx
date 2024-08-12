@@ -119,15 +119,58 @@ export function PointSummaryGrid({tree, node, setSelectedTreeKeys}: PointSummary
             key: "desc",
         },
         {
-            title: "Target",
-            dataIndex: "target",
-            key: "target",
+            title: "Goal",
+            children: [
+                {
+                    title: "Target",
+                    dataIndex: "target",
+                    key: "target",
+                },
+                {
+                    title: "Hits",
+                    dataIndex: "hits",
+                    key: "hits",
+                },
+                {
+                    title: "Hit %",
+                    dataIndex: "hit_ratio",
+                    key: "hit_ratio",
+                    render: v => `${(100 * v).toFixed(1)}%`,
+                },
+            ]
         },
         {
-            title: "Hits",
-            dataIndex: "hits",
-            key: "hits",
-        },
+            title: "Buckets",
+            children: [
+                {
+                    title: "Target",
+                    dataIndex: "target_buckets",
+                    key: "target_buckets",
+                },
+                {
+                    title: "Hit",
+                    dataIndex: "hit_buckets",
+                    key: "hit_buckets",
+                },
+                {
+                    title: "Full",
+                    dataIndex: "full_buckets",
+                    key: "full_buckets",
+                },
+                {
+                    title: "Hit %",
+                    dataIndex: "buckets_hit_ratio",
+                    key: "buckets_hit_ratio",
+                    render: v => `${(100 * v).toFixed(1)}%`,
+                },
+                {
+                    title: "Full %",
+                    dataIndex: "buckets_full_ratio",
+                    key: "buckets_full_ratio",
+                    render: v => `${(100 * v).toFixed(1)}%`,
+                },
+            ]
+        }
     ];
     const dataSource: {}[] = [];
 
@@ -143,6 +186,14 @@ export function PointSummaryGrid({tree, node, setSelectedTreeKeys}: PointSummary
                           .slice(nodePath.length - 1)
                           .map(n => n.title as string).join(' / ')
         const {point, point_hit} = subNode.data;
+
+        const hit_ratio =
+            point_hit.hits / point.target;
+        const buckets_hit_ratio =
+            point_hit.hit_buckets / point.target_buckets;
+        const buckets_full_ratio =
+            point_hit.full_buckets / point.target_buckets;
+
         dataSource.push({
             key: subNode.key,
             path: path,
@@ -151,6 +202,10 @@ export function PointSummaryGrid({tree, node, setSelectedTreeKeys}: PointSummary
             hits: point_hit.hits,
             target_buckets: point.target_buckets,
             hit_buckets: point_hit.hit_buckets,
+            full_buckets: point_hit.full_buckets,
+            hit_ratio,
+            buckets_hit_ratio,
+            buckets_full_ratio,
         });
     }
 
