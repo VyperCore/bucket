@@ -30,11 +30,6 @@ export default class CoverageTree extends Tree<PointData> {
                     point.target,
                 );
 
-                const percentHit =
-                    100 * (point_hit.hit_buckets / point.target_buckets);
-                const percentFull =
-                    100 * (point_hit.full_buckets / point.target_buckets);
-
                 const dataNode: TreeNode<PointData> = {
                     // title: `${percentFull.toFixed(1)}%/${percentHit.toFixed(
                     //     1,

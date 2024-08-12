@@ -177,6 +177,9 @@ export const antTheme: ThemeConfig = (() => {
                 borderColor: cl.secondarybg.toString(),
                 headerBorderRadius: 0,
                 rowHoverBg: cl.secondarybg.toString(),
+                headerSortHoverBg: cl.secondarybg.toString(),
+                headerSortActiveBg: cl.primarybg.toString(),
+                bodySortBg: cl.tertiarybg.toString()
             },
         },
     };

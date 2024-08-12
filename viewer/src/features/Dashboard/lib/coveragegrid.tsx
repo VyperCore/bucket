@@ -56,6 +56,35 @@ function getCoverageColumnConfig(theme: ThemeType, columnKey: string) {
     }
 }
 
+/**
+ * Splits strings into alpha and numeric portions before comparison
+ * and tries to treat the numeric portions as numbers.
+ */
+function naturalCompare(a: String | Number, b: String | Number) {
+    const aParts = a.toString().split(/(\d+)/g);
+    const bParts = b.toString().split(/(\d+)/g);
+    while (true) {
+        const aPart = aParts.shift();
+        const bPart = bParts.shift();
+        const undefCompare = aPart === undefined ? (bPart === undefined ? NaN : -1) : (bPart === undefined ? 1 : 0);
+        if (undefCompare != 0) {
+            return undefCompare;
+        }
+        const numCompare = Number.parseInt(aPart) - Number.parseInt(bPart);
+        if (!Number.isNaN(numCompare) && numCompare != 0) {
+            return numCompare;
+        }
+        const strCompare = aPart.localeCompare(bPart);
+        if (strCompare != 0) {
+            return strCompare;
+        }
+    }
+}
+
+function getColumnCompare(columnKey: string) {
+    return (a:any,b:any) => naturalCompare(a[columnKey], b[columnKey]);
+}
+
 
 export function PointGrid({node}: PointGridProps) {
     const pointData = node.data;
@@ -93,11 +122,19 @@ export function PointGrid({node}: PointGridProps) {
         },
         {
             title: "Axes",
-            children: axes.map(axis => ({
-                title: axis.name,
-                dataIndex: axis.name,
-                key: axis.name,
-            }))
+            children: axes.map(axis => {
+                return {
+                    title: axis.name,
+                    dataIndex: axis.name,
+                    key: axis.name,
+                    filters: axis_values.slice(axis.value_start - axis_value_start, axis.value_end - axis_value_start).map(axis_value => ({
+                        text: axis_value.value,
+                        value: axis_value.value
+                    })),
+                    onFilter: (value, record) => record[axis.name] == value,
+                    sorter: getColumnCompare(axis.name)
+                }
+            })
         },
         {
             title: "Goal",
@@ -106,22 +143,31 @@ export function PointGrid({node}: PointGridProps) {
                     title: "Name",
                     dataIndex: "goal_name",
                     key: "goal_name",
+                    filters: goals.map(goal => ({
+                        text: `${goal.name} - ${goal.description}`,
+                        value: goal.name
+                    })),
+                    onFilter: (value, record) => record["goal_name"] == value,
+                    sorter: getColumnCompare("goal_name")
                 },
                 {
                     title: "Target",
                     dataIndex: "target",
                     key: "target",
+                    sorter: getColumnCompare('target')
                 },
                 {
                     title: "Hits",
                     dataIndex: "hits",
                     key: "hits",
+                    sorter: getColumnCompare('hits')
                 },
                 {
                     title: "Hit %",
                     dataIndex: "hit_ratio",
                     key: "hit_ratio",
-                    ...getCoverageColumnConfig(theme, "hit_ratio")
+                    ...getCoverageColumnConfig(theme, "hit_ratio"),
+                    sorter: getColumnCompare('hit_ratio')
                 },
             ]
         }
@@ -159,6 +205,7 @@ export function PointGrid({node}: PointGridProps) {
     return <Theme.Consumer>
         {({ theme }) => {
             return <Table { ...view.body.content.table.props }
+                key={node.key}
                 columns={getColumns(theme)}
                 dataSource={dataSource}
             />
@@ -182,12 +229,14 @@ export function PointSummaryGrid({tree, node, setSelectedTreeKeys}: PointSummary
             render: text => <a>{text}</a>,
             onCell: record => ({
                 onClick: () => setSelectedTreeKeys([record.key]),
-            })
+            }),
+            sorter: getColumnCompare('path')
         },
         {
             title: "Description",
             dataIndex: "desc",
             key: "desc",
+            sorter: getColumnCompare('desc')
         },
         {
             title: "Goal",
@@ -196,17 +245,20 @@ export function PointSummaryGrid({tree, node, setSelectedTreeKeys}: PointSummary
                     title: "Target",
                     dataIndex: "target",
                     key: "target",
+                    sorter: getColumnCompare('target')
                 },
                 {
                     title: "Hits",
                     dataIndex: "hits",
                     key: "hits",
+                    sorter: getColumnCompare('hits')
                 },
                 {
                     title: "Hit %",
                     dataIndex: "hit_ratio",
                     key: "hit_ratio",
-                    ...getCoverageColumnConfig(theme, "hit_ratio")
+                    ...getCoverageColumnConfig(theme, "hit_ratio"),
+                    sorter: getColumnCompare('hit_ratio')
                 },
             ]
         },
@@ -217,28 +269,33 @@ export function PointSummaryGrid({tree, node, setSelectedTreeKeys}: PointSummary
                     title: "Target",
                     dataIndex: "target_buckets",
                     key: "target_buckets",
+                    sorter: getColumnCompare('target_buckets')
                 },
                 {
                     title: "Hit",
                     dataIndex: "hit_buckets",
                     key: "hit_buckets",
+                    sorter: getColumnCompare('hit_buckets')
                 },
                 {
                     title: "Full",
                     dataIndex: "full_buckets",
                     key: "full_buckets",
+                    sorter: getColumnCompare('full_buckets')
                 },
                 {
                     title: "Hit %",
                     dataIndex: "buckets_hit_ratio",
                     key: "buckets_hit_ratio",
-                    ...getCoverageColumnConfig(theme, "buckets_hit_ratio")
+                    ...getCoverageColumnConfig(theme, "buckets_hit_ratio"),
+                    sorter: getColumnCompare('buckets_hit_ratio')
                 },
                 {
                     title: "Full %",
                     dataIndex: "buckets_full_ratio",
                     key: "buckets_full_ratio",
-                    ...getCoverageColumnConfig(theme, "buckets_full_ratio")
+                    ...getCoverageColumnConfig(theme, "buckets_full_ratio"),
+                    sorter: getColumnCompare('buckets_full_ratio')
                 },
             ]
         }
@@ -283,6 +340,7 @@ export function PointSummaryGrid({tree, node, setSelectedTreeKeys}: PointSummary
     return <Theme.Consumer>
         {({ theme }) => {
             return <Table { ...view.body.content.table.props }
+                key={node.key}
                 columns={getColumns(theme)}
                 dataSource={dataSource}
             />
