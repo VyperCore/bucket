@@ -13,9 +13,7 @@ type AncestorMap = {
     [key: string]: TreeNode[];
 };
 
-export type View = SegmentedLabeledOption & {
-    viewFactory: () => React.ReactNode;
-};
+export type View = SegmentedLabeledOption;
 
 export default abstract class Tree<T = any> {
     private ancestorsByKey: { [key: TreeKey]: TreeNode<T>[] };

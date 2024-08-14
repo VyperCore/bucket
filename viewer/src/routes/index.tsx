@@ -1,8 +1,21 @@
 import { useRoutes } from "react-router-dom";
 import Dashboard from "@/features/Dashboard";
+import CoverageTree from "@/features/Dashboard/lib/coveragetree";
+import treeMock from "@/features/Dashboard/test/mocks/tree";
+import { JSONReader } from "@/features/Dashboard/lib/readers";
+
+function getDefaultTree() {
+    let coverageJSON;
+    try {
+        // @ts-ignore
+        coverageJSON = __BUCKET_CVG_JSON;
+    } catch (error) {
+        return new CoverageTree(treeMock);
+    }
+    return CoverageTree.fromReadings(Array.from(new JSONReader(coverageJSON).read_all()));
+}
 
 export const AppRoutes = () => {
-    const element = useRoutes([{ path: "/", element: <Dashboard /> }]);
-
+    const element = useRoutes([{ path: "*", element: <Dashboard tree={getDefaultTree()}/> }]);
     return <>{element}</>;
 };

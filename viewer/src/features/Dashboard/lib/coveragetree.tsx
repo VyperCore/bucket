@@ -1,6 +1,5 @@
 import { LayoutOutlined, TableOutlined } from "@ant-design/icons";
 import Tree, { TreeKey, TreeNode, View } from "./tree";
-import {PointGrid, PointSummaryGrid} from "./coveragegrid";
 
 export type PointData = {
     reading: Reading;
@@ -21,19 +20,8 @@ export default class CoverageTree extends Tree<PointData> {
             const point_hits = reading.iter_point_hits();
             for (const point of reading.iter_points()) {
                 const point_hit = point_hits.next().value;
-                const done = point_hit.full_buckets == point.target_buckets;
-                console.log(
-                    point.target_buckets,
-                    point_hit.full_buckets,
-                    point_hit.hit_buckets,
-                    point_hit.hits,
-                    point.target,
-                );
-
+      
                 const dataNode: TreeNode<PointData> = {
-                    // title: `${percentFull.toFixed(1)}%/${percentHit.toFixed(
-                    //     1,
-                    // )}%: ${point.name}`,
                     title: point.name,
                     key: `${i}-${point.start}-${point.end}`,
                     children: [],
@@ -42,7 +30,6 @@ export default class CoverageTree extends Tree<PointData> {
                         point,
                         point_hit,
                     },
-                    // icon: done ? <LayoutOutlined /> : <TableOutlined />,
                 };
                 // Discard anything below parent
                 stack.splice(point.depth);
@@ -67,9 +54,6 @@ export default class CoverageTree extends Tree<PointData> {
                 {
                     value: "Summary",
                     icon: <TableOutlined />,
-                    viewFactory: () => (
-                        <PointSummaryGrid tree={this} node={node} />
-                    ),
                 },
             ];
         } else {
@@ -77,14 +61,10 @@ export default class CoverageTree extends Tree<PointData> {
                 {
                     value: "Point",
                     icon: <TableOutlined />,
-                    viewFactory: () => (
-                        <PointGrid node={node} />
-                    ),
                 },
                 {
                     value: "Pivot",
                     icon: <LayoutOutlined />,
-                    viewFactory: () => <LayoutOutlined />,
                 },
             ];
         }
