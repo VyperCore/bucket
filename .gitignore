@@ -3,6 +3,7 @@ __pycache__/
 
 # Distribution / packaging
 poetry.lock
+package-lock.json
 
 # pyenv
 .python-version
