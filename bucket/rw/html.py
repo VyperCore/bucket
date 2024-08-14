@@ -21,7 +21,7 @@ class HTMLWriter(Writer):
         self.output = Path(output)
         self.written = False
 
-        result = subprocess.call(['npm', 'ls'], cwd=viewer_path, stdout=subprocess.DEVNULL)
+        result = subprocess.call(['npm', 'ls'], cwd=web_path, stdout=subprocess.DEVNULL)
         if result != 0:
             raise RuntimeError("Viewer not installed.\n"
                                "If npm is installed: \n"
