@@ -66,10 +66,17 @@ function naturalCompare(a: String | Number, b: String | Number) {
     while (true) {
         const aPart = aParts.shift();
         const bPart = bParts.shift();
-        const undefCompare = aPart === undefined ? (bPart === undefined ? NaN : -1) : (bPart === undefined ? 1 : 0);
-        if (undefCompare != 0) {
-            return undefCompare;
+
+        if (aPart === undefined || bPart === undefined) {
+            if (aPart !== undefined) {
+                return 1;
+            }
+            if (bPart !== undefined) {
+                return -1;
+            }
+            return NaN;
         }
+
         const numCompare = Number.parseInt(aPart) - Number.parseInt(bPart);
         if (!Number.isNaN(numCompare) && numCompare != 0) {
             return numCompare;
@@ -181,7 +188,7 @@ export function PointGrid({node}: PointGridProps) {
     )) {
         const bucket_hit = bucket_hits.next().value;
         const goal = goals[bucket_goal.goal - goal_start];
-        const datum = {
+        const datum: any = {
             key: bucket_hit.start,
             target: goal.target,
             hits: bucket_hit.hits,

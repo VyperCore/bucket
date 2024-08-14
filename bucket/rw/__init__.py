@@ -3,7 +3,8 @@
 
 from .common import MergeReading
 from .console import ConsoleWriter
+from .json import JSONWriter
 from .point import PointReader
 from .sql import SQLAccessor
 
-assert all([ConsoleWriter, SQLAccessor, PointReader, MergeReading])
+assert(all([ConsoleWriter, JSONWriter, SQLAccessor, PointReader, MergeReading]))

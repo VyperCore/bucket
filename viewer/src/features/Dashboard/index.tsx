@@ -16,8 +16,6 @@ import Sider from "./components/Sider";
 import { antTheme, view } from "./theme";
 import { useMemo, useState } from "react";
 import { BreadcrumbItemType } from "antd/lib/breadcrumb/Breadcrumb";
-import treeMock from "./test/mocks/tree";
-import CoverageTree from "./lib/coveragetree";
 import { LayoutOutlined } from "@ant-design/icons";
 import { PointGrid, PointSummaryGrid } from "./lib/coveragegrid";
 const { Header, Content } = Layout;
@@ -136,23 +134,17 @@ function getBreadCrumbItems({
     return breadCrumbItems;
 }
 
-export default function Dashboard() {
+export type DashboardProps = {
+    tree: Tree
+}
+
+export default function Dashboard({ tree }: DashboardProps) {
     const [selectedTreeKeys, setSelectedTreeKeys] = useState<TreeKey[]>([]);
     const [expandedTreeKeys, setExpandedTreeKeys] = useState<TreeKey[]>([]);
     const [autoExpandTreeParent, setAutoExpandTreeParent] = useState(true);
-    const [tree, setTree] = useState(new CoverageTree(treeMock) as Tree);
     const [treeKeyContentKey, setTreeKeyContentKey] = useState(
         {} as { [key: TreeKey]: string | number },
     );
-
-    // @ts-ignore
-    const pyReadyEvent = (window.PyReadyEvent = new Event("py-ready"));
-
-    document.addEventListener(pyReadyEvent.type, (e, ...args) => {
-        // @ts-ignore
-        const pyReadings = window._py_readings as Reading[];
-        setTree(CoverageTree.fromReadings(pyReadings));
-    });
 
     const onSelect = (newSelectedKeys: TreeKey[]) => {
         const newExpandedKeys = new Set<TreeKey>(expandedTreeKeys);

@@ -54,8 +54,6 @@ type BucketHitTuple = {
     hits: number;
 };
 
-type Iter<T> = Iterable<T> & Iterator<T, T, T>;
-
 type Reading = {
     get_def_sha: () => string;
     get_rec_sha: () => string;
@@ -63,24 +61,29 @@ type Reading = {
         start?: number,
         end?: number | null,
         depth?: number,
-    ) => Iter<PointTuple>;
+    ) => Generator<PointTuple>;
     iter_bucket_goals: (
         start: number,
         end: number | null,
-    ) => Iter<BucketGoalTuple>;
-    iter_axes: (start: number, end: number | null) => Iter<AxisTuple>;
+    ) => Generator<BucketGoalTuple>;
+    iter_axes: (start: number, end: number | null) => Generator<AxisTuple>;
     iter_axis_values: (
         start: number,
         end: number | null,
-    ) => Iter<AxisValueTuple>;
-    iter_goals: (start: number, end: number | null) => Iter<GoalTuple>;
+    ) => Generator<AxisValueTuple>;
+    iter_goals: (start: number, end: number | null) => Generator<GoalTuple>;
     iter_point_hits: (
         start?: number,
         end?: number | null,
         depth?: number,
-    ) => Iter<PointHitTuple>;
+    ) => Generator<PointHitTuple>;
     iter_bucket_hits: (
         start: number,
         end: number | null,
-    ) => Iter<BucketHitTuple>;
+    ) => Generator<BucketHitTuple>;
 };
+
+type Reader = {
+    read: (recordId: number) => Reading;
+    read_all: () => Generator<Reading>;
+}
