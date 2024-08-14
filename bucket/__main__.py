@@ -41,13 +41,17 @@ def write():
               help='Path to an SQL db file',
               required=True,
               type=click.Path(exists=True, readable=True, path_type=Path))
+@click.option('--web-path',
+              help='Path to the web viewer',
+              default=Path(__file__).parent / 'viewer',
+              type=click.Path(exists=True, readable=True, path_type=Path))
 @click.option('--output',
               help='Path to output the HTML report',
               required=True,
               type=click.Path(path_type=Path))
 @click.option('--record', default=None, type=click.INT)
-def html(sql_path: Path, output: Path, record: int|None):
-    writer = HTMLWriter(output)
+def html(sql_path: Path, web_path: Path, output: Path, record: int|None):
+    writer = HTMLWriter(web_path, output)
     if record is None:
         readings = list(SQLAccessor.File(sql_path).read_all())
         writer.write(readings)

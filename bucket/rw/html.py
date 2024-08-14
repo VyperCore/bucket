@@ -11,17 +11,17 @@ from typing import overload
 from .common import Reading, Writer
 from .json import JSONWriter
 
-viewer_path = Path(__file__).parent.parent.parent / 'viewer'
 
 class HTMLWriter(Writer):
     '''
     Write coverage information out to an HTML report.
     '''
-    def __init__(self, output: str | Path):
-        self.output = output
+    def __init__(self, web_path: str | Path, output: str | Path):
+        self.web_path = Path(web_path)
+        self.output = Path(output)
         self.written = False
 
-        result = subprocess.call(['npm', 'ls'], cwd=viewer_path, stdout=None)
+        result = subprocess.call(['npm', 'ls'], cwd=viewer_path, stdout=subprocess.DEVNULL)
         if result != 0:
             raise RuntimeError("Viewer not installed.\n"
                                "If npm is installed: \n"
@@ -48,7 +48,7 @@ class HTMLWriter(Writer):
 
 
             bundle_cmd = f'npm run bundle -- --outDir={tmp} --emptyOutDir=false'
-            result = subprocess.call(shlex.split(bundle_cmd), cwd=viewer_path, env=process_env)
+            result = subprocess.call(shlex.split(bundle_cmd), cwd=self.web_path, env=process_env)
 
             if result != 0:
                 raise RuntimeError("Could not build html bundle!")
