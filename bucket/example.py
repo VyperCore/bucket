@@ -275,7 +275,7 @@ if __name__ == "__main__":
     # Instance two copies of the coverage. Normally only one is required, but this is to
     # demonstrate merging coverage.
     with CoverageContext(isa="THIS IS AN ISA"):
-        cvg_a = TopDogs(name="Dogs", description="Doggy coverage", subtree="toys")
+        cvg_a = TopDogs(name="Dogs", description="Doggy coverage", subtree="toys_by_name__group_a")
 
     with CoverageContext(isa="THIS IS AN ISA"):
         cvg_b = TopDogs(name="Dogs", description="Doggy coverage")

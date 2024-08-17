@@ -21,10 +21,10 @@ class CoverBase:
     hits: int
 
     def setup(self):
-        raise NotImplementedError("This needs to be implemented by the covergroup")
+        raise NotImplementedError("This needs to be implemented by the coverpoint")
 
     def sample(self, trace):
-        raise NotImplementedError("This needs to be implemented by the covergroup")
+        raise NotImplementedError("This needs to be implemented by the coverpoint")
 
     def _chain_def(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]: ...
 
@@ -140,7 +140,7 @@ class Covergroup(CoverBase):
             return super().__getattribute__(key)
 
     def setup(self, ctx: SimpleNamespace):
-        raise NotImplementedError("This needs to be implemented by the coverpoint")
+        raise NotImplementedError("This needs to be implemented by the covergroup")
 
     def print_tree(self, indent: int = 0):
         """Print out coverage hierarch from this covergroup down"""
@@ -159,12 +159,14 @@ class Covergroup(CoverBase):
             cg.print_tree(indent + 1)
 
     def sample(self, trace):
-        """Call sample on all sub-groups and coverpoints, passing in trace object"""
-        for cp in self.coverpoints.values():
-            cp.sample(trace)
+        """Pass trace to sample on all sub-groups and coverpoints, if active"""
+        if self.active:
+            for cp in self.coverpoints.values():
+                cp._sample(trace)
 
-        for cg in self.covergroups.values():
-            cg.sample(trace)
+            for cg in self.covergroups.values():
+                cg.sample(trace)
+
 
     def iter_children(self) -> Iterable[CoverBase]:
         self.coverpoints = dict(sorted(self.coverpoints.items()))
