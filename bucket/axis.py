@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2023 Vypercore. All Rights Reserved
+# Copyright (c) 2023-2024 Vypercore. All Rights Reserved
 
 from functools import lru_cache
 import hashlib
