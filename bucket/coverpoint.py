@@ -66,6 +66,7 @@ class Coverpoint(CoverBase):
         self.name = name
         self.description = description
         self.trigger = CoverageTriggers.ALL if trigger is None else trigger
+        self.active = True
 
         # Sanity check name has been given. No default!
         assert isinstance(self.name, str), "Coverpoint name not provided"
@@ -83,7 +84,7 @@ class Coverpoint(CoverBase):
         # Instance of Bucket class to increment hit count for a bucket
         self.bucket = Bucket(self)
 
-        self.setup(ctx=CoverageContext.get())
+        self._setup()
 
         self.sha = hashlib.sha256((self.name + self.description).encode())
         self.axis_names = [x.name for x in self.axes]
@@ -98,12 +99,32 @@ class Coverpoint(CoverBase):
                 goal = self._goal_dict["DEFAULT"]
             self.sha.update(goal.sha.digest())
 
+
+    def _setup(self):
+        """
+        This calls the user defined setup() after some required setup
+        """
+        self.setup(ctx=CoverageContext.get())
+
     def setup(self, ctx: SimpleNamespace):
         """
         This function needs to be implemented for each coverpoint. Axes and goals are added here.
         See example.py for how to use
         """
         raise NotImplementedError("This needs to be implemented by the coverpoint")
+    
+
+    def _subtree_faff(self, subtree):
+        """
+        Match against subtree strings and recursively call subtree_faff
+        """
+        subtree_match = False
+        for subtree_str in subtree:
+            if subtree_str in self.full_name:
+                subtree_match |= True
+        self.active = subtree_match
+        print(f"{self.full_name}: {self.active=}")
+        return self.active
 
     def _all_axis_value_combinations(self):
         """
