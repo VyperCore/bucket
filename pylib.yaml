@@ -1,7 +1,0 @@
-# Copyright 2023 Vypercore - All Rights Reserved
-# Unauthorized copying of this file in whole or in part, via any medium is
-# strictly prohibited. Proprietary and confidential.
-
-!PyLib
-modules:
-  - ./bucket
