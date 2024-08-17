@@ -348,7 +348,4 @@ if __name__ == "__main__":
     print("\nThis is the coverage from all the regression data so far:")
     print("(To reset please delete the file 'example_file_store')")
     ConsoleWriter(axes=False, goals=False, points=False).write(merged_reading_all)
-
-
-
-    cvg_a.print_tree()
+    
