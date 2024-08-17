@@ -1,10 +1,12 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2023-2024 Vypercore. All Rights Reserved
 
-from dataclasses import dataclass
 import hashlib
-from .common.chain import OpenLink, Link
-from .link import CovDef, CovRun
+from dataclasses import dataclass
+
+from .common.chain import Link, OpenLink
+from .link import CovDef
+
 
 @dataclass
 class GoalItem:
@@ -13,7 +15,9 @@ class GoalItem:
     description: str = ""
 
     def __post_init__(self):
-        self.sha = hashlib.sha256((self.name+self.description+str(self.target)).encode())
+        self.sha = hashlib.sha256(
+            (self.name + self.description + str(self.target)).encode()
+        )
 
     def chain(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]:
         start = start or OpenLink(CovDef())

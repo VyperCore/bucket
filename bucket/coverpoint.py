@@ -6,19 +6,17 @@ import itertools
 from collections import defaultdict
 from enum import Enum
 from types import SimpleNamespace
-from typing import Iterable, Iterator
 
 from rich.console import Console
 from rich.table import Table
 
-from .common.chain import OpenLink, Link
-from .link import CovDef, CovRun
-from .covergroup import CoverBase
-from .context import CoverageContext
-
 from .axis import Axis
 from .bucket import Bucket
+from .common.chain import Link, OpenLink
+from .context import CoverageContext
+from .covergroup import CoverBase
 from .goal import GoalItem
+from .link import CovDef, CovRun
 from .triggers import CoverageTriggers
 
 
@@ -30,7 +28,7 @@ class GOAL(Enum):
 
 class Coverpoint(CoverBase):
     bucket: Bucket
-    '''
+    """
     This Bucket class is used for incrementing the hit count on a given bucket.
 
     Example 1 (using 'with' to clear the bucket after each use)::
@@ -62,7 +60,7 @@ class Coverpoint(CoverBase):
                 size=trace['Weight']
             )
 
-    '''
+    """
 
     def __init__(self, name: str, description: str, trigger=None):
         self.name = name
@@ -87,50 +85,62 @@ class Coverpoint(CoverBase):
 
         self.setup(ctx=CoverageContext.get())
 
-        self.sha = hashlib.sha256((self.name+self.description).encode())
+        self.sha = hashlib.sha256((self.name + self.description).encode())
         self.axis_names = [x.name for x in self.axes]
         goals = SimpleNamespace(**self._goal_dict)
         for combination in self._all_axis_value_combinations():
-            bucket = SimpleNamespace(**dict(zip(self.axis_names, combination, strict=True)))
-            if goal:=self.apply_goals(bucket, goals):
+            bucket = SimpleNamespace(
+                **dict(zip(self.axis_names, combination, strict=True))
+            )
+            if goal := self.apply_goals(bucket, goals):
                 self._cvg_goals[combination] = goal
             else:
                 goal = self._goal_dict["DEFAULT"]
             self.sha.update(goal.sha.digest())
 
-
     def setup(self, ctx: SimpleNamespace):
-        '''
+        """
         This function needs to be implemented for each coverpoint. Axes and goals are added here.
         See example.py for how to use
-        '''
+        """
         raise NotImplementedError("This needs to be implemented by the coverpoint")
 
     def _all_axis_value_combinations(self):
-        '''
+        """
         Iterate over all possible axis value combinations
-        '''
+        """
         axis_values = []
         for axis in self.axes:
             axis_values.append(list(axis.values.keys()))
         yield from itertools.product(*axis_values)
 
-    def _increment_hit_count(self, bucket:tuple, hits:int=1):
-        '''
+    def _increment_hit_count(self, bucket: tuple, hits: int = 1):
+        """
         Increment hit count for the specified bucket. Default is +1
-        '''
+        """
         self.cvg_hits[bucket] += hits
 
-    def add_axis(self, name:str, values:dict|list|set|tuple, description:str):
-        '''
+    def add_axis(self, name: str, values: dict | list | set | tuple, description: str):
+        """
         Add axis with values to process later
-        '''
+        """
         self.axes.append(Axis(name, values, description))
 
-    def add_goal(self, name:str, description:str, illegal:bool=False, ignore:bool=False, target:int=None):
+    def add_goal(
+        self,
+        name: str,
+        description: str,
+        illegal: bool = False,
+        ignore: bool = False,
+        target: int = None,
+    ):
         formatted_name = name.upper()
-        assert formatted_name not in self._goal_dict, f'Goal "{formatted_name}" already defined for this coverpoint'
-        assert sum([illegal, ignore, (target is not None)]) <= 1, "Only one option may be chosen: illegal, ignore or target"
+        assert (
+            formatted_name not in self._goal_dict
+        ), f'Goal "{formatted_name}" already defined for this coverpoint'
+        assert (
+            sum([illegal, ignore, (target is not None)]) <= 1
+        ), "Only one option may be chosen: illegal, ignore or target"
         assert target is None or target > 0, "If target is supplied, it must be 1+"
 
         if illegal:
@@ -143,24 +153,26 @@ class Coverpoint(CoverBase):
 
         self._goal_dict[formatted_name] = GoalItem(name, target, description)
 
-    def apply_goals(self, bucket:SimpleNamespace=None, goals:SimpleNamespace=None):
-        '''
+    def apply_goals(
+        self, bucket: SimpleNamespace = None, goals: SimpleNamespace = None
+    ):
+        """
         If coverpoint goals are defined, this function must be implemented by the coverpoint.
         If no goals are defined, then 'DEFAULT' will be applied
         See example.py for how to use.
-        '''
+        """
         if len(self._goal_dict) == 1:
             return self._goal_dict["DEFAULT"]
         raise NotImplementedError("This needs to be implemented by the coverpoint")
 
-    def _get_goal(self, bucket:tuple):
-        '''
+    def _get_goal(self, bucket: tuple):
+        """
         Retrieve goal for a given bucket
-        '''
+        """
         if bucket in self._cvg_goals:
             return self._cvg_goals[bucket]
         else:
-            return self._goal_dict['DEFAULT']
+            return self._goal_dict["DEFAULT"]
 
     def _chain_def(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]:
         start = start or OpenLink(CovDef())
@@ -188,16 +200,13 @@ class Coverpoint(CoverBase):
 
         link = CovDef(
             point=1,
-            bucket=buckets, 
+            bucket=buckets,
             target=target,
             target_buckets=target_buckets,
-            sha=self.sha
+            sha=self.sha,
         )
 
-        return start.close(self, 
-                           child=child_close,
-                           link=link,
-                           typ=CoverBase)
+        return start.close(self, child=child_close, link=link, typ=CoverBase)
 
     def _chain_run(self, start: OpenLink[CovRun] | None = None) -> Link[CovRun]:
         start = start or OpenLink(CovRun())
@@ -224,29 +233,26 @@ class Coverpoint(CoverBase):
             bucket=buckets,
             hits=hits,
             hit_buckets=hit_buckets,
-            full_buckets=full_buckets
+            full_buckets=full_buckets,
         )
 
-        return start.close(self, 
-                           link=link,
-                           typ=CoverBase)
+        return start.close(self, link=link, typ=CoverBase)
 
     def _bucket_goals(self):
-        '''
+        """
         Get goals for each bucket
-        '''
+        """
         for bucket in self._all_axis_value_combinations():
             yield self._get_goal(bucket).name
 
     def _bucket_hits(self):
-        '''
+        """
         Get hits for each bucket
-        '''
+        """
         for bucket in self._all_axis_value_combinations():
             yield self.cvg_hits[bucket]
 
     def _debug_coverage(self):
-       
         def percentage_hit(hits, goal):
             if goal >= 0:
                 return f"{min((100*hits/goal), 100):.1f}%"
