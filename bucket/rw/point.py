@@ -33,7 +33,7 @@ class PointReader(Reader):
         reading.def_sha = chain.end.sha.hexdigest()
         reading.rec_sha = self._rec_sha
         for point_link in sorted(
-            chain.index.iter(CoverBase), key=lambda l: (l.start.point, l.depth)
+            chain.index.iter(CoverBase), key=lambda link: (link.start.point, link.depth)
         ):
             reading.points.append(PointTuple.from_link(point_link))
 
@@ -64,7 +64,7 @@ class PointReader(Reader):
         chain = self.point._chain_run()
 
         for point_link in sorted(
-            chain.index.iter(CoverBase), key=lambda l: (l.start.point, l.depth)
+            chain.index.iter(CoverBase), key=lambda link: (link.start.point, link.depth)
         ):
             reading.point_hits.append(PointHitTuple.from_link(point_link))
 
