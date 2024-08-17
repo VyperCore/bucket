@@ -3,12 +3,13 @@
 
 import hashlib
 import itertools
-from typing import Iterable, Iterator
 from types import SimpleNamespace
-from .context import CoverageContext
+from typing import Iterable
 
+from .common.chain import Link, OpenLink
+from .context import CoverageContext
 from .link import CovDef, CovRun
-from .common.chain import OpenLink, Link
+
 
 class CoverBase:
     name: str
@@ -30,7 +31,7 @@ class CoverBase:
 class Covergroup(CoverBase):
     """This class groups coverpoints together, and adds them to the hierarchy"""
 
-    def __init__(self, name:str, description:str):
+    def __init__(self, name: str, description: str):
         """
         Parameters:
             name: Name of covergroup
@@ -43,10 +44,10 @@ class Covergroup(CoverBase):
 
         self.coverpoints = {}
         self.covergroups = {}
-        self.sha = hashlib.sha256((self.name+self.description).encode())
+        self.sha = hashlib.sha256((self.name + self.description).encode())
         self.setup(ctx=CoverageContext.get())
 
-    def add_coverpoint(self, coverpoint:'Coverpoint'):
+    def add_coverpoint(self, coverpoint: "Coverpoint"):
         """
         Add a coverpoint instance to the covergroup
         Parameters:
@@ -58,7 +59,7 @@ class Covergroup(CoverBase):
 
         self.coverpoints[coverpoint.name] = coverpoint
 
-    def add_covergroup(self, covergroup:'Covergroup'):
+    def add_covergroup(self, covergroup: "Covergroup"):
         """
         Add a covergroup instance to the covergroup
         Parameters:
@@ -69,10 +70,10 @@ class Covergroup(CoverBase):
 
         self.covergroups[covergroup.name] = covergroup
 
-    def __getattr__(self, key:str):
-        '''
+    def __getattr__(self, key: str):
+        """
         Allow reference to child covergroups and coverpoints using <parent>.<child>
-        '''
+        """
         if key in self.covergroups:
             return self.covergroups[key]
         elif key in self.coverpoints:
@@ -83,7 +84,7 @@ class Covergroup(CoverBase):
     def setup(self, ctx: SimpleNamespace):
         raise NotImplementedError("This needs to be implemented by the coverpoint")
 
-    def print_tree(self, indent:int=0):
+    def print_tree(self, indent: int = 0):
         """Print out coverage hierarch from this covergroup down"""
         if indent == 0:
             print("COVERAGE_TREE")
@@ -118,7 +119,9 @@ class Covergroup(CoverBase):
         for child in self.iter_children():
             child_close = child._chain_def(child_start)
             child_start = child_close.link_across()
-        return start.close(self, child=child_close, link=CovDef(point=1, sha=self.sha), typ=CoverBase)
+        return start.close(
+            self, child=child_close, link=CovDef(point=1, sha=self.sha), typ=CoverBase
+        )
 
     def _chain_run(self, start: OpenLink[CovRun] | None = None) -> Link[CovRun]:
         start = start or OpenLink(CovRun())

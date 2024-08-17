@@ -1,12 +1,13 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2023-2024 Vypercore. All Rights Reserved
 
+
 class Bucket:
-    '''
+    """
     This class is used for incrementing the hit count on a given bucket.
     This is meant to be used within the coverpoint as self.bucket.
     See coverpoint.py or example.py for how to use
-    '''
+    """
 
     def __init__(
         self,
@@ -15,13 +16,12 @@ class Bucket:
         self.parent = parent
         self.clear()
 
-    def __call__(self):
-        ...
+    def __call__(self): ...
 
     def clear(self):
-        '''
+        """
         This function clears the bucket. No values will be retained for any axis
-        '''
+        """
         self.axis_values = {}
 
     def __enter__(self):
@@ -34,11 +34,11 @@ class Bucket:
         self.clear()
 
     def hit(self, **kwargs):
-        '''
+        """
         This function will attempt to increment the hit count for the combination of axis
         values specified. All axes need to have been set to a valid value, if not an error
         will be generated.
-        '''
+        """
 
         # If axis values are passed in, set axes
         self.set_axes(**kwargs)
@@ -49,7 +49,9 @@ class Bucket:
         axis_value_list = []
         for i, axis in enumerate(self.parent.axes):
             if axis.name in self.axis_values:
-                result = self.parent.axes[i].get_named_value(self.axis_values[axis.name])
+                result = self.parent.axes[i].get_named_value(
+                    self.axis_values[axis.name]
+                )
                 axis_value_list.append(result)
             else:
                 raise Exception(f"Axis {axis.name} has not been set")
@@ -66,10 +68,12 @@ class Bucket:
             self.parent._increment_hit_count(axis_value_tuple)
         elif bucket_goal.target < 0:
             print(f"Illegal bucket '{self.parent.name}.{bucket_goal.name}' hit!")
-            print(f"  Bucket: {dict(zip(self.parent.axis_names, list(axis_value_tuple), strict=True))}")
+            print(
+                f"  Bucket: {dict(zip(self.parent.axis_names, list(axis_value_tuple), strict=True))}"
+            )
 
     def set_axes(self, **kwargs):
-        '''
+        """
         Update dictionary of axis values, overwriting existing axis values if same key is set again
-        '''
+        """
         self.axis_values |= kwargs
