@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2023 Vypercore. All Rights Reserved
+# Copyright (c) 2023-2024 Vypercore. All Rights Reserved
 
-from dataclasses import dataclass, fields
 import hashlib
+from dataclasses import dataclass, fields
 from typing import Self
+
 
 @dataclass(kw_only=True)
 class CovDef:
@@ -19,13 +20,18 @@ class CovDef:
     def __add__(self, other: Self) -> Self:
         new = type(self)()
         for field in fields(self):
-            if field.name == 'sha':
+            if field.name == "sha":
                 new_sha = self.sha.copy()
                 new_sha.update(other.sha.digest())
                 setattr(new, field.name, new_sha)
             else:
-                setattr(new, field.name, getattr(self, field.name) + getattr(other, field.name))
+                setattr(
+                    new,
+                    field.name,
+                    getattr(self, field.name) + getattr(other, field.name),
+                )
         return new
+
 
 @dataclass(kw_only=True)
 class CovRun:
@@ -38,5 +44,7 @@ class CovRun:
     def __add__(self, other: Self) -> Self:
         new = type(self)()
         for field in fields(self):
-            setattr(new, field.name, getattr(self, field.name) + getattr(other, field.name))
+            setattr(
+                new, field.name, getattr(self, field.name) + getattr(other, field.name)
+            )
         return new

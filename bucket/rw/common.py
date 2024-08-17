@@ -1,14 +1,16 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2023 Vypercore. All Rights Reserved
+# Copyright (c) 2023-2024 Vypercore. All Rights Reserved
 
 from typing import Any, Iterable, NamedTuple, Protocol
-from ..link import CovDef, CovRun
+
 from ..common.chain import Link
+from ..link import CovDef, CovRun
 
 ###############################################################################
 # Coverage information in tuple form, which is used to interface between
 # different readers and writers.
 ###############################################################################
+
 
 class PointTuple(NamedTuple):
     start: int
@@ -41,15 +43,17 @@ class PointTuple(NamedTuple):
             goal_end=link.end.goal,
             bucket_start=link.start.bucket,
             bucket_end=link.end.bucket,
-            target=link.end.target-link.start.target,
-            target_buckets=link.end.target_buckets-link.start.target_buckets,
+            target=link.end.target - link.start.target,
+            target_buckets=link.end.target_buckets - link.start.target_buckets,
             name=link.item.name,
-            description=link.item.description
+            description=link.item.description,
         )
+
 
 class BucketGoalTuple(NamedTuple):
     start: int
     goal: int
+
 
 class AxisTuple(NamedTuple):
     start: int
@@ -60,16 +64,19 @@ class AxisTuple(NamedTuple):
 
     @classmethod
     def from_link(cls, link: Link[CovDef]):
-        return cls(start=link.start.axis,
-                   value_start=link.start.axis_value,
-                   value_end=link.end.axis_value,
-                   name=link.item.name,
-                   description=link.item.description
+        return cls(
+            start=link.start.axis,
+            value_start=link.start.axis_value,
+            value_end=link.end.axis_value,
+            name=link.item.name,
+            description=link.item.description,
         )
-    
+
+
 class AxisValueTuple(NamedTuple):
     start: int
     value: str
+
 
 class GoalTuple(NamedTuple):
     start: int
@@ -79,11 +86,13 @@ class GoalTuple(NamedTuple):
 
     @classmethod
     def from_link(cls, link: Link[CovDef]):
-        return cls(start=link.start.goal,
-                   target=link.item.target,
-                   name=link.item.name,
-                   description=link.item.description
+        return cls(
+            start=link.start.goal,
+            target=link.item.target,
+            name=link.item.name,
+            description=link.item.description,
         )
+
 
 class PointHitTuple(NamedTuple):
     start: int
@@ -94,11 +103,12 @@ class PointHitTuple(NamedTuple):
 
     @classmethod
     def from_link(cls, link: Link[CovRun]):
-        return cls(start=link.start.point,
-                   depth=link.depth,
-                   hits=link.end.hits-link.start.hits,
-                   hit_buckets=link.end.hit_buckets-link.start.hit_buckets,
-                   full_buckets=link.end.full_buckets-link.start.full_buckets,
+        return cls(
+            start=link.start.point,
+            depth=link.depth,
+            hits=link.end.hits - link.start.hits,
+            hit_buckets=link.end.hit_buckets - link.start.hit_buckets,
+            full_buckets=link.end.full_buckets - link.start.full_buckets,
         )
 
 
@@ -106,48 +116,70 @@ class BucketHitTuple(NamedTuple):
     start: int
     hits: int
 
+
 ###############################################################################
 # Inferface definitions
 ###############################################################################
 
+
 class Reading(Protocol):
-    '''
+    """
     Readings allow us to access coverage from a record consistently, without
     having to worry about the storage backend.
-    '''
+    """
+
     def get_def_sha(self) -> str: ...
     def get_rec_sha(self) -> str: ...
-    def iter_points(self, start: int=0, end: int|None=None) -> Iterable[PointTuple]: ...
-    def iter_bucket_goals(self, start: int=0, end: int|None=None) -> Iterable[BucketGoalTuple]: ...
-    def iter_axes(self, start: int=0, end: int|None=None) -> Iterable[AxisTuple]: ...
-    def iter_axis_values(self, start: int=0, end: int|None=None) -> Iterable[AxisValueTuple]: ...
-    def iter_goals(self, start: int=0, end: int|None=None) -> Iterable[GoalTuple]: ...
-    def iter_point_hits(self, start: int=0, end: int|None=None) -> Iterable[PointHitTuple]: ...
-    def iter_bucket_hits(self, start: int=0, end: int|None=None) -> Iterable[BucketHitTuple]: ...
+    def iter_points(
+        self, start: int = 0, end: int | None = None
+    ) -> Iterable[PointTuple]: ...
+    def iter_bucket_goals(
+        self, start: int = 0, end: int | None = None
+    ) -> Iterable[BucketGoalTuple]: ...
+    def iter_axes(
+        self, start: int = 0, end: int | None = None
+    ) -> Iterable[AxisTuple]: ...
+    def iter_axis_values(
+        self, start: int = 0, end: int | None = None
+    ) -> Iterable[AxisValueTuple]: ...
+    def iter_goals(
+        self, start: int = 0, end: int | None = None
+    ) -> Iterable[GoalTuple]: ...
+    def iter_point_hits(
+        self, start: int = 0, end: int | None = None
+    ) -> Iterable[PointHitTuple]: ...
+    def iter_bucket_hits(
+        self, start: int = 0, end: int | None = None
+    ) -> Iterable[BucketHitTuple]: ...
 
 
 class Reader(Protocol):
-    '''
+    """
     Readers read from a backend to produce readings.
-    '''
+    """
+
     def read(self, rec_ref) -> Reading: ...
 
 
 class Writer(Protocol):
-    '''
+    """
     Writers write to a backend from a reading.
-    '''
+    """
+
     def write(self, reading) -> Any: ...
+
 
 ###############################################################################
 # Utility readings
 ###############################################################################
 
+
 class PuppetReading(Reading):
-    '''
+    """
     Utility reading which stores coverage information directly rather than
     acting as an interface to other storage.
-    '''
+    """
+
     def __init__(self):
         self.points: list[PointTuple] = []
         self.bucket_goals: list[BucketGoalTuple] = []
@@ -163,39 +195,50 @@ class PuppetReading(Reading):
         if self.def_sha is None:
             raise RuntimeError("def_sha not set")
         return self.def_sha
-        
+
     def get_rec_sha(self) -> str:
         if self.rec_sha is None:
             raise RuntimeError("rec_sha not set")
         return self.rec_sha
 
-    def iter_points(self, start: int=0, end: int|None=None) -> Iterable[PointTuple]:
-        yield from self.points[start: end]
+    def iter_points(
+        self, start: int = 0, end: int | None = None
+    ) -> Iterable[PointTuple]:
+        yield from self.points[start:end]
 
-    def iter_bucket_goals(self, start: int=0, end: int|None=None) -> Iterable[BucketGoalTuple]:
-        yield from self.bucket_goals[start: end]
+    def iter_bucket_goals(
+        self, start: int = 0, end: int | None = None
+    ) -> Iterable[BucketGoalTuple]:
+        yield from self.bucket_goals[start:end]
 
-    def iter_axes(self, start: int=0, end: int|None=None) -> Iterable[AxisTuple]:
-        yield from self.axes[start: end]
+    def iter_axes(self, start: int = 0, end: int | None = None) -> Iterable[AxisTuple]:
+        yield from self.axes[start:end]
 
-    def iter_axis_values(self, start: int=0, end: int|None=None) -> Iterable[AxisValueTuple]:
-        yield from self.axis_values[start: end]
+    def iter_axis_values(
+        self, start: int = 0, end: int | None = None
+    ) -> Iterable[AxisValueTuple]:
+        yield from self.axis_values[start:end]
 
-    def iter_goals(self, start: int=0, end: int|None=None) -> Iterable[GoalTuple]:
-        yield from self.goals[start: end]
+    def iter_goals(self, start: int = 0, end: int | None = None) -> Iterable[GoalTuple]:
+        yield from self.goals[start:end]
 
-    def iter_point_hits(self, start: int=0, end: int|None=None) -> Iterable[PointHitTuple]:
-        yield from self.point_hits[start: end]
+    def iter_point_hits(
+        self, start: int = 0, end: int | None = None
+    ) -> Iterable[PointHitTuple]:
+        yield from self.point_hits[start:end]
 
-    def iter_bucket_hits(self, start: int=0, end: int|None=None) -> Iterable[BucketHitTuple]:
-        yield from self.bucket_hits[start: end]
+    def iter_bucket_hits(
+        self, start: int = 0, end: int | None = None
+    ) -> Iterable[BucketHitTuple]:
+        yield from self.bucket_hits[start:end]
 
 
 class MergeReading(Reading):
-    '''
+    """
     Utility reading which merges data from other readings. It takes one master
     reading, which all others must match.
-    '''
+    """
+
     def __init__(self, master: Reading, *others: Reading):
         super().__init__()
         self.master = master
@@ -217,35 +260,47 @@ class MergeReading(Reading):
 
     def get_def_sha(self) -> str:
         return self.master.get_def_sha()
-    
+
     def get_rec_sha(self) -> str:
         return self.master.get_rec_sha()
 
-    def iter_points(self, start: int=0, end: int|None=None) -> Iterable[PointTuple]:
+    def iter_points(
+        self, start: int = 0, end: int | None = None
+    ) -> Iterable[PointTuple]:
         yield from self.master.iter_points(start, end)
 
-    def iter_bucket_goals(self, start: int=0, end: int|None=None) -> Iterable[BucketGoalTuple]:
+    def iter_bucket_goals(
+        self, start: int = 0, end: int | None = None
+    ) -> Iterable[BucketGoalTuple]:
         yield from self.master.iter_bucket_goals(start, end)
 
-    def iter_axes(self, start: int=0, end: int|None=None) -> Iterable[AxisTuple]:
+    def iter_axes(self, start: int = 0, end: int | None = None) -> Iterable[AxisTuple]:
         yield from self.master.iter_axes(start, end)
 
-    def iter_axis_values(self, start: int=0, end: int|None=None) -> Iterable[AxisValueTuple]:
+    def iter_axis_values(
+        self, start: int = 0, end: int | None = None
+    ) -> Iterable[AxisValueTuple]:
         yield from self.master.iter_axis_values(start, end)
 
-    def iter_goals(self, start: int=0, end: int|None=None) -> Iterable[GoalTuple]:
+    def iter_goals(self, start: int = 0, end: int | None = None) -> Iterable[GoalTuple]:
         yield from self.master.iter_goals(start, end)
 
-    def iter_bucket_hits(self, start: int = 0, end: int | None = None) -> Iterable[BucketHitTuple]:
-        for offset, hits in enumerate(self.bucket_hits[start: end]):
-            yield BucketHitTuple(start+offset, hits)
+    def iter_bucket_hits(
+        self, start: int = 0, end: int | None = None
+    ) -> Iterable[BucketHitTuple]:
+        for offset, hits in enumerate(self.bucket_hits[start:end]):
+            yield BucketHitTuple(start + offset, hits)
 
-    def iter_point_hits(self, start: int = 0, end: int | None = None) -> Iterable[PointHitTuple]:
+    def iter_point_hits(
+        self, start: int = 0, end: int | None = None
+    ) -> Iterable[PointHitTuple]:
         for point in self.iter_points(start, end):
             hits = 0
-            hit_buckets = 0 
-            full_buckets = 0 
-            for bucket_hit in self.iter_bucket_hits(point.bucket_start, point.bucket_end):
+            hit_buckets = 0
+            full_buckets = 0
+            for bucket_hit in self.iter_bucket_hits(
+                point.bucket_start, point.bucket_end
+            ):
                 target = self.bucket_targets[bucket_hit.start]
                 if target > 0:
                     bucket_hits = min(bucket_hit.hits, target)
@@ -255,21 +310,31 @@ class MergeReading(Reading):
                             full_buckets += 1
                         hits += bucket_hits
 
-            yield PointHitTuple(start=point.start, depth=point.depth, hits=hits, hit_buckets=hit_buckets, full_buckets=full_buckets)
+            yield PointHitTuple(
+                start=point.start,
+                depth=point.depth,
+                hits=hits,
+                hit_buckets=hit_buckets,
+                full_buckets=full_buckets,
+            )
 
     def merge(self, *readings: Reading):
-        '''
+        """
         Merge additional readings post init
-        '''
+        """
         master_def_sha = self.get_def_sha()
         master_rec_sha = self.get_rec_sha()
 
         for reading in readings:
             if reading.get_def_sha() != master_def_sha:
-                raise RuntimeError("Tried to merge coverage with two different definition hashes!")
-            
+                raise RuntimeError(
+                    "Tried to merge coverage with two different definition hashes!"
+                )
+
             if reading.get_rec_sha() != master_rec_sha:
-                raise RuntimeError("Tried to merge coverage with two different record hashes!")
+                raise RuntimeError(
+                    "Tried to merge coverage with two different record hashes!"
+                )
 
             for bucket_hit in reading.iter_bucket_hits():
                 self.bucket_hits[bucket_hit.start] += bucket_hit.hits

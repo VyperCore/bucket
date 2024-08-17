@@ -1,45 +1,68 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2023 Vypercore. All Rights Reserved
+# Copyright (c) 2023-2024 Vypercore. All Rights Reserved
 
 from git.repo import Repo
-from bucket import CoverageContext, Covergroup, Coverpoint, Sampler, AxisUtils
 
-from .rw import PointReader, SQLAccessor, MergeReading, ConsoleWriter
+from bucket import AxisUtils, CoverageContext, Covergroup, Coverpoint, Sampler
+
+from .rw import ConsoleWriter, MergeReading, PointReader, SQLAccessor
 
 # This file contains useful reference code (such as example coverpoints,
 # covergroups, etc), as well as some necessary code to get the example working
-# outside of a full testbench. 
+# outside of a full testbench.
+
 
 # Covergroups
 class TopDogs(Covergroup):
-    '''
+    """
     This covergroup is top level covergroup, containing all other covergroups/coverpoints.
     An instance of this covergroup will be passed to the sampler.
-    '''
+    """
+
     def setup(self, ctx):
-        self.add_coverpoint(DogStats(name="doggy_stats", description="Some basic doggy stats"))
-        self.add_covergroup(
-            DogsAndToys(name="doggy_coverage", description="A group of coverpoints about dogs")
+        self.add_coverpoint(
+            DogStats(name="doggy_stats", description="Some basic doggy stats")
         )
+        self.add_covergroup(
+            DogsAndToys(
+                name="doggy_coverage", description="A group of coverpoints about dogs"
+            )
+        )
+
 
 class DogsAndToys(Covergroup):
-    '''
+    """
     This is another covergroup to group similar coverpoints together.
-    '''
+    """
+
     def setup(self, ctx):
-        self.add_coverpoint(ChewToysByAge(name="chew_toys_by_age", description="Preferred chew toys by age"))
         self.add_coverpoint(
-            ChewToysByName(name="chew_toys_by_name__group_a", description="Preferred chew toys by name - Group A", names=["Barbara", "Connie", "Graham"])
+            ChewToysByAge(
+                name="chew_toys_by_age", description="Preferred chew toys by age"
+            )
         )
         self.add_coverpoint(
-            ChewToysByName(name="chew_toys_by_name__group_b", description="Preferred chew toys by name - Group B", names=["Clive", "Derek", "Ethel"])
+            ChewToysByName(
+                name="chew_toys_by_name__group_a",
+                description="Preferred chew toys by name - Group A",
+                names=["Barbara", "Connie", "Graham"],
+            )
+        )
+        self.add_coverpoint(
+            ChewToysByName(
+                name="chew_toys_by_name__group_b",
+                description="Preferred chew toys by name - Group B",
+                names=["Clive", "Derek", "Ethel"],
+            )
         )
 
+
 class DogStats(Coverpoint):
-    '''
-    This is an example coverpoint with 3 axes, each demonstrating a different way of 
-    specifying values to the axis. 
-    '''
+    """
+    This is an example coverpoint with 3 axes, each demonstrating a different way of
+    specifying values to the axis.
+    """
+
     def __init__(self, name: str, description: str):
         super().__init__(name, description)
 
@@ -76,32 +99,34 @@ class DogStats(Coverpoint):
             return goals.HECKIN_CHONKY
 
     def sample(self, trace):
-            self.bucket.clear()
-            self.bucket.set_axes(
-                name=trace['Name'],
-                age=trace['Age'],
-                size=trace['Weight']
-            )
-            self.bucket.hit()
+        self.bucket.clear()
+        self.bucket.set_axes(name=trace["Name"], age=trace["Age"], size=trace["Weight"])
+        self.bucket.hit()
+
 
 class ChewToysByAge(Coverpoint):
-    '''
+    """
     This is another example coverpoint. This one contains an axis demonstrating the use of
     common axis values provided as part of this library (eg. msb, one_hot)
-    '''
+    """
+
     def __init__(self, name: str, description: str):
         super().__init__(name, description)
 
     def setup(self, ctx):
-
         self.add_axis(
             name="breed",
-            values={"Border Collie":[0,1], "Whippet":2, "Labrador":3, "Cockapoo":4},
-            description="All known dog breeds"
+            values={
+                "Border Collie": [0, 1],
+                "Whippet": 2,
+                "Labrador": 3,
+                "Cockapoo": 4,
+            },
+            description="All known dog breeds",
         )
         self.add_axis(
             name="age",
-            values=['Puppy', 'Adult', 'Senior'],
+            values=["Puppy", "Adult", "Senior"],
             description="Range of dog years",
         )
         self.add_axis(
@@ -113,14 +138,14 @@ class ChewToysByAge(Coverpoint):
         self.add_axis(
             name="favourite_leg",
             values=AxisUtils.one_hot(width=4),
-            description="This makes no sense to display as one_hot, but here we are"
+            description="This makes no sense to display as one_hot, but here we are",
         )
 
         self.add_goal("NO_SLIPPERS", "Only puppies chew slippers!", illegal=True)
         self.add_goal(
             "FRONT_LEGS_ONLY",
             "Only care about seniors who pick their favourite front legs",
-            ignore=True
+            ignore=True,
         )
         self.add_goal("STICK", "Yay sticks!", target=50)
 
@@ -143,27 +168,22 @@ class ChewToysByAge(Coverpoint):
         # This could also be achieved by creating the axis with
         # a dict which specifies ranges for each age group. Then the value
         # from trace can be set directly without processing here.
-        dog_age = trace['Age']
+        dog_age = trace["Age"]
         if dog_age < 2:
-            age = 'Puppy'
+            age = "Puppy"
         elif dog_age > 12:
-            age = 'Senior'
+            age = "Senior"
         else:
-            age = 'Adult'
+            age = "Adult"
 
         with self.bucket as bucket:
-            bucket.set_axes(
-                breed=trace['Breed'],
-                age=age,
-                favourite_leg=trace['Leg']
-            )
+            bucket.set_axes(breed=trace["Breed"], age=age, favourite_leg=trace["Leg"])
 
             # For when multiple values might need covering from one trace
             # Only need to set the axes that change
-            for toy in range(len(trace['Chew_toy'])):
-                bucket.set_axes(favourite_toy=trace['Chew_toy'][toy])
+            for toy in range(len(trace["Chew_toy"])):
+                bucket.set_axes(favourite_toy=trace["Chew_toy"][toy])
                 bucket.hit()
-
 
 
 class ChewToysByName(Coverpoint):
@@ -174,8 +194,13 @@ class ChewToysByName(Coverpoint):
     def setup(self, ctx):
         self.add_axis(
             name="breed",
-            values={"Border Collie":[0,1], "Whippet":2, "Labrador":3, "Cockapoo":4},
-            description="All known dog breeds"
+            values={
+                "Border Collie": [0, 1],
+                "Whippet": 2,
+                "Labrador": 3,
+                "Cockapoo": 4,
+            },
+            description="All known dog breeds",
         )
         self.add_axis(
             name="name",
@@ -198,19 +223,19 @@ class ChewToysByName(Coverpoint):
         # 'with bucket' is used, so bucket values are cleared each time
         # bucket can also be manually cleared by using bucket.clear()
 
-        if trace['Name'] not in self.name_group:
+        if trace["Name"] not in self.name_group:
             return
-        
+
         with self.bucket as bucket:
             bucket.set_axes(
-                breed=trace['Breed'],
-                name=trace['Name'],
+                breed=trace["Breed"],
+                name=trace["Name"],
             )
 
             # For when multiple values might need covering from one trace
             # Only need to set the axes that change
-            for toy in range(len(trace['Chew_toy'])):
-                bucket.set_axes(favourite_toy=trace['Chew_toy'][toy])
+            for toy in range(len(trace["Chew_toy"])):
+                bucket.set_axes(favourite_toy=trace["Chew_toy"][toy])
                 bucket.hit()
 
 
@@ -218,8 +243,9 @@ class ChewToysByName(Coverpoint):
 class MySampler(Sampler):
     def __init__(self, coverage):
         super().__init__(coverage=coverage)
-        
+
         import random
+
         self.random = random.Random()
 
     def create_trace(self):
@@ -227,21 +253,25 @@ class MySampler(Sampler):
         # This should come from monitors, etc
         # For this example, create random doggy data and put in a dictionary
         # In practise this would normally be a class, which can be populated with many
-        # types of data as required.
+        # types of data as required.
         trace = {}
-        trace['Breed'] = self.random.choice(["Border Collie", "Whippet", "Labrador", "Cockapoo", 0, 1, 2, 3, 4])
-        trace['Chew_toy'] = self.random.choices(["Slipper", "Ball", "Stick", "Ring"], k=2)
-        trace['Weight'] = self.random.randint(5, 50)
-        trace['Age'] = self.random.randint(0, 15)
-        trace['Name'] = self.random.choice(["Clive", "Derek", "Ethel", "Barbara", "Connie", "Graham"])
-        trace['Leg'] = self.random.choice([1,2,4,8])
+        trace["Breed"] = self.random.choice(
+            ["Border Collie", "Whippet", "Labrador", "Cockapoo", 0, 1, 2, 3, 4]
+        )
+        trace["Chew_toy"] = self.random.choices(
+            ["Slipper", "Ball", "Stick", "Ring"], k=2
+        )
+        trace["Weight"] = self.random.randint(5, 50)
+        trace["Age"] = self.random.randint(0, 15)
+        trace["Name"] = self.random.choice(
+            ["Clive", "Derek", "Ethel", "Barbara", "Connie", "Graham"]
+        )
+        trace["Leg"] = self.random.choice([1, 2, 4, 8])
 
         return trace
 
 
-
 if __name__ == "__main__":
-    
     # Instance two copies of the coverage. Normally only one is required, but this is to
     # demonstrate merging coverage.
     with CoverageContext(isa="THIS IS AN ISA"):
@@ -250,14 +280,14 @@ if __name__ == "__main__":
     with CoverageContext(isa="THIS IS AN ISA"):
         cvg_b = TopDogs(name="Dogs", description="Doggy coverage")
 
-    # print_tree() is a useful function to see the hierarchy of your coverage
+    # print_tree() is a useful function to see the hierarchy of your coverage
     # You can call it from the top level covergroup, or from another covergroup
     # within your coverage tree.
     cvg_a.print_tree()
     cvg_a.doggy_coverage.print_tree()
 
     # Instance 2 samplers. Again, you would only normally have one, but two are used here
-    # to demonstrate merging coverage from multiple regressions/tests. 
+    # to demonstrate merging coverage from multiple regressions/tests.
     sampler = MySampler(coverage=cvg_a)
     for _ in range(100):
         sampler.sample(sampler.create_trace())
@@ -298,13 +328,19 @@ if __name__ == "__main__":
     # Output to console
     print("\n-------------------------------------------------------")
     print("This is the coverage with 100 samples:")
-    print(f"To view this coverage in detail please run: python -m bucket read --sql-path example_file_store --points --record {rec_ref_a}")
+    print(
+        f"To view this coverage in detail please run: python -m bucket read --sql-path example_file_store --points --record {rec_ref_a}"
+    )
     ConsoleWriter(axes=False, goals=False, points=False).write(reading_a)
-    print("\nThis is the coverage from 2 regressions. One with 100 samples, and one with 500:")
-    print(f"To view this coverage in detail please run: python -m bucket read --sql-path example_file_store --points --record {rec_ref_merged}")
+    print(
+        "\nThis is the coverage from 2 regressions. One with 100 samples, and one with 500:"
+    )
+    print(
+        f"To view this coverage in detail please run: python -m bucket read --sql-path example_file_store --points --record {rec_ref_merged}"
+    )
     ConsoleWriter(axes=False, goals=False, points=False).write(merged_reading)
 
-    # Read all back from sql - note as the db is not removed this will 
+    # Read all back from sql - note as the db is not removed this will
     # acumulate each time this example is run. This will also include
     # merged data as well as the individual runs. It is meant as an example
     # of how to use the command

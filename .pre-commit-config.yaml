@@ -1,0 +1,54 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2023-2024 Vypercore. All Rights Reserved
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-added-large-files
+      - id: check-yaml
+        args: [--unsafe]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.5.7
+    hooks:
+      # sort imports
+      - id: ruff
+        args: [check, --select, I, --fix]
+      # format
+      - id: ruff-format
+      # lint
+      - id: ruff
+        args: [--fix]
+  - repo: https://github.com/Lucas-c/pre-commit-hooks
+    rev: v1.5.5
+    hooks:
+      - id: insert-license
+        files: |
+          (?x)
+            ^.*\.py$|
+            ^.*\.ya?ml$
+        args:
+          - --license-filepath=license_header.txt
+          - "--comment-style=#"
+          - --use-current-year
+      - id: insert-license
+        files: |
+          (?x)
+            ^.*\.css$|
+            ^.*\.(j|t)sx?$
+        args:
+          - --license-filepath=license_header.txt
+          - "--comment-style=/*| *| */"
+          - --use-current-year
+      - id: insert-license
+        files: |
+          (?x)
+            ^.*\.md$|
+            ^.*\.xml$|
+            ^.*\.html$
+        args:
+          - --license-filepath=license_header.txt
+          - "--comment-style=<!--|  ~|  -->"
+          - --use-current-year
