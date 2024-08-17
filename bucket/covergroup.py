@@ -4,11 +4,14 @@
 import hashlib
 import itertools
 from types import SimpleNamespace
-from typing import Iterable
+from typing import TYPE_CHECKING, Iterable
 
 from .common.chain import Link, OpenLink
 from .context import CoverageContext
 from .link import CovDef, CovRun
+
+if TYPE_CHECKING:
+    from .coverpoint import Coverpoint
 
 
 class CoverBase:

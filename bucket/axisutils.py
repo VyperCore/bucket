@@ -93,18 +93,14 @@ class AxisUtils:
 
         def val_range(msb_val):
             if msb_val == 0:
-                u = 0
-                l = 0
+                lower, upper = 0, 0
             elif include_max and (msb_val == max_val):
-                u = max_val
-                l = max_val
+                lower, upper = max_val, max_val
+            elif include_max and (msb_val == 1 << (width - 1)):
+                lower, upper = msb_val, (msb_val << 1) - 2
             else:
-                if include_max and (msb_val == 1 << (width - 1)):
-                    u = (msb_val << 1) - 2
-                else:
-                    u = (msb_val << 1) - 1
-                l = msb_val
-            return [l, u]
+                lower, upper = msb_val, (msb_val << 1) - 1
+            return [lower, upper]
 
         if display_bin:
             pad = width if pad_zero else 0
