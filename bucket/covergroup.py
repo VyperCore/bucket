@@ -72,7 +72,7 @@ class Covergroup(CoverBase):
         self.setup(ctx=CoverageContext.get())
         self._set_full_name()
         if self.subtree:
-            self._subtree_faff(subtree)
+            self._apply_subtree(subtree)
 
     def _set_full_name(self):
         for cp in self.coverpoints.values():
@@ -82,7 +82,7 @@ class Covergroup(CoverBase):
             cg.full_name = self.full_name + f".{cg.name.lower()}"
             cg._set_full_name()
 
-    def _subtree_faff(self, subtree):
+    def _apply_subtree(self, subtree):
         """
         Match against subtree strings and recursively call subtree_faff
         """
@@ -95,10 +95,10 @@ class Covergroup(CoverBase):
         if not self.active:
             children_active = False
             for cp in self.coverpoints.values():
-                children_active |= cp._subtree_faff(subtree)
+                children_active |= cp._apply_subtree(subtree)
 
             for cg in self.covergroups.values():
-                children_active |= cg._subtree_faff(subtree)
+                children_active |= cg._apply_subtree(subtree)
 
             self.active = children_active
 
