@@ -102,7 +102,7 @@ class Coverpoint(CoverBase):
 
     def _setup(self):
         """
-        This calls the user defined setup() after some required setup
+        This calls the user defined setup() plus any other setup required
         """
         self.setup(ctx=CoverageContext.get())
 
@@ -113,9 +113,9 @@ class Coverpoint(CoverBase):
         """
         raise NotImplementedError("This needs to be implemented by the coverpoint")
     
-    def _apply_subtree(self, subtree):
+    def _apply_subtree(self, subtree:list[str]):
         """
-        Match against subtree strings and recursively call subtree_faff
+        Match against subtree strings
         """
         subtree_match = False
         for subtree_str in subtree:
