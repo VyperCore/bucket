@@ -65,9 +65,9 @@ class Covergroup(CoverBase):
         self.sha = hashlib.sha256((self.name + self.description).encode())
         self._setup(self.subtree)
 
-    def _setup(self, subtree):
+    def _setup(self, subtree:list[str]):
         """
-        This calls the user defined setup()
+        This calls the user defined setup() plus any other setup required
         """
         self.setup(ctx=CoverageContext.get())
         self._set_full_name()
@@ -75,6 +75,9 @@ class Covergroup(CoverBase):
             self._apply_subtree(subtree)
 
     def _set_full_name(self):
+        """
+        Set full_name strings for each child
+        """
         for cp in self.coverpoints.values():
             cp.full_name = self.full_name + f".{cp.name.lower()}"
 
@@ -82,9 +85,9 @@ class Covergroup(CoverBase):
             cg.full_name = self.full_name + f".{cg.name.lower()}"
             cg._set_full_name()
 
-    def _apply_subtree(self, subtree):
+    def _apply_subtree(self, subtree:list[str]):
         """
-        Match against subtree strings and recursively call subtree_faff
+        Match against subtree strings and recursively call _apply_subtree
         """
         subtree_match = False
         for subtree_str in subtree:
@@ -92,6 +95,8 @@ class Covergroup(CoverBase):
                 subtree_match |= True
         self.active = subtree_match
 
+        # If covergroup is a match, then all children are active
+        # Only need to call subtree on children if covergroup did not match
         if not self.active:
             children_active = False
             for cp in self.coverpoints.values():
