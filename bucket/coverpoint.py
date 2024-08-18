@@ -113,7 +113,7 @@ class Coverpoint(CoverBase):
         """
         raise NotImplementedError("This needs to be implemented by the coverpoint")
     
-    def _subtree_faff(self, subtree):
+    def _apply_subtree(self, subtree):
         """
         Match against subtree strings and recursively call subtree_faff
         """
@@ -130,7 +130,7 @@ class Coverpoint(CoverBase):
         """
         if self.active:
             self.sample(trace)
-            
+
     def _all_axis_value_combinations(self):
         """
         Iterate over all possible axis value combinations
