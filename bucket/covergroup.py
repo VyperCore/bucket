@@ -52,12 +52,12 @@ class Covergroup(CoverBase):
             if isinstance(subtree, str):
                 self.subtree = [subtree]
             else:
-                self.subtree = subtree
-            assert isinstance(self.subtree, list), f"subtree must be str or list[str]"
-            for s in self.subtree:
-                assert isinstance(s, str), f"subtree entries must be str"
+                assert isinstance(self.subtree, list), f"subtree must be str or list[str]"
+                for s in self.subtree:
+                    assert isinstance(s, str), f"subtree entries must be str"
+                self.subtree = [x.lower() for x in subtree]
         else:
-            self.subtree = subtree
+            self.subtree = None
 
         self.active = True
         self.coverpoints = {}
