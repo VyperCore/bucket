@@ -113,15 +113,32 @@ class Coverpoint(CoverBase):
         """
         raise NotImplementedError("This needs to be implemented by the coverpoint")
     
-    def _apply_subtree(self, subtree:list[str]):
+    def _apply_filter(self, filter:dict, allowed:bool=False, denied:bool=False):
         """
-        Match against subtree strings
+        Match against filter strings
         """
-        subtree_match = False
-        for subtree_str in subtree:
-            if subtree_str in self.full_name:
-                subtree_match |= True
-        self.active = subtree_match
+        allow_match = False
+        deny_match = False
+
+        # Filter for allow
+        if allowed:
+            allow_match = True
+        elif 'allow' in filter:
+            if any(f_str in self.full_name for f_str in filter['allow']):
+                allow_match = True
+        else:
+            allow_match = True
+
+        # Filter for deny
+        if denied:
+            deny_match = True
+        elif 'deny' in filter:
+            if any(f_str in self.full_name for f_str in filter['deny']):
+                deny_match = True
+        else:
+            deny_match = False
+
+        self.active = allow_match and not deny_match
         return self.active
     
     def _sample(self, trace):

@@ -34,13 +34,11 @@ class CoverBase:
 class Covergroup(CoverBase):
     """This class groups coverpoints together, and adds them to the hierarchy"""
 
-    def __init__(self, name: str, description: str, subtree:str|list[str] = None):
+    def __init__(self, name: str, description: str):
         """
         Parameters:
             name: Name of covergroup
             description: Description of covergroup
-            subtree: Used to enable/disable coverpoints. 
-                     Should only be passed in for top covergroup
         """
 
         self.name = name
@@ -48,31 +46,21 @@ class Covergroup(CoverBase):
         # Required for top covergroup - will be overwritten for all others
         self.full_name = name.lower()
 
-        if subtree:
-            if isinstance(subtree, str):
-                self.subtree = [subtree]
-            else:
-                assert isinstance(self.subtree, list), f"subtree must be str or list[str]"
-                for s in self.subtree:
-                    assert isinstance(s, str), f"subtree entries must be str"
-                self.subtree = [x.lower() for x in subtree]
-        else:
-            self.subtree = None
-
         self.active = True
         self.coverpoints = {}
         self.covergroups = {}
         self.sha = hashlib.sha256((self.name + self.description).encode())
-        self._setup(self.subtree)
+        self._setup()
 
-    def _setup(self, subtree:list[str]):
+    def _setup(self):
         """
         This calls the user defined setup() plus any other setup required
         """
         self.setup(ctx=CoverageContext.get())
         self._set_full_name()
-        if self.subtree:
-            self._apply_subtree(subtree)
+
+    def setup(self, ctx: SimpleNamespace):
+        raise NotImplementedError("This needs to be implemented by the covergroup")
 
     def _set_full_name(self):
         """
@@ -85,28 +73,70 @@ class Covergroup(CoverBase):
             cg.full_name = self.full_name + f".{cg.name.lower()}"
             cg._set_full_name()
 
-    def _apply_subtree(self, subtree:list[str]):
+    def apply_filter(self, filter:dict|list|str):
         """
-        Match against subtree strings and recursively call _apply_subtree
+        Sanitise input then call _apply_filter recursively
         """
-        subtree_match = False
-        for subtree_str in subtree:
-            if subtree_str in self.full_name:
-                subtree_match |= True
-        self.active = subtree_match
+        if isinstance(filter, str):
+            s_filter = {'allow': [filter]}
+        elif isinstance(filter, list):
+            s_filter = {'allow': filter}
+        else:
+            s_filter = filter
+        
+        assert isinstance(s_filter, dict)
+        if 'allow' in s_filter:
+            assert isinstance(s_filter['allow'], list), f"allow entries must be list[str]"
+            for s in s_filter['allow']:
+                assert isinstance(s, str), f"allow filter entries must be str"
+            s_filter['allow'][:] = [x.lower() for x in s_filter['allow']]
+        if 'deny' in s_filter:
+            assert isinstance(s_filter['deny'], list), f"deny entries must be list[str]"
+            for s in s_filter['allow']:
+                assert isinstance(s, str), f"deny filter entries must be str"
+            s_filter['deny'][:] = [x.lower() for x in s_filter['deny']]
 
-        # If covergroup is a match, then all children are active
-        # Only need to call subtree on children if covergroup did not match
-        if not self.active:
-            children_active = False
-            for cp in self.coverpoints.values():
-                children_active |= cp._apply_subtree(subtree)
+        self._apply_filter(s_filter)
 
-            for cg in self.covergroups.values():
-                children_active |= cg._apply_subtree(subtree)
+        return self
 
-            self.active = children_active
 
+    def _apply_filter(self, filter:dict, allowed:bool=False, denied:bool=False):
+        """
+        Match against filter strings and recursively call _apply_filter
+        """
+        # See if covergroup is a match for allow/deny first, as could mean
+        # children don't need to be checked
+
+        allow_match = False
+        deny_match = False
+
+        # Filter for allow
+        if allowed:
+            allow_match = True
+        elif 'allow' in filter:
+            if any(f_str in self.full_name for f_str in filter['allow']):
+                allow_match = True
+        else:
+            allow_match = True
+
+        # Filter for deny
+        if denied:
+            deny_match = True
+        elif 'deny' in filter:
+            if any(f_str in self.full_name for f_str in filter['deny']):
+                deny_match = True
+        else:
+            deny_match = False
+
+        any_children_active = False
+        for cp in self.coverpoints.values():
+            any_children_active |= cp._apply_filter(filter, allowed=allow_match, denied=deny_match)
+
+        for cg in self.covergroups.values():
+            any_children_active |= cg._apply_filter(filter, allowed=allow_match, denied=deny_match)
+
+        self.active = any_children_active
         return self.active
 
 
@@ -143,9 +173,6 @@ class Covergroup(CoverBase):
             return self.coverpoints[key]
         else:
             return super().__getattribute__(key)
-
-    def setup(self, ctx: SimpleNamespace):
-        raise NotImplementedError("This needs to be implemented by the covergroup")
 
     def print_tree(self, indent: int = 0):
         """Print out coverage hierarch from this covergroup down"""

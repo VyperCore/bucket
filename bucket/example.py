@@ -25,7 +25,7 @@ class TopDogs(Covergroup):
         )
         self.add_covergroup(
             DogsAndToys(
-                name="doggy_coverage", description="A group of coverpoints about dogs"
+                name="chew_toys", description="A group of coverpoints about dog chew toys"
             )
         )
 
@@ -274,8 +274,9 @@ class MySampler(Sampler):
 if __name__ == "__main__":
     # Instance two copies of the coverage. Normally only one is required, but this is to
     # demonstrate merging coverage.
+    filter = {'allow': ['toys_by_name'], 'deny': ['group_b']}
     with CoverageContext(isa="THIS IS AN ISA"):
-        cvg_a = TopDogs(name="Dogs", description="Doggy coverage", subtree="toys_by_name__group_a")
+        cvg_a = TopDogs(name="Dogs", description="Doggy coverage").apply_filter(filter)
 
     with CoverageContext(isa="THIS IS AN ISA"):
         cvg_b = TopDogs(name="Dogs", description="Doggy coverage")
@@ -284,7 +285,7 @@ if __name__ == "__main__":
     # You can call it from the top level covergroup, or from another covergroup
     # within your coverage tree.
     cvg_a.print_tree()
-    cvg_a.doggy_coverage.print_tree()
+    cvg_a.chew_toys.print_tree()
 
     # Instance 2 samplers. Again, you would only normally have one, but two are used here
     # to demonstrate merging coverage from multiple regressions/tests.
