@@ -7,4 +7,7 @@ poetry.lock
 # pyenv
 .python-version
 
+# ZSH autocomplete
+bin/zsh/.zcompdump
+
 example_file_store
