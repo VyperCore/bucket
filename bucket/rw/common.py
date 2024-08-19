@@ -130,13 +130,27 @@ class Reading(Protocol):
 
     def get_def_sha(self) -> str: ...
     def get_rec_sha(self) -> str: ...
-    def iter_points(self, start: int=0, end: int|None=None, depth: int=0) -> Iterable[PointTuple]: ...
-    def iter_bucket_goals(self, start: int=0, end: int|None=None) -> Iterable[BucketGoalTuple]: ...
-    def iter_axes(self, start: int=0, end: int|None=None) -> Iterable[AxisTuple]: ...
-    def iter_axis_values(self, start: int=0, end: int|None=None) -> Iterable[AxisValueTuple]: ...
-    def iter_goals(self, start: int=0, end: int|None=None) -> Iterable[GoalTuple]: ...
-    def iter_point_hits(self, start: int=0, end: int|None=None, depth: int=0) -> Iterable[PointHitTuple]: ...
-    def iter_bucket_hits(self, start: int=0, end: int|None=None) -> Iterable[BucketHitTuple]: ...
+    def iter_points(
+        self, start: int = 0, end: int | None = None, depth: int = 0
+    ) -> Iterable[PointTuple]: ...
+    def iter_bucket_goals(
+        self, start: int = 0, end: int | None = None
+    ) -> Iterable[BucketGoalTuple]: ...
+    def iter_axes(
+        self, start: int = 0, end: int | None = None
+    ) -> Iterable[AxisTuple]: ...
+    def iter_axis_values(
+        self, start: int = 0, end: int | None = None
+    ) -> Iterable[AxisValueTuple]: ...
+    def iter_goals(
+        self, start: int = 0, end: int | None = None
+    ) -> Iterable[GoalTuple]: ...
+    def iter_point_hits(
+        self, start: int = 0, end: int | None = None, depth: int = 0
+    ) -> Iterable[PointHitTuple]: ...
+    def iter_bucket_hits(
+        self, start: int = 0, end: int | None = None
+    ) -> Iterable[BucketHitTuple]: ...
 
 
 class Reader(Protocol):
@@ -187,10 +201,12 @@ class PuppetReading(Reading):
             raise RuntimeError("rec_sha not set")
         return self.rec_sha
 
-    def iter_points(self, start: int=0, end: int|None=None, depth: int=0) -> Iterable[PointTuple]:
+    def iter_points(
+        self, start: int = 0, end: int | None = None, depth: int = 0
+    ) -> Iterable[PointTuple]:
         offset_start = start + depth
         offset_end = None if end is None else end + depth
-        yield from self.points[offset_start: offset_end]
+        yield from self.points[offset_start:offset_end]
 
     def iter_bucket_goals(
         self, start: int = 0, end: int | None = None
@@ -208,10 +224,12 @@ class PuppetReading(Reading):
     def iter_goals(self, start: int = 0, end: int | None = None) -> Iterable[GoalTuple]:
         yield from self.goals[start:end]
 
-    def iter_point_hits(self, start: int=0, end: int|None=None, depth: int=0) -> Iterable[PointHitTuple]:
+    def iter_point_hits(
+        self, start: int = 0, end: int | None = None, depth: int = 0
+    ) -> Iterable[PointHitTuple]:
         offset_start = start + depth
         offset_end = None if end is None else end + depth
-        yield from self.point_hits[offset_start: offset_end]
+        yield from self.point_hits[offset_start:offset_end]
 
     def iter_bucket_hits(
         self, start: int = 0, end: int | None = None
@@ -250,7 +268,9 @@ class MergeReading(Reading):
     def get_rec_sha(self) -> str:
         return self.master.get_rec_sha()
 
-    def iter_points(self, start: int=0, end: int|None=None, depth: int=0) -> Iterable[PointTuple]:
+    def iter_points(
+        self, start: int = 0, end: int | None = None, depth: int = 0
+    ) -> Iterable[PointTuple]:
         yield from self.master.iter_points(start, end, depth)
 
     def iter_bucket_goals(
@@ -275,7 +295,9 @@ class MergeReading(Reading):
         for offset, hits in enumerate(self.bucket_hits[start:end]):
             yield BucketHitTuple(start + offset, hits)
 
-    def iter_point_hits(self, start: int = 0, end: int | None = None, depth: int=0) -> Iterable[PointHitTuple]:
+    def iter_point_hits(
+        self, start: int = 0, end: int | None = None, depth: int = 0
+    ) -> Iterable[PointHitTuple]:
         for point in self.iter_points(start, end, depth):
             hits = 0
             hit_buckets = 0

@@ -1,3 +1,8 @@
+/*
+ * SPDX-License-Identifier: MIT
+ * Copyright (c) 2023-2024 Vypercore. All Rights Reserved
+ */
+
 type JSONDefinition = {
     sha: string,
 } & {[key:string]: (string | number)[][]};
@@ -105,7 +110,7 @@ export class JSONReader implements Reader {
     *read_all() {
         for (const record of this.data.records) {
             const definition = this.data.definitions[record.def]
-            yield new JSONReading(this.data.tables, definition, record)      
+            yield new JSONReading(this.data.tables, definition, record)
         }
         return 0;
     }

@@ -1,3 +1,8 @@
+/*
+ * SPDX-License-Identifier: MIT
+ * Copyright (c) 2023-2024 Vypercore. All Rights Reserved
+ */
+
 import { TreeNode } from "../../lib/tree";
 
 const data = {
@@ -5,7 +10,7 @@ const data = {
         description: "",
     },
     point_hit: {
-        
+
     }
 }
 

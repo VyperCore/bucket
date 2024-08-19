@@ -1,3 +1,8 @@
+/*
+ * SPDX-License-Identifier: MIT
+ * Copyright (c) 2023-2024 Vypercore. All Rights Reserved
+ */
+
 // #!/usr/bin/env node --no-warnings=ExperimentalWarning
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
