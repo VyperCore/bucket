@@ -165,6 +165,27 @@ A sampler must be initialised with a reference to the top of the coverage hierar
     sampler.sample(trace_data)
 ```
 
+# Filtering coverage
+
+Coverpoint and Covergroups may be filtered (to either be included or excluded) to allow coverage to run quicker. This is useful when working on a small subset of coverage and you don't want to run everything, or for follow-up regressions on the same build to exclude already saturated coverpoints. 
+
+`filter_by_function()`
+
+| Parameter | Type | Description |
+| --- | --- | ---|
+| matcher | function | Function to match against coverpoints/covergroups |
+| match_state | bool | What the active state should be set to in the event of a match |
+| mismatch_state | bool | What the active state should be set to in the event it does not match. Can be 'None' if state should remain unchanged |
+
+Some helper functions have been provided to allow for easy use of common use-cases, but you are able to use the full capability of the filter function by providing your own match criteria.
+
+``` # Only run branch related coverage, except for coverpoints related to if branch is taken
+    cvg = MyBigCoverGroup(name="my_toplevel_covergroup", description="All of my coverage")
+    cvg.include_by_name('branch_coverage')
+    cvg.exclude_by_name(['branch_taken'])
+```
+These lists are hardcoded in the example above, but are intended to come from command line arguments/input files/etc. 
+
 
 ## Exporting coverage
 
