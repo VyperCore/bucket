@@ -6,14 +6,14 @@ import itertools
 from types import SimpleNamespace
 from typing import TYPE_CHECKING, Annotated, Callable, Iterable
 
+from pydantic import AfterValidator, validate_call
+
 from .common.chain import Link, OpenLink
 from .context import CoverageContext
 from .link import CovDef, CovRun
-from pydantic import validate_call, AfterValidator
 
 if TYPE_CHECKING:
     from .coverpoint import Coverpoint
-
 
 
 def match_str_validator(m_strs: str | list[str]) -> list[str]:
@@ -23,11 +23,13 @@ def match_str_validator(m_strs: str | list[str]) -> list[str]:
     m_strs[:] = (m_str.lower() for m_str in m_strs)
     return m_strs
 
+
 MatchStrs = Annotated[str | list[str], AfterValidator(match_str_validator)]
+
 
 class CoverBase:
     name: str
-    full_name: str
+    full_path: str
     description: str
     target: int
     hits: int
@@ -42,7 +44,12 @@ class CoverBase:
 
     def _chain_run(self, start: OpenLink[CovRun] | None = None) -> Link[CovRun]: ...
 
-    def _apply_filter(self, matcher: Callable[["CoverBase"], bool], match_state: bool, mismatch_state: bool | None) -> bool: ...
+    def _apply_filter(
+        self,
+        matcher: Callable[["CoverBase"], bool],
+        match_state: bool,
+        mismatch_state: bool | None,
+    ) -> bool: ...
 
 
 class Covergroup(CoverBase):
@@ -58,7 +65,7 @@ class Covergroup(CoverBase):
         self.name = name
         self.description = description
         # Required for top covergroup - will be overwritten for all others
-        self.full_name = name.lower()
+        self.full_path = name.lower()
 
         self.active = True
         self.coverpoints = {}
@@ -71,24 +78,24 @@ class Covergroup(CoverBase):
         This calls the user defined setup() plus any other setup required
         """
         self.setup(ctx=CoverageContext.get())
-        self._set_full_name()
+        self._set_full_path()
 
     def setup(self, ctx: SimpleNamespace):
         raise NotImplementedError("This needs to be implemented by the covergroup")
 
-    def _set_full_name(self):
+    def _set_full_path(self):
         """
-        Set full_name strings for each child
+        Set full_path strings for each child
         """
         for cp in self.coverpoints.values():
-            cp.full_name = self.full_name + f".{cp.name.lower()}"
+            cp.full_path = self.full_path + f".{cp.name.lower()}"
 
         for cg in self.covergroups.values():
-            cg.full_name = self.full_name + f".{cg.name.lower()}"
-            cg._set_full_name()
+            cg.full_path = self.full_path + f".{cg.name.lower()}"
+            cg._set_full_path()
 
     @validate_call
-    def include_by_name(self, names: MatchStrs, override: bool=True):
+    def include_by_name(self, names: MatchStrs, override: bool = True):
         """
         Filter the coverage tree, including only subtree which match `names`.
         Parameters:
@@ -97,15 +104,15 @@ class Covergroup(CoverBase):
         """
 
         def matcher(cp: CoverBase):
-            l_name = cp.full_name.lower()
+            l_name = cp.full_path.lower()
             return any(f_str in l_name for f_str in names)
-    
+
         self._apply_filter(matcher, True, False if override else None)
 
         return self
-    
+
     @validate_call
-    def exclude_by_name(self, names: MatchStrs, override: bool=False):
+    def exclude_by_name(self, names: MatchStrs, override: bool = False):
         """
         Filter the coverage tree, excluding subtrees which match `names`.
         Parameters:
@@ -114,25 +121,39 @@ class Covergroup(CoverBase):
         """
 
         def matcher(cp: CoverBase):
-            l_name = cp.full_name.lower()
+            l_name = cp.full_path.lower()
             return any(f_str in l_name for f_str in names)
-    
+
         self._apply_filter(matcher, False, True if override else None)
 
         return self
 
-    def filter_by_function(self, matcher: Callable[[CoverBase], bool], match_state: bool, mismatch_state: bool | None):
+    def filter_by_function(
+        self,
+        matcher: Callable[[CoverBase], bool],
+        match_state: bool,
+        mismatch_state: bool | None,
+    ):
         self._apply_filter(matcher, match_state, mismatch_state)
         return self
 
-    def _apply_filter(self, matcher: Callable[[CoverBase], bool], match_state: bool, mismatch_state: bool | None):
+    def _apply_filter(
+        self,
+        matcher: Callable[[CoverBase], bool],
+        match_state: bool,
+        mismatch_state: bool | None,
+    ):
         any_children_active = False
         if matcher(self):
             for child in self.iter_children():
-                any_children_active |= child._apply_filter(lambda _: True, match_state, mismatch_state)
+                any_children_active |= child._apply_filter(
+                    lambda _: True, match_state, mismatch_state
+                )
         else:
             for child in self.iter_children():
-                any_children_active |= child._apply_filter(matcher, match_state, mismatch_state)
+                any_children_active |= child._apply_filter(
+                    matcher, match_state, mismatch_state
+                )
 
         self.active = any_children_active
         return self.active
@@ -146,7 +167,7 @@ class Covergroup(CoverBase):
         """
         if coverpoint.name in self.coverpoints:
             raise Exception("Coverpoint names must be unique within a covergroup")
-        
+
         self.coverpoints[coverpoint.name] = coverpoint
 
     def add_covergroup(self, covergroup: "Covergroup"):
@@ -195,7 +216,6 @@ class Covergroup(CoverBase):
 
             for cg in self.covergroups.values():
                 cg.sample(trace)
-
 
     def iter_children(self) -> Iterable[CoverBase]:
         self.coverpoints = dict(sorted(self.coverpoints.items()))

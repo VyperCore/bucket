@@ -6,6 +6,7 @@ import itertools
 from collections import defaultdict
 from enum import Enum
 from types import SimpleNamespace
+from typing import Callable
 
 from rich.console import Console
 from rich.table import Table
@@ -18,7 +19,6 @@ from .covergroup import CoverBase
 from .goal import GoalItem
 from .link import CovDef, CovRun
 from .triggers import CoverageTriggers
-from typing import Callable
 
 
 class GOAL(Enum):
@@ -100,7 +100,6 @@ class Coverpoint(CoverBase):
                 goal = self._goal_dict["DEFAULT"]
             self.sha.update(goal.sha.digest())
 
-
     def _setup(self):
         """
         This calls the user defined setup() plus any other setup required
@@ -114,7 +113,12 @@ class Coverpoint(CoverBase):
         """
         raise NotImplementedError("This needs to be implemented by the coverpoint")
 
-    def _apply_filter(self, matcher: Callable[[CoverBase], bool], match_state: bool | None, mismatch_state: bool | None):
+    def _apply_filter(
+        self,
+        matcher: Callable[[CoverBase], bool],
+        match_state: bool | None,
+        mismatch_state: bool | None,
+    ):
         if matcher(self) and match_state is not None:
             self.active = match_state
         elif mismatch_state is not None:
@@ -176,9 +180,7 @@ class Coverpoint(CoverBase):
 
         self._goal_dict[formatted_name] = GoalItem(name, target, description)
 
-    def apply_goals(
-        self, bucket: SimpleNamespace, goals: SimpleNamespace
-    ):
+    def apply_goals(self, bucket: SimpleNamespace, goals: SimpleNamespace):
         """
         If coverpoint goals are defined, this function must be implemented by the coverpoint.
         If no goals are defined, then 'DEFAULT' will be applied

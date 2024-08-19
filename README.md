@@ -17,9 +17,9 @@ Bucket is a python library to create nicer functional coverpoints. There are sev
 
 ## Support
 This library is being actively built, and is expected to change while it matures and key features are added.
-We are not providing external support for use of this library, however we are aiming to make it as easy to use as possible. 
+We are not providing external support for use of this library, however we are aiming to make it as easy to use as possible.
 
-As per the licence: 
+As per the licence:
 > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -51,4 +51,3 @@ Please feel free to contribute to the project, following these guidelines:
 * Pull requests must respect the goals of the library, as stated in the documentation.
 * Pull requests should take care not to make performance worse except for cases which require bug fixes.
 * Pull requests should update the documentation for any added/changed functionality.
-
