@@ -25,7 +25,8 @@ class TopDogs(Covergroup):
         )
         self.add_covergroup(
             DogsAndToys(
-                name="chew_toys", description="A group of coverpoints about dog chew toys"
+                name="chew_toys",
+                description="A group of coverpoints about dog chew toys",
             )
         )
 
@@ -275,9 +276,10 @@ if __name__ == "__main__":
     # Instance two copies of the coverage. Normally only one is required, but this is to
     # demonstrate merging coverage.
     with CoverageContext(isa="THIS IS AN ISA"):
-        cvg_a = TopDogs(name="Dogs", description="Doggy coverage") \
-                    .include_by_name('toys_by_name')
-        cvg_a.exclude_by_name(['group_b'])
+        cvg_a = TopDogs(name="Dogs", description="Doggy coverage").include_by_name(
+            "toys_by_name"
+        )
+        cvg_a.exclude_by_name(["group_b"])
 
     with CoverageContext(isa="THIS IS AN ISA"):
         cvg_b = TopDogs(name="Dogs", description="Doggy coverage")
@@ -344,7 +346,7 @@ if __name__ == "__main__":
     print("\nThis is the coverage from all the regression data so far:")
     print("(To reset please delete the file 'example_file_store')")
     ConsoleWriter(axes=False, goals=False, points=False).write(merged_reading_all)
-    
+
     # print_tree() is a useful function to see the hierarchy of your coverage
     # You can call it from the top level covergroup, or from another covergroup
     # within your coverage tree.
