@@ -1,0 +1,19 @@
+#!/bin/zsh
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2023-2024 Vypercore. All Rights Reserved
+
+# Check for HW_ROOT already being set in the shell
+if [[ "$BUCKET_ROOT" != "" ]]; then
+    echo "[\033[0;31mERROR\033[0m] Hardware shell is already activated!"
+    exit 1
+fi
+
+# Work out where the repository is located
+BUCKET_ROOT=$(readlink -f ${0:a:h}/..)
+
+USER_HISTFILE=${HISTFILE:-$HOME/.zsh_history}
+
+BUCKET_ROOT=$BUCKET_ROOT \
+    USER_HISTFILE=$USER_HISTFILE \
+    ZDOTDIR=$BUCKET_ROOT/bin/zsh \
+    /bin/zsh -i $@
