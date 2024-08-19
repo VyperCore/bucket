@@ -1,3 +1,8 @@
+/*
+ * SPDX-License-Identifier: MIT
+ * Copyright (c) 2023-2024 Vypercore. All Rights Reserved
+ */
+
 import { PropsWithChildren, createContext, useState } from "react";
 import * as themes from "@/theme";
 

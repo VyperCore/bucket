@@ -1,3 +1,8 @@
+/*
+ * SPDX-License-Identifier: MIT
+ * Copyright (c) 2023-2024 Vypercore. All Rights Reserved
+ */
+
 import { LayoutOutlined, TableOutlined } from "@ant-design/icons";
 import Tree, { TreeKey, TreeNode, View } from "./tree";
 
@@ -20,7 +25,7 @@ export default class CoverageTree extends Tree<PointData> {
             const point_hits = reading.iter_point_hits();
             for (const point of reading.iter_points()) {
                 const point_hit = point_hits.next().value;
-      
+
                 const dataNode: TreeNode<PointData> = {
                     title: point.name,
                     key: `${i}-${point.start}-${point.end}`,

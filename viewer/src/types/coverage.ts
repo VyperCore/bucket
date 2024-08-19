@@ -1,3 +1,8 @@
+/*
+ * SPDX-License-Identifier: MIT
+ * Copyright (c) 2023-2024 Vypercore. All Rights Reserved
+ */
+
 type PointTuple = {
     start: number;
     depth: number;

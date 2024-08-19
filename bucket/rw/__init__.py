@@ -3,9 +3,11 @@
 
 from .common import MergeReading
 from .console import ConsoleWriter
-from .json import JSONWriter
 from .html import HTMLWriter
+from .json import JSONWriter
 from .point import PointReader
 from .sql import SQLAccessor
 
-assert(all([ConsoleWriter, JSONWriter, HTMLWriter, SQLAccessor, PointReader, MergeReading]))
+assert all(
+    [ConsoleWriter, JSONWriter, HTMLWriter, SQLAccessor, PointReader, MergeReading]
+)

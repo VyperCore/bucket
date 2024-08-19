@@ -1,3 +1,8 @@
+/*
+ * SPDX-License-Identifier: MIT
+ * Copyright (c) 2023-2024 Vypercore. All Rights Reserved
+ */
+
 import CoverageTree, { PointNode } from "./coveragetree";
 import { Table, TableProps } from "antd";
 import { view } from "../theme";
@@ -13,7 +18,7 @@ export type PointGridProps = {
 function getCoverageColumnConfig(theme: ThemeType, columnKey: string) {
     const good = new Color(theme.theme.colors.positivebg.value);
     const bad = new Color(theme.theme.colors.negativebg.value);
-    const mix = Color.range(Color.mix(bad, good, 0.2, {space:'hsl'}), 
+    const mix = Color.range(Color.mix(bad, good, 0.2, {space:'hsl'}),
                             Color.mix(bad, good, 0.6, {space:'hsl'}),
                             {space:'hsl'});
     return {
@@ -109,7 +114,7 @@ function numCompare(a: number, b: number) {
     } else if (bIsNaN) {
         return 1;
     }
-    
+
     const aIsNeg0 = Object.is(a, -0);
     const bIsNeg0 = Object.is(b, -0);
 
@@ -346,7 +351,7 @@ export function PointSummaryGrid({tree, node, setSelectedTreeKeys}: PointSummary
 
     const gather = (n: PointNode):PointNode[] => [n].concat(...n.children?.map(gather) ?? [])
 
-    
+
     const isRoot = node.key == CoverageTree.ROOT;
 
     const root = isRoot ? null : [node];

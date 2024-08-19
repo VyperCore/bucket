@@ -1,3 +1,8 @@
+/*
+ * SPDX-License-Identifier: MIT
+ * Copyright (c) 2023-2024 Vypercore. All Rights Reserved
+ */
+
 import { TreeDataNode } from "antd";
 import type { SegmentedLabeledOption } from "antd/lib/segmented";
 

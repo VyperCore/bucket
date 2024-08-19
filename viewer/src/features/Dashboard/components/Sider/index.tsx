@@ -1,3 +1,8 @@
+/*
+ * SPDX-License-Identifier: MIT
+ * Copyright (c) 2023-2024 Vypercore. All Rights Reserved
+ */
+
 import { Layout, Tree as AntTree, Input } from "antd";
 import { ReactNode, useMemo, useState } from "react";
 import { view } from "../../theme";
