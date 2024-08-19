@@ -121,7 +121,7 @@ class Coverpoint(CoverBase):
     ):
         if matcher(self) and match_state is not None:
             self.active = match_state
-        elif mismatch_state is not None:
+        elif not matcher(self) and mismatch_state is not None:
             self.active = mismatch_state
         return self.active
 
