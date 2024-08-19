@@ -121,6 +121,10 @@ class Covergroup(CoverBase):
 
         return self
 
+    def filter_by_function(self, matcher: Callable[[CoverBase], bool], match_state: bool, mismatch_state: bool | None):
+        self._apply_filter(matcher, match_state, mismatch_state)
+        return self
+
     def _apply_filter(self, matcher: Callable[[CoverBase], bool], match_state: bool, mismatch_state: bool | None):
         any_children_active = False
         if matcher(self):
