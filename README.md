@@ -29,7 +29,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ## Roadmap
-There are several features planned but not actively started. These include:
+There are several features planned, these include:
 
 - Coverage filtering to enable only coverpoints of interest (In progress)
 - Improved coverage viewer (In progress)
