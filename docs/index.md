@@ -185,7 +185,7 @@ Some helper functions have been provided to allow for easy use of common use-cas
     cvg.include_by_name('branch_coverage')
     cvg.exclude_by_name(['branch_taken'])
 ```
-These lists are hardcoded in the example above, but are intended to come from command line arguments/input files/etc. 
+These strings are hardcoded in the example above, but are intended to come from command line arguments/input files/etc. 
 
 
 ## Exporting coverage
