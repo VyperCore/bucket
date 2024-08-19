@@ -108,26 +108,27 @@ class Covergroup(CoverBase):
         # See if covergroup is a match for allow/deny first, as could mean
         # children don't need to be checked
 
-        allow_match = False
-        deny_match = False
-
-        # Filter for allow
-        if allowed:
-            allow_match = True
-        elif 'allow' in filter:
-            if any(f_str in self.full_name for f_str in filter['allow']):
-                allow_match = True
-        else:
-            allow_match = True
-
         # Filter for deny
         if denied:
             deny_match = True
         elif 'deny' in filter:
             if any(f_str in self.full_name for f_str in filter['deny']):
                 deny_match = True
+            else:
+                deny_match = False
         else:
             deny_match = False
+
+        # Filter for allow
+        if allowed:
+            allow_match = True
+        elif 'allow' in filter and not deny_match:
+            if any(f_str in self.full_name for f_str in filter['allow']):
+                allow_match = True
+            else:
+                allow_match = False
+        else:
+            allow_match = True
 
         any_children_active = False
         for cp in self.coverpoints.values():

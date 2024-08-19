@@ -117,26 +117,27 @@ class Coverpoint(CoverBase):
         """
         Match against filter strings
         """
-        allow_match = False
-        deny_match = False
-
-        # Filter for allow
-        if allowed:
-            allow_match = True
-        elif 'allow' in filter:
-            if any(f_str in self.full_name for f_str in filter['allow']):
-                allow_match = True
-        else:
-            allow_match = True
-
         # Filter for deny
         if denied:
             deny_match = True
         elif 'deny' in filter:
             if any(f_str in self.full_name for f_str in filter['deny']):
                 deny_match = True
+            else:
+                deny_match = False
         else:
             deny_match = False
+
+        # Filter for allow
+        if allowed:
+            allow_match = True
+        elif 'allow' in filter and not deny_match:
+            if any(f_str in self.full_name for f_str in filter['allow']):
+                allow_match = True
+            else:
+                allow_match = False
+        else:
+            allow_match = True
 
         self.active = allow_match and not deny_match
         return self.active
