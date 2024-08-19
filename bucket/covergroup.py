@@ -4,7 +4,9 @@
 import hashlib
 import itertools
 from types import SimpleNamespace
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING, Annotated, Callable, Iterable
+
+from pydantic import AfterValidator, validate_call
 
 from .common.chain import Link, OpenLink
 from .context import CoverageContext
@@ -14,8 +16,20 @@ if TYPE_CHECKING:
     from .coverpoint import Coverpoint
 
 
+def match_str_validator(m_strs: str | list[str]) -> list[str]:
+    "Accept a str or list of strings and make them lowercase"
+    if isinstance(m_strs, str):
+        m_strs = [m_strs]
+    m_strs[:] = (m_str.lower() for m_str in m_strs)
+    return m_strs
+
+
+MatchStrs = Annotated[str | list[str], AfterValidator(match_str_validator)]
+
+
 class CoverBase:
     name: str
+    full_path: str
     description: str
     target: int
     hits: int
@@ -30,6 +44,13 @@ class CoverBase:
 
     def _chain_run(self, start: OpenLink[CovRun] | None = None) -> Link[CovRun]: ...
 
+    def _apply_filter(
+        self,
+        matcher: Callable[["CoverBase"], bool],
+        match_state: bool,
+        mismatch_state: bool | None,
+    ) -> bool: ...
+
 
 class Covergroup(CoverBase):
     """This class groups coverpoints together, and adds them to the hierarchy"""
@@ -39,16 +60,103 @@ class Covergroup(CoverBase):
         Parameters:
             name: Name of covergroup
             description: Description of covergroup
-            cvg_tier: what coverage tier is being run [0..3]
         """
 
         self.name = name
         self.description = description
+        # Required for top covergroup - will be overwritten for all others
+        self.full_path = name.lower()
 
+        self.active = True
         self.coverpoints = {}
         self.covergroups = {}
         self.sha = hashlib.sha256((self.name + self.description).encode())
+        self._setup()
+
+    def _setup(self):
+        """
+        This calls the user defined setup() plus any other setup required
+        """
         self.setup(ctx=CoverageContext.get())
+        self._set_full_path()
+
+    def setup(self, ctx: SimpleNamespace):
+        raise NotImplementedError("This needs to be implemented by the covergroup")
+
+    def _set_full_path(self):
+        """
+        Set full_path strings for each child
+        """
+        for cp in self.coverpoints.values():
+            cp.full_path = self.full_path + f".{cp.name.lower()}"
+
+        for cg in self.covergroups.values():
+            cg.full_path = self.full_path + f".{cg.name.lower()}"
+            cg._set_full_path()
+
+    @validate_call
+    def include_by_name(self, names: MatchStrs, override: bool = True):
+        """
+        Filter the coverage tree, including only subtree which match `names`.
+        Parameters:
+            names: A case-insensitve string or string list to match against
+            override: Whether to modify state of unmatched nodes (default true)
+        """
+
+        def matcher(cp: CoverBase):
+            l_name = cp.full_path.lower()
+            return any(f_str in l_name for f_str in names)
+
+        self._apply_filter(matcher, True, False if override else None)
+
+        return self
+
+    @validate_call
+    def exclude_by_name(self, names: MatchStrs, override: bool = False):
+        """
+        Filter the coverage tree, excluding subtrees which match `names`.
+        Parameters:
+            names: A case-insensitve string or string list to match against
+            override: Whether to modify state of unmatched nodes (default false)
+        """
+
+        def matcher(cp: CoverBase):
+            l_name = cp.full_path.lower()
+            return any(f_str in l_name for f_str in names)
+
+        self._apply_filter(matcher, False, True if override else None)
+
+        return self
+
+    def filter_by_function(
+        self,
+        matcher: Callable[[CoverBase], bool],
+        match_state: bool,
+        mismatch_state: bool | None,
+    ):
+        self._apply_filter(matcher, match_state, mismatch_state)
+        return self
+
+    def _apply_filter(
+        self,
+        matcher: Callable[[CoverBase], bool],
+        match_state: bool,
+        mismatch_state: bool | None,
+    ):
+        any_children_active = False
+        if matcher(self):
+            for child in self.iter_children():
+                any_children_active |= child._apply_filter(
+                    lambda _: True, match_state, mismatch_state
+                )
+        else:
+            for child in self.iter_children():
+                any_children_active |= child._apply_filter(
+                    matcher, match_state, mismatch_state
+                )
+
+        self.active = any_children_active
+        return self.active
 
     def add_coverpoint(self, coverpoint: "Coverpoint"):
         """
@@ -84,9 +192,6 @@ class Covergroup(CoverBase):
         else:
             return super().__getattribute__(key)
 
-    def setup(self, ctx: SimpleNamespace):
-        raise NotImplementedError("This needs to be implemented by the coverpoint")
-
     def print_tree(self, indent: int = 0):
         """Print out coverage hierarch from this covergroup down"""
         if indent == 0:
@@ -95,19 +200,22 @@ class Covergroup(CoverBase):
         indent += 1
         indentation = "    " * indent
         for cp in self.coverpoints.values():
-            print(f"{indentation}|-- {cp.name}: {cp.description}")
+            active = "X" if cp.active else "-"
+            print(f"[{active}] {indentation}|-- {cp.name}: {cp.description}")
 
         for cg in self.covergroups.values():
-            print(f"{indentation}|-- {cg.name}: {cg.description}")
+            active = "X" if cg.active else "-"
+            print(f"[{active}] {indentation}|-- {cg.name}: {cg.description}")
             cg.print_tree(indent + 1)
 
     def sample(self, trace):
-        """Call sample on all sub-groups and coverpoints, passing in trace object"""
-        for cp in self.coverpoints.values():
-            cp.sample(trace)
+        """Pass trace to sample on all sub-groups and coverpoints, if active"""
+        if self.active:
+            for cp in self.coverpoints.values():
+                cp._sample(trace)
 
-        for cg in self.covergroups.values():
-            cg.sample(trace)
+            for cg in self.covergroups.values():
+                cg.sample(trace)
 
     def iter_children(self) -> Iterable[CoverBase]:
         self.coverpoints = dict(sorted(self.coverpoints.items()))

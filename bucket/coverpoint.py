@@ -6,6 +6,7 @@ import itertools
 from collections import defaultdict
 from enum import Enum
 from types import SimpleNamespace
+from typing import Callable
 
 from rich.console import Console
 from rich.table import Table
@@ -66,6 +67,7 @@ class Coverpoint(CoverBase):
         self.name = name
         self.description = description
         self.trigger = CoverageTriggers.ALL if trigger is None else trigger
+        self.active = True
 
         # Sanity check name has been given. No default!
         assert isinstance(self.name, str), "Coverpoint name not provided"
@@ -83,7 +85,7 @@ class Coverpoint(CoverBase):
         # Instance of Bucket class to increment hit count for a bucket
         self.bucket = Bucket(self)
 
-        self.setup(ctx=CoverageContext.get())
+        self._setup()
 
         self.sha = hashlib.sha256((self.name + self.description).encode())
         self.axis_names = [x.name for x in self.axes]
@@ -98,12 +100,37 @@ class Coverpoint(CoverBase):
                 goal = self._goal_dict["DEFAULT"]
             self.sha.update(goal.sha.digest())
 
+    def _setup(self):
+        """
+        This calls the user defined setup() plus any other setup required
+        """
+        self.setup(ctx=CoverageContext.get())
+
     def setup(self, ctx: SimpleNamespace):
         """
         This function needs to be implemented for each coverpoint. Axes and goals are added here.
         See example.py for how to use
         """
         raise NotImplementedError("This needs to be implemented by the coverpoint")
+
+    def _apply_filter(
+        self,
+        matcher: Callable[[CoverBase], bool],
+        match_state: bool | None,
+        mismatch_state: bool | None,
+    ):
+        if matcher(self) and match_state is not None:
+            self.active = match_state
+        elif mismatch_state is not None:
+            self.active = mismatch_state
+        return self.active
+
+    def _sample(self, trace):
+        """
+        Call user defined sample function if active
+        """
+        if self.active:
+            self.sample(trace)
 
     def _all_axis_value_combinations(self):
         """
@@ -132,7 +159,7 @@ class Coverpoint(CoverBase):
         description: str,
         illegal: bool = False,
         ignore: bool = False,
-        target: int = None,
+        target: int | None = None,
     ):
         formatted_name = name.upper()
         assert (
@@ -153,9 +180,7 @@ class Coverpoint(CoverBase):
 
         self._goal_dict[formatted_name] = GoalItem(name, target, description)
 
-    def apply_goals(
-        self, bucket: SimpleNamespace = None, goals: SimpleNamespace = None
-    ):
+    def apply_goals(self, bucket: SimpleNamespace, goals: SimpleNamespace):
         """
         If coverpoint goals are defined, this function must be implemented by the coverpoint.
         If no goals are defined, then 'DEFAULT' will be applied

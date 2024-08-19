@@ -25,7 +25,8 @@ class TopDogs(Covergroup):
         )
         self.add_covergroup(
             DogsAndToys(
-                name="doggy_coverage", description="A group of coverpoints about dogs"
+                name="chew_toys",
+                description="A group of coverpoints about dog chew toys",
             )
         )
 
@@ -275,26 +276,23 @@ if __name__ == "__main__":
     # Instance two copies of the coverage. Normally only one is required, but this is to
     # demonstrate merging coverage.
     with CoverageContext(isa="THIS IS AN ISA"):
-        cvg_a = TopDogs(name="Dogs", description="Doggy coverage")
+        cvg_a = TopDogs(name="Dogs", description="Doggy coverage").include_by_name(
+            "toys_by_name"
+        )
+        cvg_a.exclude_by_name(["group_b"])
 
     with CoverageContext(isa="THIS IS AN ISA"):
         cvg_b = TopDogs(name="Dogs", description="Doggy coverage")
 
-    # print_tree() is a useful function to see the hierarchy of your coverage
-    # You can call it from the top level covergroup, or from another covergroup
-    # within your coverage tree.
-    cvg_a.print_tree()
-    cvg_a.doggy_coverage.print_tree()
-
     # Instance 2 samplers. Again, you would only normally have one, but two are used here
     # to demonstrate merging coverage from multiple regressions/tests.
-    sampler = MySampler(coverage=cvg_a)
+    sampler_a = MySampler(coverage=cvg_a)
     for _ in range(100):
-        sampler.sample(sampler.create_trace())
+        sampler_a.sample(sampler_a.create_trace())
 
-    sampler = MySampler(coverage=cvg_b)
+    sampler_b = MySampler(coverage=cvg_b)
     for _ in range(500):
-        sampler.sample(sampler.create_trace())
+        sampler_b.sample(sampler_b.create_trace())
 
     # Create a context specific hash
     # This is stored alongside recorded coverage and is used to determine if
@@ -348,3 +346,9 @@ if __name__ == "__main__":
     print("\nThis is the coverage from all the regression data so far:")
     print("(To reset please delete the file 'example_file_store')")
     ConsoleWriter(axes=False, goals=False, points=False).write(merged_reading_all)
+
+    # print_tree() is a useful function to see the hierarchy of your coverage
+    # You can call it from the top level covergroup, or from another covergroup
+    # within your coverage tree.
+    cvg_a.print_tree()
+    cvg_a.chew_toys.print_tree()
