@@ -3,7 +3,6 @@ __pycache__/
 
 # Distribution / packaging
 poetry.lock
-package-lock.json
 
 # pyenv
 .python-version
@@ -11,4 +10,4 @@ package-lock.json
 # ZSH autocomplete
 bin/zsh/.zcompdump
 
-example_file_store
+example_file_store.db
