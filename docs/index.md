@@ -173,8 +173,8 @@ Coverpoint and Covergroups may be filtered (to either be included or excluded) t
 | Parameter | Type | Description |
 | --- | --- | ---|
 | matcher | function | Function to match against coverpoints/covergroups |
-| match_state | bool | What the active state should be set to in the event of a match |
-| mismatch_state | bool | What the active state should be set to in the event it does not match. Can be 'None' if state should remain unchanged |
+| match_state | bool | What the active state should be set to in the event of a match. Set to 'None' if state should remain unchanged |
+| mismatch_state | bool | What the active state should be set to in the event it does not match. Set to 'None' if state should remain unchanged |
 
 Some helper functions have been provided to allow for easy use of common use-cases, but you are able to use the full capability of the filter function by providing your own match criteria.
 

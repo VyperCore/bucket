@@ -140,7 +140,7 @@ class Covergroup(CoverBase):
     def _apply_filter(
         self,
         matcher: Callable[[CoverBase], bool],
-        match_state: bool,
+        match_state: bool | None,
         mismatch_state: bool | None,
     ):
         any_children_active = False
