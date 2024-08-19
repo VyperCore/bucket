@@ -31,7 +31,7 @@ SOFTWARE.
 ## Roadmap
 There are several features planned, these include:
 
-- Coverage filtering to enable only coverpoints of interest (In progress)
+- <s>Coverage filtering to enable only coverpoints of interest</s>
 - Improved coverage viewer (In progress)
 - CI
 - Improved documentation
