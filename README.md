@@ -31,12 +31,12 @@ SOFTWARE.
 ## Roadmap
 There are several features planned but not actively started. These include:
 
-- Linter / CI
+- Coverage filtering to enable only coverpoints of interest (In progress)
+- Improved coverage viewer (In progress)
+- CI
 - Improved documentation
 - Use logging instead of print
-- Coverage filtering to enable only coverpoints of interest
 - Tiered coverage to allow for quicker CIs, more granuality for soak regressions, etc
-- Improved coverage viewer
 - Track which testcases contribute to coverage
 - Speed optimisations
 
