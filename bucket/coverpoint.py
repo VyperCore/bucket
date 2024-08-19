@@ -18,6 +18,7 @@ from .covergroup import CoverBase
 from .goal import GoalItem
 from .link import CovDef, CovRun
 from .triggers import CoverageTriggers
+from typing import Callable
 
 
 class GOAL(Enum):
@@ -112,36 +113,14 @@ class Coverpoint(CoverBase):
         See example.py for how to use
         """
         raise NotImplementedError("This needs to be implemented by the coverpoint")
-    
-    def _apply_filter(self, filter:dict, allowed:bool=False, denied:bool=False):
-        """
-        Match against filter strings
-        """
-        # Filter for deny
-        if denied:
-            deny_match = True
-        elif 'deny' in filter:
-            if any(f_str in self.full_name for f_str in filter['deny']):
-                deny_match = True
-            else:
-                deny_match = False
-        else:
-            deny_match = False
 
-        # Filter for allow
-        if allowed:
-            allow_match = True
-        elif 'allow' in filter and not deny_match:
-            if any(f_str in self.full_name for f_str in filter['allow']):
-                allow_match = True
-            else:
-                allow_match = False
-        else:
-            allow_match = True
-
-        self.active = allow_match and not deny_match
+    def _apply_filter(self, matcher: Callable[[CoverBase], bool], match_state: bool | None, mismatch_state: bool | None):
+        if matcher(self) and match_state is not None:
+            self.active = match_state
+        elif mismatch_state is not None:
+            self.active = mismatch_state
         return self.active
-    
+
     def _sample(self, trace):
         """
         Call user defined sample function if active
@@ -176,7 +155,7 @@ class Coverpoint(CoverBase):
         description: str,
         illegal: bool = False,
         ignore: bool = False,
-        target: int = None,
+        target: int | None = None,
     ):
         formatted_name = name.upper()
         assert (
@@ -198,7 +177,7 @@ class Coverpoint(CoverBase):
         self._goal_dict[formatted_name] = GoalItem(name, target, description)
 
     def apply_goals(
-        self, bucket: SimpleNamespace = None, goals: SimpleNamespace = None
+        self, bucket: SimpleNamespace, goals: SimpleNamespace
     ):
         """
         If coverpoint goals are defined, this function must be implemented by the coverpoint.

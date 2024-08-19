@@ -274,18 +274,13 @@ class MySampler(Sampler):
 if __name__ == "__main__":
     # Instance two copies of the coverage. Normally only one is required, but this is to
     # demonstrate merging coverage.
-    filter = {'allow': ['toys_by_name'], 'deny': ['group_b']}
     with CoverageContext(isa="THIS IS AN ISA"):
-        cvg_a = TopDogs(name="Dogs", description="Doggy coverage").apply_filter(filter)
+        cvg_a = TopDogs(name="Dogs", description="Doggy coverage") \
+                    .include_by_name('toys_by_name')
+        cvg_a.exclude_by_name(['group_b'])
 
     with CoverageContext(isa="THIS IS AN ISA"):
         cvg_b = TopDogs(name="Dogs", description="Doggy coverage")
-
-    # print_tree() is a useful function to see the hierarchy of your coverage
-    # You can call it from the top level covergroup, or from another covergroup
-    # within your coverage tree.
-    cvg_a.print_tree()
-    cvg_a.chew_toys.print_tree()
 
     # Instance 2 samplers. Again, you would only normally have one, but two are used here
     # to demonstrate merging coverage from multiple regressions/tests.
@@ -350,3 +345,8 @@ if __name__ == "__main__":
     print("(To reset please delete the file 'example_file_store')")
     ConsoleWriter(axes=False, goals=False, points=False).write(merged_reading_all)
     
+    # print_tree() is a useful function to see the hierarchy of your coverage
+    # You can call it from the top level covergroup, or from another covergroup
+    # within your coverage tree.
+    cvg_a.print_tree()
+    cvg_a.chew_toys.print_tree()
