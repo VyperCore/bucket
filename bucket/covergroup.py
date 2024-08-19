@@ -4,18 +4,30 @@
 import hashlib
 import itertools
 from types import SimpleNamespace
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING, Annotated, Callable, Iterable
 
 from .common.chain import Link, OpenLink
 from .context import CoverageContext
 from .link import CovDef, CovRun
+from pydantic import validate_call, AfterValidator
 
 if TYPE_CHECKING:
     from .coverpoint import Coverpoint
 
 
+
+def match_str_validator(m_strs: str | list[str]) -> list[str]:
+    "Accept a str or list of strings and make them lowercase"
+    if isinstance(m_strs, str):
+        m_strs = [m_strs]
+    m_strs[:] = (m_str.lower() for m_str in m_strs)
+    return m_strs
+
+MatchStrs = Annotated[str | list[str], AfterValidator(match_str_validator)]
+
 class CoverBase:
     name: str
+    full_name: str
     description: str
     target: int
     hits: int
@@ -29,6 +41,8 @@ class CoverBase:
     def _chain_def(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]: ...
 
     def _chain_run(self, start: OpenLink[CovRun] | None = None) -> Link[CovRun]: ...
+
+    def _apply_filter(self, matcher: Callable[["CoverBase"], bool], match_state: bool, mismatch_state: bool | None) -> bool: ...
 
 
 class Covergroup(CoverBase):
@@ -73,73 +87,51 @@ class Covergroup(CoverBase):
             cg.full_name = self.full_name + f".{cg.name.lower()}"
             cg._set_full_name()
 
-    def apply_filter(self, filter:dict|list|str):
+    @validate_call
+    def include_by_name(self, names: MatchStrs, override: bool=True):
         """
-        Sanitise input then call _apply_filter recursively
+        Filter the coverage tree, including only subtree which match `names`.
+        Parameters:
+            names: A case-insensitve string or string list to match against
+            override: Whether to modify state of unmatched nodes (default true)
         """
-        if isinstance(filter, str):
-            s_filter = {'allow': [filter]}
-        elif isinstance(filter, list):
-            s_filter = {'allow': filter}
-        else:
-            s_filter = filter
-        
-        assert isinstance(s_filter, dict)
-        if 'allow' in s_filter:
-            assert isinstance(s_filter['allow'], list), f"allow entries must be list[str]"
-            for s in s_filter['allow']:
-                assert isinstance(s, str), f"allow filter entries must be str"
-            s_filter['allow'][:] = [x.lower() for x in s_filter['allow']]
-        if 'deny' in s_filter:
-            assert isinstance(s_filter['deny'], list), f"deny entries must be list[str]"
-            for s in s_filter['allow']:
-                assert isinstance(s, str), f"deny filter entries must be str"
-            s_filter['deny'][:] = [x.lower() for x in s_filter['deny']]
 
-        self._apply_filter(s_filter)
+        def matcher(cp: CoverBase):
+            l_name = cp.full_name.lower()
+            return any(f_str in l_name for f_str in names)
+    
+        self._apply_filter(matcher, True, False if override else None)
+
+        return self
+    
+    @validate_call
+    def exclude_by_name(self, names: MatchStrs, override: bool=False):
+        """
+        Filter the coverage tree, excluding subtrees which match `names`.
+        Parameters:
+            names: A case-insensitve string or string list to match against
+            override: Whether to modify state of unmatched nodes (default false)
+        """
+
+        def matcher(cp: CoverBase):
+            l_name = cp.full_name.lower()
+            return any(f_str in l_name for f_str in names)
+    
+        self._apply_filter(matcher, False, True if override else None)
 
         return self
 
-
-    def _apply_filter(self, filter:dict, allowed:bool=False, denied:bool=False):
-        """
-        Match against filter strings and recursively call _apply_filter
-        """
-        # See if covergroup is a match for allow/deny first, as could mean
-        # children don't need to be checked
-
-        # Filter for deny
-        if denied:
-            deny_match = True
-        elif 'deny' in filter:
-            if any(f_str in self.full_name for f_str in filter['deny']):
-                deny_match = True
-            else:
-                deny_match = False
-        else:
-            deny_match = False
-
-        # Filter for allow
-        if allowed:
-            allow_match = True
-        elif 'allow' in filter and not deny_match:
-            if any(f_str in self.full_name for f_str in filter['allow']):
-                allow_match = True
-            else:
-                allow_match = False
-        else:
-            allow_match = True
-
+    def _apply_filter(self, matcher: Callable[[CoverBase], bool], match_state: bool, mismatch_state: bool | None):
         any_children_active = False
-        for cp in self.coverpoints.values():
-            any_children_active |= cp._apply_filter(filter, allowed=allow_match, denied=deny_match)
-
-        for cg in self.covergroups.values():
-            any_children_active |= cg._apply_filter(filter, allowed=allow_match, denied=deny_match)
+        if matcher(self):
+            for child in self.iter_children():
+                any_children_active |= child._apply_filter(lambda _: True, match_state, mismatch_state)
+        else:
+            for child in self.iter_children():
+                any_children_active |= child._apply_filter(matcher, match_state, mismatch_state)
 
         self.active = any_children_active
         return self.active
-
 
     def add_coverpoint(self, coverpoint: "Coverpoint"):
         """
