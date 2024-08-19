@@ -17,9 +17,9 @@ Bucket is a python library to create nicer functional coverpoints. There are sev
 
 ## Support
 This library is being actively built, and is expected to change while it matures and key features are added.
-We are not providing external support for use of this library, however we are aiming to make it as easy to use as possible. 
+We are not providing external support for use of this library, however we are aiming to make it as easy to use as possible.
 
-As per the licence: 
+As per the licence:
 > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,14 +29,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ## Roadmap
-There are several features planned but not actively started. These include:
+There are several features planned, these include:
 
-- Linter / CI
+- Coverage filtering to enable only coverpoints of interest (In progress)
+- Improved coverage viewer (In progress)
+- CI
 - Improved documentation
 - Use logging instead of print
-- Coverage filtering to enable only coverpoints of interest
 - Tiered coverage to allow for quicker CIs, more granuality for soak regressions, etc
-- Improved coverage viewer
 - Track which testcases contribute to coverage
 - Speed optimisations
 
@@ -51,4 +51,3 @@ Please feel free to contribute to the project, following these guidelines:
 * Pull requests must respect the goals of the library, as stated in the documentation.
 * Pull requests should take care not to make performance worse except for cases which require bug fixes.
 * Pull requests should update the documentation for any added/changed functionality.
-
