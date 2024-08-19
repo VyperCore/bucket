@@ -10,4 +10,4 @@ poetry.lock
 # ZSH autocomplete
 bin/zsh/.zcompdump
 
-example_file_store
+example_file_store.db

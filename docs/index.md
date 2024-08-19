@@ -6,8 +6,7 @@
 # Getting Started:
 
 ```
-$ poetry install
-$ poetry shell
+$ ./bin/shell
 $ python -m bucket.example
 ```
 

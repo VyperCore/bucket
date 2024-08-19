@@ -131,7 +131,7 @@ class Reading(Protocol):
     def get_def_sha(self) -> str: ...
     def get_rec_sha(self) -> str: ...
     def iter_points(
-        self, start: int = 0, end: int | None = None
+        self, start: int = 0, end: int | None = None, depth: int = 0
     ) -> Iterable[PointTuple]: ...
     def iter_bucket_goals(
         self, start: int = 0, end: int | None = None
@@ -146,7 +146,7 @@ class Reading(Protocol):
         self, start: int = 0, end: int | None = None
     ) -> Iterable[GoalTuple]: ...
     def iter_point_hits(
-        self, start: int = 0, end: int | None = None
+        self, start: int = 0, end: int | None = None, depth: int = 0
     ) -> Iterable[PointHitTuple]: ...
     def iter_bucket_hits(
         self, start: int = 0, end: int | None = None
@@ -202,9 +202,11 @@ class PuppetReading(Reading):
         return self.rec_sha
 
     def iter_points(
-        self, start: int = 0, end: int | None = None
+        self, start: int = 0, end: int | None = None, depth: int = 0
     ) -> Iterable[PointTuple]:
-        yield from self.points[start:end]
+        offset_start = start + depth
+        offset_end = None if end is None else end + depth
+        yield from self.points[offset_start:offset_end]
 
     def iter_bucket_goals(
         self, start: int = 0, end: int | None = None
@@ -223,9 +225,11 @@ class PuppetReading(Reading):
         yield from self.goals[start:end]
 
     def iter_point_hits(
-        self, start: int = 0, end: int | None = None
+        self, start: int = 0, end: int | None = None, depth: int = 0
     ) -> Iterable[PointHitTuple]:
-        yield from self.point_hits[start:end]
+        offset_start = start + depth
+        offset_end = None if end is None else end + depth
+        yield from self.point_hits[offset_start:offset_end]
 
     def iter_bucket_hits(
         self, start: int = 0, end: int | None = None
@@ -265,9 +269,9 @@ class MergeReading(Reading):
         return self.master.get_rec_sha()
 
     def iter_points(
-        self, start: int = 0, end: int | None = None
+        self, start: int = 0, end: int | None = None, depth: int = 0
     ) -> Iterable[PointTuple]:
-        yield from self.master.iter_points(start, end)
+        yield from self.master.iter_points(start, end, depth)
 
     def iter_bucket_goals(
         self, start: int = 0, end: int | None = None
@@ -292,9 +296,9 @@ class MergeReading(Reading):
             yield BucketHitTuple(start + offset, hits)
 
     def iter_point_hits(
-        self, start: int = 0, end: int | None = None
+        self, start: int = 0, end: int | None = None, depth: int = 0
     ) -> Iterable[PointHitTuple]:
-        for point in self.iter_points(start, end):
+        for point in self.iter_points(start, end, depth):
             hits = 0
             hit_buckets = 0
             full_buckets = 0
