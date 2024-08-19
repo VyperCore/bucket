@@ -61,8 +61,9 @@ function getCoverageColumnConfig(theme: ThemeType, columnKey: string) {
  * and tries to treat the numeric portions as numbers.
  */
 function naturalCompare(a: String | Number, b: String | Number) {
-    const aParts = a.toString().split(/(\d+)/g);
-    const bParts = b.toString().split(/(\d+)/g);
+    const num_regex = /(\d+\.?\d*)/g
+    const aParts = a.toString().split(num_regex);
+    const bParts = b.toString().split(num_regex);
     while (true) {
         const aPart = aParts.shift();
         const bPart = bParts.shift();
@@ -88,8 +89,42 @@ function naturalCompare(a: String | Number, b: String | Number) {
     }
 }
 
-function getColumnCompare(columnKey: string) {
+function getColumnMixedCompare(columnKey: string) {
     return (a:any,b:any) => naturalCompare(a[columnKey], b[columnKey]);
+}
+
+function numCompare(a: number, b: number) {
+    const rel = a - b;
+    if (Number.isFinite(rel) && (a !== 0 || b !== 0)) {
+        return rel;
+    }
+
+    const aIsNaN = Number.isNaN(a);
+    const bIsNaN = Number.isNaN(b);
+
+    if (aIsNaN && bIsNaN) {
+        return 0;
+    } else if (aIsNaN) {
+        return -1;
+    } else if (bIsNaN) {
+        return 1;
+    }
+    
+    const aIsNeg0 = Object.is(a, -0);
+    const bIsNeg0 = Object.is(b, -0);
+
+    if (aIsNeg0 && bIsNeg0) {
+        return 0;
+    } else if (aIsNeg0) {
+        return -1;
+    } else if (bIsNeg0) {
+        return 1;
+    }
+    return 0;
+}
+
+function getColumnNumCompare(columnKey: string) {
+    return (a:any,b:any) => numCompare(a[columnKey], b[columnKey]);
 }
 
 
@@ -139,7 +174,7 @@ export function PointGrid({node}: PointGridProps) {
                         value: axis_value.value
                     })),
                     onFilter: (value, record) => record[axis.name] == value,
-                    sorter: getColumnCompare(axis.name)
+                    sorter: getColumnMixedCompare(axis.name)
                 }
             })
         },
@@ -155,26 +190,26 @@ export function PointGrid({node}: PointGridProps) {
                         value: goal.name
                     })),
                     onFilter: (value, record) => record["goal_name"] == value,
-                    sorter: getColumnCompare("goal_name")
+                    sorter: getColumnMixedCompare("goal_name")
                 },
                 {
                     title: "Target",
                     dataIndex: "target",
                     key: "target",
-                    sorter: getColumnCompare('target')
+                    sorter: getColumnNumCompare('target')
                 },
                 {
                     title: "Hits",
                     dataIndex: "hits",
                     key: "hits",
-                    sorter: getColumnCompare('hits')
+                    sorter: getColumnNumCompare('hits')
                 },
                 {
                     title: "Hit %",
                     dataIndex: "hit_ratio",
                     key: "hit_ratio",
                     ...getCoverageColumnConfig(theme, "hit_ratio"),
-                    sorter: getColumnCompare('hit_ratio')
+                    sorter: getColumnNumCompare('hit_ratio')
                 },
             ]
         }
@@ -237,13 +272,13 @@ export function PointSummaryGrid({tree, node, setSelectedTreeKeys}: PointSummary
             onCell: record => ({
                 onClick: () => setSelectedTreeKeys([record.key]),
             }),
-            sorter: getColumnCompare('path')
+            sorter: getColumnMixedCompare('path')
         },
         {
             title: "Description",
             dataIndex: "desc",
             key: "desc",
-            sorter: getColumnCompare('desc')
+            sorter: getColumnMixedCompare('desc')
         },
         {
             title: "Goal",
@@ -252,20 +287,20 @@ export function PointSummaryGrid({tree, node, setSelectedTreeKeys}: PointSummary
                     title: "Target",
                     dataIndex: "target",
                     key: "target",
-                    sorter: getColumnCompare('target')
+                    sorter: getColumnNumCompare('target')
                 },
                 {
                     title: "Hits",
                     dataIndex: "hits",
                     key: "hits",
-                    sorter: getColumnCompare('hits')
+                    sorter: getColumnNumCompare('hits')
                 },
                 {
                     title: "Hit %",
                     dataIndex: "hit_ratio",
                     key: "hit_ratio",
                     ...getCoverageColumnConfig(theme, "hit_ratio"),
-                    sorter: getColumnCompare('hit_ratio')
+                    sorter: getColumnNumCompare('hit_ratio')
                 },
             ]
         },
@@ -276,33 +311,33 @@ export function PointSummaryGrid({tree, node, setSelectedTreeKeys}: PointSummary
                     title: "Target",
                     dataIndex: "target_buckets",
                     key: "target_buckets",
-                    sorter: getColumnCompare('target_buckets')
+                    sorter:  getColumnNumCompare('target_buckets')
                 },
                 {
                     title: "Hit",
                     dataIndex: "hit_buckets",
                     key: "hit_buckets",
-                    sorter: getColumnCompare('hit_buckets')
+                    sorter:  getColumnNumCompare('hit_buckets')
                 },
                 {
                     title: "Full",
                     dataIndex: "full_buckets",
                     key: "full_buckets",
-                    sorter: getColumnCompare('full_buckets')
+                    sorter:  getColumnNumCompare('full_buckets')
                 },
                 {
                     title: "Hit %",
                     dataIndex: "buckets_hit_ratio",
                     key: "buckets_hit_ratio",
                     ...getCoverageColumnConfig(theme, "buckets_hit_ratio"),
-                    sorter: getColumnCompare('buckets_hit_ratio')
+                    sorter:  getColumnNumCompare('buckets_hit_ratio')
                 },
                 {
                     title: "Full %",
                     dataIndex: "buckets_full_ratio",
                     key: "buckets_full_ratio",
                     ...getCoverageColumnConfig(theme, "buckets_full_ratio"),
-                    sorter: getColumnCompare('buckets_full_ratio')
+                    sorter:  getColumnNumCompare('buckets_full_ratio')
                 },
             ]
         }
