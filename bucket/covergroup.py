@@ -10,7 +10,7 @@ from pydantic import validate_call
 
 from .base import CoverBase
 from .common.chain import Link, OpenLink
-from .common.types import MatchStrs
+from .common.types import MatchStrs, TagStrs
 from .context import CoverageContext
 from .link import CovDef, CovRun
 
@@ -37,6 +37,7 @@ class Covergroup(CoverBase):
         self.tier = None
         self.tags = []
 
+        self._filter_applied = False
         self.active = True
         self.coverpoints = {}
         self.covergroups = {}
@@ -58,8 +59,6 @@ class Covergroup(CoverBase):
         """
         Update covergroup with child tiers and tags
         """
-        if self.name == "Dogs":
-            breakpoint()
         for child in self.iter_children():
             if self.tier is None or child.tier < self.tier:
                 self.tier = child.tier
@@ -79,48 +78,122 @@ class Covergroup(CoverBase):
             cg._set_full_path()
 
     @validate_call
-    def include_by_name(self, names: MatchStrs, override: bool = True):
+    def include_by_function(self, matcher: Callable[[CoverBase], bool]):
         """
-        Filter the coverage tree, including only subtree which match `names`.
+        Filter coverpoints by the provided function. Those that match are set to active.
+        If this is the first filter to be applied, then any coverpoints which do not match
+        are explicitly set to inactive, as the default state is active.
+        Parameters:
+            matcher: A function to match against coverpoints/covergroup data
+        """
+        mismatch_state = None
+        if not self._filter_applied:
+            mismatch_state = False
+        self._apply_filter(matcher, True, mismatch_state)
+        return self
+
+    @validate_call
+    def exclude_by_function(self, matcher: Callable[[CoverBase], bool]):
+        """
+        Filter coverpoints by the provided function. Those that match are set to active.
+        If this is the first filter to be applied, then any coverpoints which do not match
+        are explicitly set to inactive, as the default state is active.
+        Parameters:
+            matcher: A function to match against coverpoints/covergroup data
+        """
+        self._apply_filter(matcher, False, None)
+        return self
+
+    @validate_call
+    def include_by_name(self, names: MatchStrs):
+        """
+        Filter the coverage tree, including coverpoints/covergroups which match.
+        If this is the first filter to be applied, then any coverpoints which do not match
+        are explicitly set to inactive, as the default state is active.
         Parameters:
             names: A case-insensitive string or string list to match against
-            override: Whether to modify state of unmatched nodes (default true)
         """
-
-        def matcher(cp: CoverBase):
-            l_name = cp.full_path.lower()
-            return any(f_str in l_name for f_str in names)
-
-        self._apply_filter(matcher, True, False if override else None)
-
-        return self
+        return self.include_by_function(self._match_by_name(names))
 
     @validate_call
-    def exclude_by_name(self, names: MatchStrs, override: bool = False):
+    def exclude_by_name(self, names: MatchStrs):
         """
-        Filter the coverage tree, excluding subtrees which match `names`.
+        Filter the coverage tree, excluding coverpoints/covergroups which match.
         Parameters:
-            names: A case-insensitve string or string list to match against
-            override: Whether to modify state of unmatched nodes (default false)
+            names: A case-insensitive string or string list to match against
         """
+        return self.exclude_by_function(self._match_by_name(names))
 
+    @validate_call
+    def include_by_tier(self, tier: int):
+        """
+        Filter the coverage tree, including coverpoints equal to or less than 'tier'.
+        If this is the first filter to be applied, then any coverpoints which do not match
+        are explicitly set to inactive, as the default state is active.
+        Parameters:
+            tier: The highest tier to be set active
+        """
+        return self.include_by_function(self._match_by_tier(tier))
+
+    @validate_call
+    def exclude_by_tier(self, tier: int):
+        """
+        Filter the coverage tree, excluding coverpoints equal to or less than 'tier'.
+        Parameters:
+            names: A case-insensitive string or string list to match against
+            tier: The highest tier to be set inactive
+        """
+        return self.exclude_by_function(self._match_by_tier(tier))
+
+    @validate_call
+    def include_by_tags(self, tags: TagStrs, match_all: bool = False):
+        """
+        Filter the coverage tree, including coverpoints matching against `tags`.
+        If this is the first filter to be applied, then any coverpoints which do not match
+        are explicitly set to inactive, as the default state is active.
+        Parameters:
+            tags: Tag(s) to match against
+            match_all: If set, all tags must match. If cleared, any tags can match (default: False)
+        """
+        return self.include_by_function(self._match_by_tags(tags))
+
+    @validate_call
+    def exclude_by_tags(self, tags: TagStrs, match_all: bool = False):
+        """
+        Filter the coverage tree, excluding coverpoints matching against `tags`.
+        Parameters:
+            tags: Tag(s) to match against
+            match_all: If set, all tags must match. If cleared, any tags can match
+        """
+        return self.exclude_by_function(self._match_by_tags(tags))
+
+    def _match_by_name(self, names: MatchStrs):
         def matcher(cp: CoverBase):
             l_name = cp.full_path.lower()
             return any(f_str in l_name for f_str in names)
 
-        self._apply_filter(matcher, False, True if override else None)
+        return matcher
 
-        return self
+    def _match_by_tier(self, tier: int):
+        def matcher(cp: CoverBase):
+            return cp.tier <= tier
 
-    @validate_call
-    def filter_by_function(
-        self,
-        matcher: Callable[[CoverBase], bool],
-        match_state: bool,
-        mismatch_state: bool | None,
-    ):
-        self._apply_filter(matcher, match_state, mismatch_state)
-        return self
+        return matcher
+
+    def _match_by_tags(self, tags: TagStrs, match_all: bool = False):
+        def matcher(cp: CoverBase):
+            if match_all:
+                for tag in tags:
+                    if tag not in cp.tags:
+                        return False
+                return True
+            else:
+                for tag in tags:
+                    if tag in cp.tags:
+                        return True
+                return False
+
+        return matcher
 
     def _apply_filter(
         self,
@@ -128,6 +201,7 @@ class Covergroup(CoverBase):
         match_state: bool | None,
         mismatch_state: bool | None,
     ):
+        self._filter_applied = True
         any_children_active = False
         if matcher(self):
             for child in self.iter_children():
