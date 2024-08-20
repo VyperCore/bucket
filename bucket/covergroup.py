@@ -80,7 +80,10 @@ class Covergroup(CoverBase):
     @validate_call
     def include_by_function(self, matcher: Callable[[CoverBase], bool]):
         """
-        Enable coverpoints which match the provided function. Unmatched coverpoints will not have their active state changed, except this is the first filter to be applied, then any coverpoints which do not match are explicitly set to inactive, as the default state is active.
+        Enable coverpoints which match the provided function. Unmatched coverpoints will
+        not have their active state changed, except this is the first filter to be
+        applied, then any coverpoints which do not match are explicitly set to inactive,
+        as the default state is active.
         Parameters:
             matcher: A function to match against coverpoint/covergroup data
         """
@@ -93,7 +96,8 @@ class Covergroup(CoverBase):
     @validate_call
     def restrict_by_function(self, matcher: Callable[[CoverBase], bool]):
         """
-        Filter coverpoints which match the provided function. Those that match will not change their active state, those that don't match will be set to inactive.
+        Filter coverpoints which match the provided function. Those that match will not
+        change their active state, those that don't match will be set to inactive.
         Parameters:
             matcher: A function to match against coverpoint/covergroup data
         """
@@ -103,7 +107,8 @@ class Covergroup(CoverBase):
     @validate_call
     def exclude_by_function(self, matcher: Callable[[CoverBase], bool]):
         """
-        Disable coverpoints which match the provided function. Unmatched coverpoints will not have their active state changed.
+        Disable coverpoints which match the provided function. Unmatched coverpoints will
+        not have their active state changed.
         Parameters:
             matcher: A function to match against coverpoint/covergroup data
         """
@@ -113,7 +118,10 @@ class Covergroup(CoverBase):
     @validate_call
     def include_by_name(self, names: MatchStrs):
         """
-        Enable coverpoints which match the provided names. Unmatched coverpoints will not have their active state changed, except this is the first filter to be applied, then any coverpoints which do not match are explicitly set to inactive, as the default state is active.
+        Enable coverpoints which match the provided names. Unmatched coverpoints will not
+        have their active state changed, except this is the first filter to be applied,
+        then any coverpoints which do not match are explicitly set to inactive, as the
+        default state is active.
         Parameters:
             names: A case-insensitive string or string list to match against
         """
@@ -122,7 +130,8 @@ class Covergroup(CoverBase):
     @validate_call
     def restrict_by_name(self, names: MatchStrs):
         """
-        Filter coverpoints which match the provided names. Those that match will not change their active state, those that don't match will be set to inactive.
+        Filter coverpoints which match the provided names. Those that match will not
+        change their active state, those that don't match will be set to inactive.
         Parameters:
             names: A case-insensitive string or string list to match against
         """
@@ -131,7 +140,8 @@ class Covergroup(CoverBase):
     @validate_call
     def exclude_by_name(self, names: MatchStrs):
         """
-        Disable coverpoints which match the provided names. Unmatched coverpoints will not have their active state changed.
+        Disable coverpoints which match the provided names. Unmatched coverpoints will
+        not have their active state changed.
         Parameters:
             names: A case-insensitive string or string list to match against
         """
@@ -140,7 +150,9 @@ class Covergroup(CoverBase):
     @validate_call
     def set_tier_level(self, tier: int):
         """
-        Filter the coverage tree for coverpoints equal to or less than 'tier'. Those that match will not change their active state, those that don't match will be set to inactive.
+        Filter the coverage tree for coverpoints equal to or less than 'tier'. Those that
+        match will not change their active state, those that don't match will be set to
+        inactive.
         Parameters:
             tier: The highest tier to be set active
         """
@@ -149,17 +161,22 @@ class Covergroup(CoverBase):
     @validate_call
     def include_by_tags(self, tags: TagStrs, match_all: bool = False):
         """
-        Enable coverpoints which match the provided tags. Unmatched coverpoints will not have their active state changed, except this is the first filter to be applied, then any coverpoints which do not match are explicitly set to inactive, as the default state is active.
+        Enable coverpoints which match the provided tags. Unmatched coverpoints will not
+        have their active state changed, except this is the first filter to be applied,
+        then any coverpoints which do not match are explicitly set to inactive, as the
+        default state is active.
         Parameters:
             tags: Tag(s) to match against
-            match_all: If set, all tags must match. If cleared, any tags can match (default: False)
+            match_all: If set, all tags must match.
+                       If cleared, any tags can match (default: False)
         """
         return self.include_by_function(self._match_by_tags(tags, match_all))
 
     @validate_call
     def restrict_by_tags(self, tags: TagStrs, match_all: bool = False):
         """
-        Filter coverpoints which match the provided tags. Those that match will not change their active state, those that don't match will be set to inactive.
+        Filter coverpoints which match the provided tags. Those that match will not
+        change their active state, those that don't match will be set to inactive.
         Parameters:
             tags: Tag(s) to match against
             match_all: If set, all tags must match. If cleared, any tags can match
@@ -169,7 +186,8 @@ class Covergroup(CoverBase):
     @validate_call
     def exclude_by_tags(self, tags: TagStrs, match_all: bool = False):
         """
-        Disable coverpoints which match the provided tags. Unmatched coverpoints will not have their active state changed.
+        Disable coverpoints which match the provided tags. Unmatched coverpoints will not
+        have their active state changed.
         Parameters:
             tags: Tag(s) to match against
             match_all: If set, all tags must match. If cleared, any tags can match

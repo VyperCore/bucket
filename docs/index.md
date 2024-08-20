@@ -170,7 +170,7 @@ Coverpoint and Covergroups may be filtered to allow coverage to run quicker. Thi
 
 | Function  | Description |
 |---|---|
-| `include_by_function()` | Enable coverpoints which match. Unmatched coverpoints will not change state |
+| `include_by_function()` | Enable coverpoints which match. Unmatched coverpoints will not have their active state changed, except this is the first filter to be applied, then any coverpoints which do not match are explicitly set to inactive, as the default state is active. |
 | `restrict_by_function()` | Restrict to coverpoints which match. Matched coverpoints will not change state. Unmatched will be disabled |
 | `exclude_by_function()` |  Disable coverpoints which match. Unmatched coverpoints will not change state |
 
