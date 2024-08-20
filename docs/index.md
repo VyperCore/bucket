@@ -20,8 +20,8 @@ Each new coverpoint should inherit from the Coverpoint class, and requires a 'na
 
 ``` Python
 class MyCoverpoint(Coverpoint):
-    def __init__(self, name: str, description: str, trigger=None):
-        super().__init__(name, description, trigger=None)
+    def __init__(self, name: str, description: str):
+        super().__init__(name, description)
 ```
 
 A `setup()` method is then required to create the axes and goals of the coverpoint. This function will only be called if the coverpoint is active. Next, you use `add_axis()` which requires a name, description and values.

@@ -8,17 +8,18 @@ from enum import Enum
 from types import SimpleNamespace
 from typing import Callable
 
+from pydantic import validate_call
 from rich.console import Console
 from rich.table import Table
 
 from .axis import Axis
+from .base import CoverBase
 from .bucket import Bucket
 from .common.chain import Link, OpenLink
+from .common.types import TagStrs
 from .context import CoverageContext
-from .covergroup import CoverBase
 from .goal import GoalItem
 from .link import CovDef, CovRun
-from .triggers import CoverageTriggers
 
 
 class GOAL(Enum):
@@ -63,16 +64,11 @@ class Coverpoint(CoverBase):
 
     """
 
-    def __init__(self, name: str, description: str, trigger=None):
+    @validate_call
+    def __init__(self, name: str, description: str):
         self.name = name
         self.description = description
-        self.trigger = CoverageTriggers.ALL if trigger is None else trigger
         self.active = True
-
-        # Sanity check name has been given. No default!
-        assert isinstance(self.name, str), "Coverpoint name not provided"
-        assert isinstance(self.description, str), "Coverpoint description not provided"
-        print(f"{self.name}: {self.description}")
 
         # List of axes used by this coverpoint
         self.axes: list[Axis] = []  # TODO make a dict
@@ -87,6 +83,9 @@ class Coverpoint(CoverBase):
 
         self._setup()
 
+        self.tier = 0
+        self.tags = []
+
         self.sha = hashlib.sha256((self.name + self.description).encode())
         self.axis_names = [x.name for x in self.axes]
         goals = SimpleNamespace(**self._goal_dict)
@@ -99,6 +98,8 @@ class Coverpoint(CoverBase):
             else:
                 goal = self._goal_dict["DEFAULT"]
             self.sha.update(goal.sha.digest())
+
+        print(f"{self.name}: {self.description} created")
 
     def _setup(self):
         """
@@ -113,15 +114,28 @@ class Coverpoint(CoverBase):
         """
         raise NotImplementedError("This needs to be implemented by the coverpoint")
 
+    @validate_call
+    def set_tier(self, tier):
+        """Set coverpoint tier"""
+        self.tier = tier
+        return self
+
+    @validate_call
+    def set_tags(self, tags: TagStrs):
+        """Set coverpoint tags"""
+        self.tags += tags
+        return self
+
     def _apply_filter(
         self,
         matcher: Callable[[CoverBase], bool],
         match_state: bool | None,
         mismatch_state: bool | None,
     ):
-        if matcher(self) and match_state is not None:
+        is_match = matcher(self)
+        if is_match and match_state is not None:
             self.active = match_state
-        elif not matcher(self) and mismatch_state is not None:
+        elif not is_match and mismatch_state is not None:
             self.active = mismatch_state
         return self.active
 
@@ -147,12 +161,14 @@ class Coverpoint(CoverBase):
         """
         self.cvg_hits[bucket] += hits
 
+    @validate_call
     def add_axis(self, name: str, values: dict | list | set | tuple, description: str):
         """
         Add axis with values to process later
         """
         self.axes.append(Axis(name, values, description))
 
+    @validate_call
     def add_goal(
         self,
         name: str,
