@@ -4,11 +4,13 @@
 import hashlib
 import itertools
 from types import SimpleNamespace
-from typing import TYPE_CHECKING, Annotated, Callable, Iterable
+from typing import TYPE_CHECKING, Callable, Iterable
 
-from pydantic import AfterValidator, validate_call
+from pydantic import validate_call
 
+from .base import CoverBase
 from .common.chain import Link, OpenLink
+from .common.types import MatchStrs
 from .context import CoverageContext
 from .link import CovDef, CovRun
 
@@ -16,45 +18,10 @@ if TYPE_CHECKING:
     from .coverpoint import Coverpoint
 
 
-def match_str_validator(m_strs: str | list[str]) -> list[str]:
-    "Accept a str or list of strings and make them lowercase"
-    if isinstance(m_strs, str):
-        m_strs = [m_strs]
-    m_strs[:] = (m_str.lower() for m_str in m_strs)
-    return m_strs
-
-
-MatchStrs = Annotated[str | list[str], AfterValidator(match_str_validator)]
-
-
-class CoverBase:
-    name: str
-    full_path: str
-    description: str
-    target: int
-    hits: int
-
-    def setup(self):
-        raise NotImplementedError("This needs to be implemented by the coverpoint")
-
-    def sample(self, trace):
-        raise NotImplementedError("This needs to be implemented by the coverpoint")
-
-    def _chain_def(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]: ...
-
-    def _chain_run(self, start: OpenLink[CovRun] | None = None) -> Link[CovRun]: ...
-
-    def _apply_filter(
-        self,
-        matcher: Callable[["CoverBase"], bool],
-        match_state: bool,
-        mismatch_state: bool | None,
-    ) -> bool: ...
-
-
 class Covergroup(CoverBase):
     """This class groups coverpoints together, and adds them to the hierarchy"""
 
+    @validate_call
     def __init__(self, name: str, description: str):
         """
         Parameters:
@@ -66,6 +33,9 @@ class Covergroup(CoverBase):
         self.description = description
         # Required for top covergroup - will be overwritten for all others
         self.full_path = name.lower()
+
+        self.tier = None
+        self.tags = []
 
         self.active = True
         self.coverpoints = {}
@@ -79,9 +49,23 @@ class Covergroup(CoverBase):
         """
         self.setup(ctx=CoverageContext.get())
         self._set_full_path()
+        self._update_tags_and_tiers()
 
     def setup(self, ctx: SimpleNamespace):
         raise NotImplementedError("This needs to be implemented by the covergroup")
+
+    def _update_tags_and_tiers(self):
+        """
+        Update covergroup with child tiers and tags
+        """
+        if self.name == "Dogs":
+            breakpoint()
+        for child in self.iter_children():
+            if self.tier is None or child.tier < self.tier:
+                self.tier = child.tier
+            for tag in child.tags:
+                if tag not in self.tags:
+                    self.tags.append(tag)
 
     def _set_full_path(self):
         """
@@ -99,7 +83,7 @@ class Covergroup(CoverBase):
         """
         Filter the coverage tree, including only subtree which match `names`.
         Parameters:
-            names: A case-insensitve string or string list to match against
+            names: A case-insensitive string or string list to match against
             override: Whether to modify state of unmatched nodes (default true)
         """
 
@@ -128,6 +112,7 @@ class Covergroup(CoverBase):
 
         return self
 
+    @validate_call
     def filter_by_function(
         self,
         matcher: Callable[[CoverBase], bool],
@@ -163,11 +148,10 @@ class Covergroup(CoverBase):
         Add a coverpoint instance to the covergroup
         Parameters:
             coverpoint: instance of a coverpoint
-            trigger:    [optional] specific trigger on which to sample the coverpoint
         """
         if coverpoint.name in self.coverpoints:
             raise Exception("Coverpoint names must be unique within a covergroup")
-
+        coverpoint.parent = self
         self.coverpoints[coverpoint.name] = coverpoint
 
     def add_covergroup(self, covergroup: "Covergroup"):
@@ -178,7 +162,7 @@ class Covergroup(CoverBase):
         """
         if covergroup.name in self.covergroups:
             raise Exception("Covergroup names must be unique within a covergroup")
-
+        covergroup.parent = self
         self.covergroups[covergroup.name] = covergroup
 
     def __getattr__(self, key: str):
@@ -192,20 +176,29 @@ class Covergroup(CoverBase):
         else:
             return super().__getattribute__(key)
 
+    @validate_call
     def print_tree(self, indent: int = 0):
         """Print out coverage hierarch from this covergroup down"""
+
+        def fmt_active(active):
+            return "A" if active else "-"
+
         if indent == 0:
             print("COVERAGE_TREE")
-            print(f"* {self.name}: {self.description}")
+            print(
+                f"[{fmt_active(self.active)}]({self.tier}) {self.name}: {self.description} -- Tags:{self.tags}"
+            )
         indent += 1
         indentation = "    " * indent
         for cp in self.coverpoints.values():
-            active = "X" if cp.active else "-"
-            print(f"[{active}] {indentation}|-- {cp.name}: {cp.description}")
+            print(
+                f"[{fmt_active(cp.active)}]({cp.tier}) {indentation}|-- {cp.name}: {cp.description} -- Tags:{cp.tags}"
+            )
 
         for cg in self.covergroups.values():
-            active = "X" if cg.active else "-"
-            print(f"[{active}] {indentation}|-- {cg.name}: {cg.description}")
+            print(
+                f"[{fmt_active(cg.active)}]({cg.tier}) {indentation}|-- {cg.name}: {cg.description} -- Tags:{cg.tags}"
+            )
             cg.print_tree(indent + 1)
 
     def sample(self, trace):
@@ -217,6 +210,7 @@ class Covergroup(CoverBase):
             for cg in self.covergroups.values():
                 cg.sample(trace)
 
+    @validate_call
     def iter_children(self) -> Iterable[CoverBase]:
         self.coverpoints = dict(sorted(self.coverpoints.items()))
         self.covergroups = dict(sorted(self.covergroups.items()))
