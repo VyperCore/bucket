@@ -166,25 +166,33 @@ A sampler must be initialised with a reference to the top of the coverage hierar
 
 ## Filtering coverage
 
-Coverpoint and Covergroups may be filtered (to either be included or excluded) to allow coverage to run quicker. This is useful when working on a small subset of coverage and you don't want to run everything, or for follow-up regressions on the same build to exclude already saturated coverpoints.
+Coverpoint and Covergroups may be filtered to allow coverage to run quicker. This is useful when working on a small subset of coverage and you don't want to run everything, or for follow-up regressions to exclude already saturated coverpoints.
 
-`filter_by_function()`
+| Function  | Description |
+| `include_by_function()` | Enable coverpoints which match. Unmatched coverpoints will not change state |
+| `restrict_by_function()` | Restrict to coverpoints which match. Matched coverpoints will not change state. Unmatched will be disabled |
+| `exclude_by_function()` |  Disable coverpoints which match. Unmatched coverpoints will not change state |
 
 | Parameter | Type | Description |
 | --- | --- | ---|
-| matcher | function | Function to match against coverpoints/covergroups |
-| match_state | bool | What the active state should be set to in the event of a match. Set to 'None' if state should remain unchanged |
-| mismatch_state | bool | What the active state should be set to in the event it does not match. Set to 'None' if state should remain unchanged |
+| matcher | Callable | Function to match against coverpoints/covergroups |
 
 Some helper functions have been provided to allow for easy use of common use-cases, but you are able to use the full capability of the filter function by providing your own match criteria.
 
+| Functions | Description |
+| `*_by_name` | Provide a list of names to match against |
+| `*_by_tag` | Provide a list of tags to match against (either match all or some)|
+| `set_tier_level` | Restrict coverpoints to the requested tier level |
+
+The filter functions stack in the order they are provided. It is recommended that any `restrict_by_*` functions, and `set_tier_level` are called after any `include`/`exclude` functions.
+
 ```
-    # Only run branch related coverage, except for coverpoints related to if branch is taken
+    # Only run branch related coverage which are tier 1 or lower.
     cvg = MyBigCoverGroup(name="my_toplevel_covergroup", description="All of my coverage")
     cvg.include_by_name('branch_coverage')
-    cvg.exclude_by_name(['branch_taken'])
+    cvg.set_tier_level(1)
 ```
-These strings are hardcoded in the example above, but are intended to come from command line arguments/input files/etc.
+The strings/values are hardcoded in the example above, but are intended to come from command line arguments/input files/etc.
 
 
 ## Exporting coverage
