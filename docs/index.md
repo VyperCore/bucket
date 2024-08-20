@@ -169,6 +169,7 @@ A sampler must be initialised with a reference to the top of the coverage hierar
 Coverpoint and Covergroups may be filtered to allow coverage to run quicker. This is useful when working on a small subset of coverage and you don't want to run everything, or for follow-up regressions to exclude already saturated coverpoints.
 
 | Function  | Description |
+|---|---|
 | `include_by_function()` | Enable coverpoints which match. Unmatched coverpoints will not change state |
 | `restrict_by_function()` | Restrict to coverpoints which match. Matched coverpoints will not change state. Unmatched will be disabled |
 | `exclude_by_function()` |  Disable coverpoints which match. Unmatched coverpoints will not change state |
@@ -180,6 +181,7 @@ Coverpoint and Covergroups may be filtered to allow coverage to run quicker. Thi
 Some helper functions have been provided to allow for easy use of common use-cases, but you are able to use the full capability of the filter function by providing your own match criteria.
 
 | Functions | Description |
+|---|---|
 | `*_by_name` | Provide a list of names to match against |
 | `*_by_tag` | Provide a list of tags to match against (either match all or some)|
 | `set_tier_level` | Restrict coverpoints to the requested tier level |
