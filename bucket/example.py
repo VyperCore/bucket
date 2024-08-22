@@ -22,6 +22,8 @@ class TopDogs(Covergroup):
     def setup(self, ctx):
         self.add_coverpoint(
             DogStats(name="doggy_stats", description="Some basic doggy stats")
+            .set_tier(1)
+            .set_tags(["basic", "stats"])
         )
         self.add_covergroup(
             DogsAndToys(
@@ -39,22 +41,29 @@ class DogsAndToys(Covergroup):
     def setup(self, ctx):
         self.add_coverpoint(
             ChewToysByAge(
-                name="chew_toys_by_age", description="Preferred chew toys by age"
+                name="chew_toys_by_age",
+                description="Preferred chew toys by age",
             )
+            .set_tier(5)
+            .set_tags(["toys", "age"])
         )
         self.add_coverpoint(
             ChewToysByName(
                 name="chew_toys_by_name__group_a",
-                description="Preferred chew toys by name - Group A",
+                description="Preferred chew toys by name (Group A)",
                 names=["Barbara", "Connie", "Graham"],
             )
+            .set_tier(3)
+            .set_tags(["toys", "name"])
         )
         self.add_coverpoint(
             ChewToysByName(
                 name="chew_toys_by_name__group_b",
-                description="Preferred chew toys by name - Group B",
+                description="Preferred chew toys by name (Group B)",
                 names=["Clive", "Derek", "Ethel"],
             )
+            .set_tier(2)
+            .set_tags(["toys", "name"])
         )
 
 
@@ -339,7 +348,7 @@ if __name__ == "__main__":
     ConsoleWriter(axes=False, goals=False, points=False).write(merged_reading)
 
     # Read all back from sql - note as the db is not removed this will
-    # acumulate each time this example is run. This will also include
+    # accumulate each time this example is run. This will also include
     # merged data as well as the individual runs. It is meant as an example
     # of how to use the command
     merged_reading_all = MergeReading(*sql_accessor.read_all())
@@ -350,5 +359,7 @@ if __name__ == "__main__":
     # print_tree() is a useful function to see the hierarchy of your coverage
     # You can call it from the top level covergroup, or from another covergroup
     # within your coverage tree.
+    print("\n-------------------------------------------------------")
+    print("Print coverage tree for cvg_a")
     cvg_a.print_tree()
     cvg_a.chew_toys.print_tree()
