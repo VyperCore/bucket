@@ -24,7 +24,9 @@ class MyCoverpoint(Coverpoint):
         super().__init__(name, description)
 ```
 
-A `setup()` method is then required to create the axes and goals of the coverpoint. This function will only be called if the coverpoint is active. Next, you use `add_axis()` which requires a name, description and values.
+A `setup()` method is then required to create the axes and goals of the coverpoint.
+
+You use `add_axis()` to add each axis, which requires a name, description and some values.
 
 | Parameter | Type | Description |
 | --- | ---| ---|
@@ -34,8 +36,7 @@ A `setup()` method is then required to create the axes and goals of the coverpoi
 
 `Values` can be in the form of numbers or strings. They are processed by the coverpoint when added. A name for each value/range will automatically be generated unless one is given. Names allow more meaning to be given to integers/ranges, while still allowing either the name or the value to be sampled. Names will be shown in the exported coverage.
 
-To specify a named value, a dictionary should be used in the form `{'name': value}`.
-Alternatively, a list, tuple or set can be passed in and the names will be automatically created.
+To specify a named value, a dictionary should be used in the form `{'name': value}`. Alternatively, a list, tuple or set can be passed in and the names will be automatically created.
 Ranges can also be specified by providing a MIN and MAX value in a list in place of a single value.<br>
 eg. `[0,1,2,[3, 9], 10]`
 
@@ -49,6 +50,12 @@ The example below shows an axis being added with five buckets. Four of the bucke
             description="Range of values for my_axis",
         )
 ```
+### Tier and tags
+If you wish to filter out coverpoints or allow for easier searching in the coverage viewer then you can set a tier and/or tags.
+<b>
+Tier: A coverpoints tier is set to 0 by default, which is the highest priority. Any value can be set. Later, the tier_level can be set by the testbench which will disable coverpoints of a lower priority tier.
+<b>
+Tags: Tags can be added to coverpoints to allow for easier filtering (where names may not make sense - such as a group coverpoints across several covergroups). They will also be made available in the coverage viewer so only coverpoints with matching tags are shown.
 
 ----
 
@@ -178,7 +185,10 @@ Coverpoint and Covergroups may be filtered to allow coverage to run quicker. Thi
 
 | Parameter | Type | Description |
 | --- | --- | ---|
-| matcher | Callable | Function to match against coverpoints/covergroups |
+| matcher | Callable | A function to match against coverpoints/covergroups. Expect a True/False result |
+| cp_only | bool | Should function match against coverpoints only, or both coverpoints and covergroups? |
+
+Eg. `cp_only` can be set False when filtering against names to be able to match against a covergroup and enable all coverpoints it contains. However, you may want it set to match against coverpoints only when filtering with tags, as covergroups will accumulate all of their children's tags.
 
 
 Some additional helper functions have been provided to allow for easy use of common use-cases. You are able mix these with your own match functions as required.
@@ -188,7 +198,7 @@ Some additional helper functions have been provided to allow for easy use of com
 | `*_by_name` | Provide a list of names to match against |
 | `*_by_tag` | Provide a list of tags to match against (either match all or some) |
 
-The filters stack in the order they are provided. It is recommended that they are applied in the order of include -> restrict -> exclude, but you are able to layer them in any order you like.
+NOTE: The filters stack in the order they are provided. It is recommended that they are applied in the order of include -> restrict -> exclude, but you are able to layer them in any order you like.
 
 ### Set tier level
 
@@ -196,9 +206,7 @@ The filters stack in the order they are provided. It is recommended that they ar
 |---|---|
 | `set_tier_level` | Restrict coverpoints to the requested tier level. Lower values are higher priority |
 
-All coverpoints default to tier 0 if they aren't explicitly set. If you don't wish to alter this setting, then all coverpoints will be included by default.
-
-This sets the tier level separately to the filter functions. If you want to use `tier` as part of your match criteria you are able to do so with `*_by_function()`.
+All coverpoints default to tier 0 if they aren't explicitly set and will be enabled by default. This sets the tier level separately to the filter functions. If you want to use `tier` as part of your match criteria you are able to do so with `*_by_function()`.
 
 
 ```
