@@ -166,7 +166,9 @@ A sampler must be initialised with a reference to the top of the coverage hierar
 
 ## Filtering coverage
 
-Coverpoint and Covergroups may be filtered to allow coverage to run quicker. This is useful when working on a small subset of coverage and you don't want to run everything, or for follow-up regressions to exclude already saturated coverpoints.
+### Filtering by function
+
+Coverpoint and Covergroups may be filtered to allow coverage to run quicker. This is useful when working on a small subset of coverage and you don't want to run everything, or for follow-up regressions to exclude already saturated coverpoints. Below are the methods to include, restrict or exclude coverage which match the condition provided.
 
 | Function  | Description |
 |---|---|
@@ -178,15 +180,26 @@ Coverpoint and Covergroups may be filtered to allow coverage to run quicker. Thi
 | --- | --- | ---|
 | matcher | Callable | Function to match against coverpoints/covergroups |
 
-Some helper functions have been provided to allow for easy use of common use-cases, but you are able to use the full capability of the filter function by providing your own match criteria.
+
+Some additional helper functions have been provided to allow for easy use of common use-cases. You are able mix these with your own match functions as required.
 
 | Functions | Description |
 |---|---|
 | `*_by_name` | Provide a list of names to match against |
-| `*_by_tag` | Provide a list of tags to match against (either match all or some)|
-| `set_tier_level` | Restrict coverpoints to the requested tier level |
+| `*_by_tag` | Provide a list of tags to match against (either match all or some) |
 
-The filter functions stack in the order they are provided. It is recommended that any `restrict_by_*` functions, and `set_tier_level` are called after any `include`/`exclude` functions.
+The filters stack in the order they are provided. It is recommended that they are applied in the order of include -> restrict -> exclude, but you are able to layer them in any order you like.
+
+### Set tier level
+
+| Functions | Description |
+|---|---|
+| `set_tier_level` | Restrict coverpoints to the requested tier level. Lower values are higher priority |
+
+All coverpoints default to tier 0 if they aren't explicitly set. If you don't wish to alter this setting, then all coverpoints will be included by default.
+
+This sets the tier level separately to the filter functions. If you want to use `tier` as part of your match criteria you are able to do so with `*_by_function()`.
+
 
 ```
     # Only run branch related coverage which are tier 1 or lower.
