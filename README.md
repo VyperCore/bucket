@@ -32,11 +32,11 @@ SOFTWARE.
 There are several features planned, these include:
 
 - <s>Coverage filtering to enable only coverpoints of interest</s>
-- Improved coverage viewer (In progress)
+- <s>Tiered/tagged coverage to allow for quicker CIs, more granuality for soak regressions, etc</s>
+- <s>Improved coverage viewer</s> (In progress)
 - CI
 - Improved documentation
 - Use logging instead of print
-- Tiered coverage to allow for quicker CIs, more granuality for soak regressions, etc
 - Track which testcases contribute to coverage
 - Speed optimisations
 
