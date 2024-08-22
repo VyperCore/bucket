@@ -31,10 +31,11 @@ SOFTWARE.
 ## Roadmap
 There are several features planned, these include:
 
-- <s>Coverage filtering to enable only coverpoints of interest</s>
-- <s>Tiered/tagged coverage to allow for quicker CIs, more granuality for soak regressions, etc</s>
-- <s>Improved coverage viewer</s> (In progress)
-- CI
+- <s>Coverage filtering</s>
+- <s>Tiered/tagged coverage</s>
+- <s>Browser-based coverage viewer</s>
+- Additional coverage viewer features
+- CI / testing
 - Improved documentation
 - Use logging instead of print
 - Track which testcases contribute to coverage
