@@ -35,6 +35,7 @@ class Covergroup(CoverBase):
         self.full_path = name.lower()
 
         self.tier = None
+        self.tier_active = True
         self.tags = []
 
         self._filter_applied = False
@@ -78,7 +79,7 @@ class Covergroup(CoverBase):
             cg._set_full_path()
 
     @validate_call
-    def include_by_function(self, matcher: Callable[[CoverBase], bool]):
+    def include_by_function(self, matcher: Callable[[CoverBase], bool], cp_only=False):
         """
         Enable coverpoints which match the provided function. Unmatched coverpoints will
         not have their active state changed, except this is the first filter to be
@@ -94,7 +95,7 @@ class Covergroup(CoverBase):
         return self
 
     @validate_call
-    def restrict_by_function(self, matcher: Callable[[CoverBase], bool]):
+    def restrict_by_function(self, matcher: Callable[[CoverBase], bool], cp_only=False):
         """
         Filter coverpoints which match the provided function. Those that match will not
         change their active state, those that don't match will be set to inactive.
@@ -105,7 +106,7 @@ class Covergroup(CoverBase):
         return self
 
     @validate_call
-    def exclude_by_function(self, matcher: Callable[[CoverBase], bool]):
+    def exclude_by_function(self, matcher: Callable[[CoverBase], bool], cp_only=False):
         """
         Disable coverpoints which match the provided function. Unmatched coverpoints will
         not have their active state changed.
@@ -148,17 +149,6 @@ class Covergroup(CoverBase):
         return self.exclude_by_function(self._match_by_name(names))
 
     @validate_call
-    def set_tier_level(self, tier: int):
-        """
-        Filter the coverage tree for coverpoints equal to or less than 'tier'. Those that
-        match will not change their active state, those that don't match will be set to
-        inactive.
-        Parameters:
-            tier: The highest tier to be set active
-        """
-        return self.restrict_by_function(self._match_by_tier(tier))
-
-    @validate_call
     def include_by_tags(self, tags: TagStrs, match_all: bool = False):
         """
         Enable coverpoints which match the provided tags. Unmatched coverpoints will not
@@ -170,7 +160,9 @@ class Covergroup(CoverBase):
             match_all: If set, all tags must match.
                        If cleared, any tags can match (default: False)
         """
-        return self.include_by_function(self._match_by_tags(tags, match_all))
+        return self.include_by_function(
+            self._match_by_tags(tags, match_all), cp_only=True
+        )
 
     @validate_call
     def restrict_by_tags(self, tags: TagStrs, match_all: bool = False):
@@ -181,7 +173,7 @@ class Covergroup(CoverBase):
             tags: Tag(s) to match against
             match_all: If set, all tags must match. If cleared, any tags can match
         """
-        return self.exclude_by_function(self._match_by_tags(tags))
+        return self.exclude_by_function(self._match_by_tags(tags), cp_only=True)
 
     @validate_call
     def exclude_by_tags(self, tags: TagStrs, match_all: bool = False):
@@ -192,7 +184,24 @@ class Covergroup(CoverBase):
             tags: Tag(s) to match against
             match_all: If set, all tags must match. If cleared, any tags can match
         """
-        return self.exclude_by_function(self._match_by_tags(tags))
+        return self.exclude_by_function(self._match_by_tags(tags), cp_only=True)
+
+    @validate_call
+    def set_tier_level(self, tier: int):
+        """
+        Filter the coverage tree for coverpoints equal to or less than 'tier'.
+        Parameters:
+            tier: The highest tier level to be set active
+        """
+        self._set_tier_level(tier)
+        return self
+
+    def _set_tier_level(self, tier: int):
+        any_children_active = False
+        for child in self.iter_children():
+            any_children_active |= child._set_tier_level(tier)
+        self.tier_active = any_children_active
+        return self.tier_active
 
     def _match_by_name(self, names: MatchStrs):
         def matcher(cp: CoverBase):
