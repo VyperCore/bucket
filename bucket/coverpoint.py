@@ -82,6 +82,7 @@ class Coverpoint(CoverBase):
         self._setup()
 
         self.tier = 0
+        self.tier_active = True
         self.tags = []
 
         self.sha = hashlib.sha256((self.name + self.description).encode())
@@ -124,6 +125,10 @@ class Coverpoint(CoverBase):
         self.tags += tags
         return self
 
+    def _set_tier_level(self, tier: int):
+        self.tier_active = True if tier >= self.tier else False
+        return self.tier_active
+
     def _apply_filter(
         self,
         matcher: Callable[[CoverBase], bool],
@@ -141,7 +146,7 @@ class Coverpoint(CoverBase):
         """
         Call user defined sample function if active
         """
-        if self.active:
+        if self.active and self.tier_active:
             self.sample(trace)
 
     def _all_axis_value_combinations(self):
