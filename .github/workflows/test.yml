@@ -18,12 +18,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
+      - name: Set up poetry
         run: |
           python -m pip install --upgrade pip poetry
-          sudo apt-get update; sudo apt-get install zsh
+          poetry install
 
       - name: Run tests
         run: |
-          ./bin/shell -c 'pytest -s'
-        shell: zsh {0}
+          poetry run pytest --cov
