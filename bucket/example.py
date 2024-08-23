@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2023-2024 Vypercore. All Rights Reserved
 
+from pathlib import Path
+
 from git.repo import Repo
 
 from bucket import AxisUtils, CoverageContext, Covergroup, Coverpoint, Sampler
@@ -281,7 +283,7 @@ class MySampler(Sampler):
         return trace
 
 
-def run(db_path: str):
+def run(db_path: Path):
     # Instance two copies of the coverage. Normally only one is required, but this is to
     # demonstrate merging coverage.
     with CoverageContext(isa="THIS IS AN ISA"):
