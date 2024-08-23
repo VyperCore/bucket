@@ -79,7 +79,7 @@ class Covergroup(CoverBase):
             cg._set_full_path()
 
     @validate_call
-    def include_by_function(self, matcher: Callable[[CoverBase], bool], cp_only=False):
+    def include_by_function(self, matcher: Callable[[CoverBase], bool]):
         """
         Enable coverpoints which match the provided function. Unmatched coverpoints will
         not have their active state changed, except this is the first filter to be
@@ -95,7 +95,7 @@ class Covergroup(CoverBase):
         return self
 
     @validate_call
-    def restrict_by_function(self, matcher: Callable[[CoverBase], bool], cp_only=False):
+    def restrict_by_function(self, matcher: Callable[[CoverBase], bool]):
         """
         Filter coverpoints which match the provided function. Those that match will not
         change their active state, those that don't match will be set to inactive.
@@ -106,7 +106,7 @@ class Covergroup(CoverBase):
         return self
 
     @validate_call
-    def exclude_by_function(self, matcher: Callable[[CoverBase], bool], cp_only=False):
+    def exclude_by_function(self, matcher: Callable[[CoverBase], bool]):
         """
         Disable coverpoints which match the provided function. Unmatched coverpoints will
         not have their active state changed.
@@ -160,9 +160,7 @@ class Covergroup(CoverBase):
             match_all: If set, all tags must match.
                        If cleared, any tags can match (default: False)
         """
-        return self.include_by_function(
-            self._match_by_tags(tags, match_all), cp_only=True
-        )
+        return self.include_by_function(self._match_by_tags(tags, match_all))
 
     @validate_call
     def restrict_by_tags(self, tags: TagStrs, match_all: bool = False):
@@ -173,7 +171,7 @@ class Covergroup(CoverBase):
             tags: Tag(s) to match against
             match_all: If set, all tags must match. If cleared, any tags can match
         """
-        return self.exclude_by_function(self._match_by_tags(tags), cp_only=True)
+        return self.exclude_by_function(self._match_by_tags(tags, match_all))
 
     @validate_call
     def exclude_by_tags(self, tags: TagStrs, match_all: bool = False):
@@ -184,7 +182,7 @@ class Covergroup(CoverBase):
             tags: Tag(s) to match against
             match_all: If set, all tags must match. If cleared, any tags can match
         """
-        return self.exclude_by_function(self._match_by_tags(tags), cp_only=True)
+        return self.exclude_by_function(self._match_by_tags(tags, match_all))
 
     @validate_call
     def set_tier_level(self, tier: int):
@@ -218,16 +216,18 @@ class Covergroup(CoverBase):
 
     def _match_by_tags(self, tags: TagStrs, match_all: bool = False):
         def matcher(cp: CoverBase):
-            if match_all:
-                for tag in tags:
-                    if tag not in cp.tags:
-                        return False
-                return True
-            else:
-                for tag in tags:
-                    if tag in cp.tags:
-                        return True
-                return False
+            if isinstance(cp, Coverpoint):
+                if match_all:
+                    for tag in tags:
+                        if tag not in cp.tags:
+                            return False
+                    return True
+                else:
+                    for tag in tags:
+                        if tag in cp.tags:
+                            return True
+                    return False
+            return False
 
         return matcher
 

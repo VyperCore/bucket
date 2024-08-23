@@ -186,17 +186,15 @@ Coverpoint and Covergroups may be filtered to allow coverage to run quicker. Thi
 | Parameter | Type | Description |
 | --- | --- | ---|
 | matcher | Callable | A function to match against coverpoints/covergroups. Expect a True/False result |
-| cp_only | bool | Should function match against coverpoints only, or both coverpoints and covergroups? |
-
-Eg. `cp_only` can be set False when filtering against names to be able to match against a covergroup and enable all coverpoints it contains. However, you may want it set to match against coverpoints only when filtering with tags, as covergroups will accumulate all of their children's tags.
-
 
 Some additional helper functions have been provided to allow for easy use of common use-cases. You are able mix these with your own match functions as required.
 
 | Functions | Description |
 |---|---|
-| `*_by_name` | Provide a list of names to match against |
-| `*_by_tag` | Provide a list of tags to match against (either match all or some) |
+| `*_by_name` | Provide a list of names to match against both coverpoints and covergroups|
+| `*_by_tag` | Provide a list of tags to match against (either match all or some). Coverpoints only|
+
+When filtering by name, both covergroups and coverpoints are matched so you can enable all children of a covergroup easily. However, filtering by tag only matches against coverpoints, as covergroups will accumulate all of their children's tags and may match unexpectedly.
 
 NOTE: The filters stack in the order they are provided. It is recommended that they are applied in the order of include -> restrict -> exclude, but you are able to layer them in any order you like.
 
