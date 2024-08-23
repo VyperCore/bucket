@@ -9,8 +9,6 @@ from types import SimpleNamespace
 from typing import Callable
 
 from pydantic import validate_call
-from rich.console import Console
-from rich.table import Table
 
 from .axis import Axis
 from .base import CoverBase
@@ -292,41 +290,3 @@ class Coverpoint(CoverBase):
         """
         for bucket in self._all_axis_value_combinations():
             yield self.cvg_hits[bucket]
-
-    def _debug_coverage(self):
-        def percentage_hit(hits, goal):
-            if goal >= 0:
-                return f"{min((100*hits/goal), 100):.1f}%"
-            else:
-                return "-"
-
-        table = Table(title=self.name.upper())
-
-        header_names = [x.name for x in self.axes] + [
-            "Total Hits",
-            "Goal",
-            "Percentage Hit",
-            "Goal Name",
-            "Goal Description",
-        ]
-
-        for header in header_names:
-            table.add_column(header, justify="right", style="cyan", no_wrap=True)
-
-        # Iterate over all buckets (even if unhit):
-        for bucket in self._all_axis_value_combinations():
-            hits = self.cvg_hits[bucket]
-            goal = self._get_goal(bucket)
-            data = [
-                *list(bucket),
-                str(hits),
-                str(goal.target),
-                percentage_hit(hits, goal.target),
-                goal.name,
-                goal.description,
-            ]
-
-            table.add_row(*data)
-
-        console = Console()
-        console.print(table)

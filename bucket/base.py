@@ -30,3 +30,34 @@ class CoverBase:
         match_state: bool,
         mismatch_state: bool | None,
     ) -> bool: ...
+
+    def print(
+        self,
+        axes: bool = True,
+        goals: bool = True,
+        points: bool = True,
+        summary: bool = True,
+    ):
+        "Print all coverage data to the console"
+        # Import rw functions here to avoid circular imports
+        from .rw import ConsoleWriter, PointReader
+
+        ConsoleWriter(axes=axes, goals=goals, points=points, summary=summary).write(
+            PointReader("").read(self)
+        )
+
+    def print_axes(self):
+        "Print coverage axis data to the console"
+        self.print(axes=True, goals=False, points=False, summary=False)
+
+    def print_goals(self):
+        "Print coverage goal data to the console"
+        self.print(axes=False, goals=True, points=False, summary=False)
+
+    def print_points(self):
+        "Print coverage point data to the console"
+        self.print(axes=False, goals=False, points=True, summary=False)
+
+    def print_summary(self):
+        "Print coverage summary data to the console"
+        self.print(axes=False, goals=False, points=False, summary=True)
