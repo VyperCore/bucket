@@ -31,6 +31,8 @@ class CoverBase:
         mismatch_state: bool | None,
     ) -> bool: ...
 
+    def _set_tier_level(self, tier: int) -> bool: ...
+
     def print(
         self,
         axes: bool = True,
