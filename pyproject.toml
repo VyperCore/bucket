@@ -7,7 +7,7 @@ name = "bucket"
 version = "0.1"
 description = "Python functional coverage"
 authors = [
-    "Stuart Alldred <stuart@vypercore.com>",
+    "Stuart Alldred <stuartalldred@gmail.com>",
     "Edward Kotarski <edktrsk@gmail.com>",
 ]
 license = "MIT"
