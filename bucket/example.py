@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2023-2024 Vypercore. All Rights Reserved
 
+from pathlib import Path
+
 from git.repo import Repo
 
 from bucket import AxisUtils, CoverageContext, Covergroup, Coverpoint, Sampler
@@ -281,7 +283,7 @@ class MySampler(Sampler):
         return trace
 
 
-if __name__ == "__main__":
+def run(db_path: Path):
     # Instance two copies of the coverage. Normally only one is required, but this is to
     # demonstrate merging coverage.
     with CoverageContext(isa="THIS IS AN ISA"):
@@ -316,7 +318,7 @@ if __name__ == "__main__":
     reading_b = point_reader.read(cvg_b)
 
     # Create a local sql database
-    sql_accessor = SQLAccessor.File("example_file_store.db")
+    sql_accessor = SQLAccessor.File(db_path)
 
     # Write each reading into the database
     rec_ref_a = sql_accessor.write(reading_a)
@@ -363,3 +365,7 @@ if __name__ == "__main__":
     print("Print coverage tree for cvg_a")
     cvg_a.print_tree()
     cvg_a.chew_toys.print_tree()
+
+
+if __name__ == "__main__":
+    run("example_file_store.db")

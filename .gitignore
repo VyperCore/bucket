@@ -11,3 +11,6 @@ poetry.lock
 bin/zsh/.zcompdump
 
 example_file_store.db
+
+# test coverage
+.coverage
