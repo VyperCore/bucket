@@ -2,13 +2,7 @@
 # Copyright (c) 2023-2024 Vypercore. All Rights Reserved
 
 name: Tests
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    types: [opened, synchronize, reopened]
-  workflow_dispatch:
+on: pull_request
 jobs:
   test:
     runs-on: ubuntu-latest
