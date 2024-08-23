@@ -2,7 +2,12 @@
 # Copyright (c) 2023-2024 Vypercore. All Rights Reserved
 
 name: Tests
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+  workflow_dispatch:
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -25,3 +30,4 @@ jobs:
       - name: Run tests
         run: |
           ./bin/shell -c 'pytest -s'
+        shell: zsh {0}
