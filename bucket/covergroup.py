@@ -216,18 +216,12 @@ class Covergroup(CoverBase):
 
     def _match_by_tags(self, tags: TagStrs, match_all: bool = False):
         def matcher(cp: CoverBase):
-            if isinstance(cp, Coverpoint):
-                if match_all:
-                    for tag in tags:
-                        if tag not in cp.tags:
-                            return False
-                    return True
-                else:
-                    for tag in tags:
-                        if tag in cp.tags:
-                            return True
-                    return False
-            return False
+            if not isinstance(cp, Coverpoint):
+                return False
+            if match_all:
+                return all(tag in cp.tags for tag in tags)
+            else:
+                return any(tag in cp.tags for tag in tags)
 
         return matcher
 
