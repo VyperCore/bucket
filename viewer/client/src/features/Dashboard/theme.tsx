@@ -24,18 +24,18 @@ const sider = {
         collapsible: false,
         defaultCollapsed: false,
         reverseArrow: false,
-        width: 'auto',
+        width: "auto",
         collapsedWidth: 0,
         style: {
             padding: 5,
             borderRightColor: cl.tertiarybg.toString(),
             borderRightWidth: 1,
             borderRightStyle: "solid",
-            maxWidth: 'auto'
+            maxWidth: "auto",
         },
         zeroWidthTriggerStyle: {
             background: cl.accentbg.toString(),
-            zIndex: 10
+            zIndex: 10,
         },
     } as SiderProps,
     search: {
@@ -100,16 +100,16 @@ const body = {
             style: {
                 margin: 0,
                 minHeight: 280,
-                overflow: 'scroll'
+                overflow: "auto",
             },
         } as ComponentPropsWithoutRef<"div">,
         table: {
             props: {
                 pagination: false,
                 sticky: true,
-                size: 'small',
-                tableLayout: 'auto',
-                bordered: true
+                size: "small",
+                tableLayout: "auto",
+                bordered: true,
             } as TableProps,
         },
     },
@@ -184,7 +184,7 @@ export const antTheme: ThemeConfig = (() => {
                 rowHoverBg: cl.secondarybg.toString(),
                 headerSortHoverBg: cl.secondarybg.toString(),
                 headerSortActiveBg: cl.primarybg.toString(),
-                bodySortBg: cl.tertiarybg.toString()
+                bodySortBg: cl.tertiarybg.toString(),
             },
         },
     };

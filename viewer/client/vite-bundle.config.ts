@@ -28,12 +28,5 @@ export default defineConfig(async () => {
         define: {
             __BUCKET_CVG_JSON: coverage,
         },
-        build: {
-            rollupOptions: {
-                input: {
-                    app: "./src/index.html",
-                },
-            },
-        },
     };
 });

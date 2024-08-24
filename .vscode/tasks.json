@@ -1,0 +1,65 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "watch-client",
+      "command": "npm",
+      "args": ["run", "dev"],
+      "type": "shell",
+      "options": {
+        "cwd": "${workspaceFolder}/viewer/client"
+      },
+      // https://stackoverflow.com/a/54017304
+      "isBackground": true,
+      "problemMatcher": [
+        {
+          "pattern": [
+            {
+              "regexp": ".",
+              "file": 1,
+              "location": 2,
+              "message": 3
+            }
+          ],
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": ".",
+            "endsPattern": "."
+          }
+        }
+      ]
+    },
+    {
+      "label": "watch-server",
+      "command": "npm",
+      "args": ["run", "dev"],
+      "type": "shell",
+      "options": {
+        "cwd": "${workspaceFolder}/viewer/server"
+      },
+      // https://stackoverflow.com/a/54017304
+      "isBackground": true,
+      "problemMatcher": [
+        {
+          "pattern": [
+            {
+              "regexp": ".",
+              "file": 1,
+              "location": 2,
+              "message": 3
+            }
+          ],
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": ".",
+            "endsPattern": "."
+          }
+        }
+      ]
+    },
+    {
+      "label": "watch",
+      "dependsOn": ["watch-client", "watch-server"]
+    }
+  ]
+}

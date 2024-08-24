@@ -12,9 +12,15 @@ import tsconfigPaths from "vite-tsconfig-paths";
 export default defineConfig({
     plugins: [react(), tsconfigPaths()],
     build: {
+        // sourcemap: true,
         rollupOptions: {
-            input: {
-                app: "./src/index.html",
+            onwarn(warning, defaultHandler) {
+                // We get this when node modules don't provide sourcemaps.
+                // Suppress warning as it's out of our control.
+                if (warning.code === "SOURCEMAP_ERROR") {
+                    return;
+                }
+                defaultHandler(warning);
             },
         },
     },

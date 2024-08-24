@@ -1,11 +1,13 @@
 {
-  "name": "bucketbase",
+  "name": "client",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "author": "Edward Kotarski <edktrsk@gmail.com>",
   "scripts": {
-    "dev": "vite --port 4000",
     "build": "tsc && vite build",
+    "format": "prettier --write src",
+    "dev": "vite build --minify=false --watch --sourcemap=true",
     "bundle": "BUCKET_CVG_JSON=$BUCKET_CVG_JSON vite build --config vite-bundle.config.ts",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
@@ -31,6 +33,7 @@
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
     "@vitejs/plugin-react-swc": "^3.5.0",
+    "prettier": "^3.0.0",
     "eslint": "^8.55.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
