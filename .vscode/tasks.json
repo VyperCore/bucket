@@ -24,7 +24,7 @@
           "background": {
             "activeOnStart": true,
             "beginsPattern": ".",
-            "endsPattern": "."
+            "endsPattern": "built in.*"
           }
         }
       ]
@@ -52,7 +52,7 @@
           "background": {
             "activeOnStart": true,
             "beginsPattern": ".",
-            "endsPattern": "."
+            "endsPattern": "Application is running.*"
           }
         }
       ]
