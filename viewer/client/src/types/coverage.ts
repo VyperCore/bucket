@@ -91,4 +91,4 @@ type Reading = {
 type Reader = {
     read: (recordId: number) => Reading;
     read_all: () => Generator<Reading>;
-}
+};

@@ -23,14 +23,14 @@ export type View = SegmentedLabeledOption;
 export default abstract class Tree<T = any> {
     private ancestorsByKey: { [key: TreeKey]: TreeNode<T>[] };
     public static ROOT = "_ROOT_";
-    private root: TreeNode
+    private root: TreeNode;
 
     constructor(nodes: TreeNode<T>[]) {
         this.root = {
             key: Tree.ROOT,
             children: nodes,
-            data: {}
-        }
+            data: {},
+        };
         this.ancestorsByKey = Tree.mapNodeAncestors(nodes);
         this.ancestorsByKey[Tree.ROOT] = [this.root];
     }

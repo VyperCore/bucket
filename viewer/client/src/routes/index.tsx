@@ -17,10 +17,14 @@ function getDefaultTree() {
     } catch (error) {
         return new CoverageTree(treeMock);
     }
-    return CoverageTree.fromReadings(Array.from(new JSONReader(coverageJSON).read_all()));
+    return CoverageTree.fromReadings(
+        Array.from(new JSONReader(coverageJSON).read_all()),
+    );
 }
 
 export const AppRoutes = () => {
-    const element = useRoutes([{ path: "*", element: <Dashboard tree={getDefaultTree()}/> }]);
+    const element = useRoutes([
+        { path: "*", element: <Dashboard tree={getDefaultTree()} /> },
+    ]);
     return <>{element}</>;
 };

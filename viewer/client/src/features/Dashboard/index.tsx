@@ -140,8 +140,8 @@ function getBreadCrumbItems({
 }
 
 export type DashboardProps = {
-    tree: Tree
-}
+    tree: Tree;
+};
 
 export default function Dashboard({ tree }: DashboardProps) {
     const [selectedTreeKeys, setSelectedTreeKeys] = useState<TreeKey[]>([]);
@@ -185,13 +185,19 @@ export default function Dashboard({ tree }: DashboardProps) {
     const selectedViewContent = useMemo(() => {
         switch (currentContentKey) {
             case "Pivot":
-                return <LayoutOutlined />
+                return <LayoutOutlined />;
             case "Summary":
-                return <PointSummaryGrid tree={tree} node={tree.getNodeByKey(viewKey)} setSelectedTreeKeys={onSelect} />
+                return (
+                    <PointSummaryGrid
+                        tree={tree}
+                        node={tree.getNodeByKey(viewKey)}
+                        setSelectedTreeKeys={onSelect}
+                    />
+                );
             case "Point":
-                return <PointGrid node={tree.getNodeByKey(viewKey)} />
+                return <PointGrid node={tree.getNodeByKey(viewKey)} />;
             default:
-                throw new Error("Invalid view!?")
+                throw new Error("Invalid view!?");
         }
     }, [viewKey, currentContentKey]);
 
