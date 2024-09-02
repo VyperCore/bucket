@@ -4,7 +4,7 @@
 
 # Check for HW_ROOT already being set in the shell
 if [[ "$BUCKET_ROOT" != "" ]]; then
-    echo "[\033[0;31mERROR\033[0m] Hardware shell is already activated!"
+    echo "[\033[0;31mERROR\033[0m] Bucket shell is already activated!"
     exit 1
 fi
 
