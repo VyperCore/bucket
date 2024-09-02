@@ -305,7 +305,7 @@ class Covergroup(CoverBase):
             )
             cg.print_tree(indent + 1)
 
-    def should_sample(self) -> bool:
+    def should_sample(self, trace) -> bool:
         # This function can be optionally overridden by the user to stop the covergroup from
         # passing on the trace data to its children. By default it returns True.
         return True
@@ -313,7 +313,7 @@ class Covergroup(CoverBase):
     def _sample(self, trace):
         """Call sample for all children if active"""
 
-        if self.active and self.should_sample():
+        if self.active and self.should_sample(trace):
             for child in self.iter_children():
                 child._sample(trace)
 
