@@ -4,7 +4,7 @@
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
-from bucket import example
+from example import example
 
 
 def test_example():
