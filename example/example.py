@@ -97,7 +97,7 @@ def run(db_path: Path):
     ConsoleWriter(axes=False, goals=False, points=False).write(merged_reading_all)
 
     # Generating web viewer
-    # To nerate the HTML report run:
+    # To generate the HTML report run:
     # python -m bucket write html --sql-path ./example_file_store.db --output index.html
     HTMLWriter(
         web_path=Path(__file__).parent.parent / "viewer", output="index.html"
