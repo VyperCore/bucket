@@ -16,7 +16,7 @@ class Sampler:
     def sample(self, trace):
         """Go through the coverage tree and recursively call sample, passing in trace"""
         processed_trace = self.process_trace(trace)
-        self.coverage.sample(processed_trace)
+        self.coverage._sample(processed_trace)
 
     def process_trace(self, trace):
         """
