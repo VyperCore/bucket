@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2023-2024 Vypercore. All Rights Reserved
 
-# Check for HW_ROOT already being set in the shell
+# Check for BUCKET_ROOT already being set in the shell
 if [[ "$BUCKET_ROOT" != "" ]]; then
     echo "[\033[0;31mERROR\033[0m] Bucket shell is already activated!"
     exit 1
