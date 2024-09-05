@@ -23,7 +23,7 @@ class TopDogs(Covergroup):
         )
         self.add_covergroup(
             DogsAndToys(
-                name="chew_toys",
+                name="dog_toys",
                 description="A group of coverpoints about dog chew toys",
             )
         )

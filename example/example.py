@@ -99,12 +99,13 @@ def run(db_path: Path):
     # Generating web viewer
     # To generate the HTML report run:
     # python -m bucket write html --sql-path ./example_file_store.db --output index.html
-    HTMLWriter(
-        web_path=Path(__file__).parent.parent / "viewer", output="index.html"
-    ).write(merged_reading_all)
-
-    print("\n-------------------------------------------------------")
-    print("Open index.html to view coverage")
+    try:
+        HTMLWriter().write(merged_reading_all)
+        print("\n-------------------------------------------------------")
+        print("Open index.html to view coverage")
+    except Exception:
+        print("\n-------------------------------------------------------")
+        print("Web viewer failed")
 
     # print_tree() is a useful function to see the hierarchy of your coverage
     # You can call it from the top level covergroup, or from another covergroup
