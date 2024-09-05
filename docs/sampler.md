@@ -22,5 +22,7 @@ class MySampler(Sampler):
 ```
 ---
 <br>
+
 Prev: [Covergroups](covergroups.md)
+<br>
 Next: [Adding coverage to the testbench](add_to_testbench.md)

@@ -5,9 +5,9 @@
 
 ## Coverpoints
 
-A coverpoint consists of one or more axes, which are then crossed. Each possible combination of the axes values is called a bucket. Each bucket has a default goal with a target of 10 hits, which can be modified as required, or can be made illegal or ignored.
+A coverpoint consists of one or more axes, which are then crossed. Each possible combination of the axis values is called a bucket. Each bucket has a default goal with a target of 10 hits, which can be modified as required, or can be made illegal or ignored.
 
-Each new coverpoint should inherit from the Coverpoint class, and requires a 'name' and a 'description'.
+Each new coverpoint should inherit from the Coverpoint class, and requires a 'name' and a 'description'. More arguments can be passed to the coverpoint as required (see example files).
 
 ``` Python
 class MyCoverpoint(Coverpoint):
@@ -25,13 +25,15 @@ You use `add_axis()` to add each axis, which requires a name, description and so
 | description | str | A short description of the coverpoint aim |
 | values | dict,list,tuple,set | All the values/ranges to be covered by the axis |
 
-`Values` can be in the form of numbers or strings. They are processed by the coverpoint when added. A name for each value/range will automatically be generated unless one is given. Names allow more meaning to be given to integers/ranges, while still allowing either the name or the value to be sampled. Names will be shown in the exported coverage.
+`Values` can be in the form of numbers or strings. They are processed by the coverpoint when added. A name for each value/range will automatically be generated unless one is given. Names allow more meaning to be given to numbers/ranges, while still allowing either the name or the value to be sampled. Names will be shown in the exported coverage.
 
 To specify a named value, a dictionary should be used in the form `{'name': value}`. Alternatively, a list, tuple or set can be passed in and the names will be automatically created.
+<br>
+
 Ranges can also be specified by providing a MIN and MAX value in a list in place of a single value.<br>
 eg. `[0,1,2,[3, 9], 10]`
 
-The example below shows an axis being added with five buckets. Four of the buckets only accept a single value, while the remaining one can accept a value from `2` to `13`. Later, when sampling, either the auto-generated name of a bucket can be passed in (eg. "1", "2 -> 13", "15"), or the raw value can be passed instead (eg. 0, 5, 9)
+The example below shows an axis being added with five buckets. Four of the buckets only accept a single value, while the remaining one can accept any value from `2` to `13`. Later, when sampling, either the auto-generated name of a bucket can be passed in (eg. "1", "2 -> 13", "15"), or the raw value can be passed instead (eg. 0, 5, 9)
 
 ``` Python
     def setup(self, ctx):
@@ -41,16 +43,10 @@ The example below shows an axis being added with five buckets. Four of the bucke
             description="Range of values for my_axis",
         )
 ```
-### Tier and tags
-If you wish to filter out coverpoints or allow for easier searching in the coverage viewer then you can set a tier and/or tags.
-<b>
-Tier: A coverpoints tier is set to 0 by default, which is the highest priority. Any value can be set. Later, the tier_level can be set by the testbench which will disable coverpoints of a lower priority tier.
-<b>
-Tags: Tags can be added to coverpoints to allow for easier filtering (where names may not make sense - such as a group coverpoints across several covergroups). They will also be made available in the coverage viewer so only coverpoints with matching tags are shown.
-
 ----
 
-Goals can be optionally used to name buckets or to define ILLEGAL, IGNORE and modified hit counts. `add_goal` requires a name and a description. It can optionally include a new target hit count, or define the bucket(s) as ignore or illegal. If no target is provided, a default of 10 is currently used.
+### Goals
+Goals can be optionally used to name buckets or to define ILLEGAL, IGNORE and modified hit counts. `add_goal` requires a name and a description. It can optionally include a new target hit count, or define the bucket(s) as ignore or illegal. If no target is provided, a default of 10 is currently used. Only one of `target`, `illegal` and `ignore` can be set for a given goal.
 
 | Parameter | Type | Description |
 | --- | --- | ---|
@@ -63,13 +59,17 @@ Goals can be optionally used to name buckets or to define ILLEGAL, IGNORE and mo
 <br>
 Each goal is created during setup(), normally after the axes have been defined. Below, one goal has been made ILLEGAL, while the other has increased the number of hits required to 20.
 
+<br>
+
 ``` Python
         self.add_goal("MOULDY_CHEESE", "Not so gouda!", illegal=True)
         self.add_goal("OPTMISTIC_CHEESE", "I brie-live in myself!", target=20)
 ```
 
 If goals have been created, then they must be applied to the relevant buckets. To do this the `apply_goals()` method must be overridden, which will be automatically called at the end of the setup phase. After filtering which buckets are to have a goal applied, the new goal should be returned. A default of 10 hits is otherwise applied.
-NOTE: The **name** of the bucket is used, not the original value. For strings this should make no difference, but for values, you will need to convert them back to int. (Ranges will need to be referenced by name)
+<br>
+
+NOTE: The **name** of the axis value is used, not the original value. For strings this should make no difference, but for values, you will need to convert them back to int/float/etc. (Ranges will need to be referenced by name. However setting all ranges to a goal could match against "->" for example).
 
 ``` Python
     def apply_goals(self, bucket, goals):
@@ -81,6 +81,8 @@ NOTE: The **name** of the bucket is used, not the original value. For strings th
 ---
 <br>
 Finally, a `sample()` method needs to be defined. This sets a bucket with a particular cross of axis values, which will have its hit count increased (if applicable).
+
+<br>
 
 A trace object can be of any type, but is intended to be a class containing all information to be covered (from a monitor, model, etc). Each coverpoint can then sample the relevant information. This could be as simple as directly assigning values to each axis, processing the values into something more useful and/or storing values for the next time the coverpoint is called.
 
@@ -110,4 +112,5 @@ If multiple values are to be sampled for a given call of a coverpoint, then all 
 <br>
 
 Prev: [Index](index.md)
+<br>
 Next: [Covergroups](covergroups.md)

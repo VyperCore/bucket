@@ -20,5 +20,7 @@ A sampler must be initialised with a reference to the top of the coverage hierar
 ```
 ---
 <br>
+
 Prev: [Sampler](sampler.md)
+<br>
 Next: [Filters](filters.md)
