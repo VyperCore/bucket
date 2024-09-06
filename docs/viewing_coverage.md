@@ -15,3 +15,10 @@ Here's how to do it...
 
 
 Screenshots...
+
+---
+<br>
+
+Prev: [Export and merge](export_and_merge.md)
+<br>
+Next: [Back to index](index.md)

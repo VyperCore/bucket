@@ -21,13 +21,3 @@ Below describes how to use Bucket to create coverpoints, sample your data and th
 4. [Adding coverage to the testbench](add_to_testbench.md)
 5. [Merging coverage](merging_coverage.md)
 6. [Viewing coverage](viewing_coverage.md)
-
-
-
-
-
-## Exporting coverage
-
-At the end of each testcase, it is possible to export the coverage data to SQL. This can be stored locally, or fed directly into a database hosted elsewhere.
-
-Coverage merging can also be performed at the end of a regression to combine all test case data.

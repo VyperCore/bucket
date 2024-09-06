@@ -5,7 +5,11 @@
 
 ## Exporting coverage
 
-At the end of a simulation, the recorded coverage should be exported for later reading/processing. Coverage is saved into an SQL file, which can easily be stored locally or added to a larger database.
+
+It is possible to export the coverage data to SQL. This can be stored locally, or fed directly into a database hosted elsewhere. Coverage merging can also be performed to combine all coverage data from multiple simulations.
+
+
+At the end of a simulation, the recorded coverage should be exported for later reading/processing.
 
 ```Python
     # In your testbench
