@@ -19,8 +19,26 @@ A sampler must be initialised with a reference to the top of the coverage hierar
     sampler.sample(trace_data)
 ```
 ---
+### Sampler (optional)
+
+If your trace information requires pre-processing, then you can override the Sampler's `process_trace()` method, which by default will just return the trace object unmodified.
+
+For example:
+
+``` Python
+class MySampler(Sampler):
+    def __init__(self, coverage):
+        super().__init__(coverage=coverage)
+
+    def process_trace(self, trace):
+        ...
+        # Modify trace object for all coverpoints
+        ...
+        return trace
+```
+---
 <br>
 
-Prev: [Sampler](sampler.md)
+Prev: [Filters](filters.md)
 <br>
-Next: [Filters](filters.md)
+Next: [Export and merge](export_and_merge.md)

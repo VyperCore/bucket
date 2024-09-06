@@ -64,7 +64,7 @@ class DogsAndToys(Covergroup):
 
     def should_sample(self, trace):
         """
-        This function is used to stop dog coverage being sampled when not relevant
+        This function is used to stop coverpoints being called when not relevant
         """
         return True if trace["type"] == "Dog" else False
 

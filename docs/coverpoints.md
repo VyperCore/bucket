@@ -5,7 +5,7 @@
 
 ## Coverpoints
 
-A coverpoint consists of one or more axes, which are then crossed. Each possible combination of the axis values is called a bucket. Each bucket has a default goal with a target of 10 hits, which can be modified as required, or can be made illegal or ignored.
+A coverpoint consists of one or more axes, which are then crossed. (An axis covers one signal/data). Each possible combination of the axes' values is called a bucket. Each bucket has a default goal with a target of 10 hits, which can be modified as required, or can be made illegal or ignored.
 
 Each new coverpoint should inherit from the Coverpoint class, and requires a 'name' and a 'description'. More arguments can be passed to the coverpoint as required (see example files).
 

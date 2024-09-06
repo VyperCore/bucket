@@ -17,9 +17,9 @@ Below describes how to use Bucket to create coverpoints, sample your data and th
 # Contents
 1. [Coverpoints](coverpoints.md)
 2. [Covergroups](covergroups.md)
-3. [Sampler](sampler.md)
+3. [Filters](filters.md)
 4. [Adding coverage to the testbench](add_to_testbench.md)
-5. [Filters](filters.md)
+5. [Merging coverage](merging_coverage.md)
 6. [Viewing coverage](viewing_coverage.md)
 
 
