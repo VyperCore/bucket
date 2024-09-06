@@ -17,7 +17,11 @@ class HTMLWriter(Writer):
     Write coverage information out to an HTML report.
     """
 
-    def __init__(self, web_path: str | Path, output: str | Path):
+    def __init__(
+        self,
+        web_path: str | Path = Path(__file__).parent.parent.parent / "viewer",
+        output: str | Path = "index.html",
+    ):
         self.web_path = Path(web_path)
         self.output = Path(output)
         self.written = False
