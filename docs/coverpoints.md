@@ -11,46 +11,9 @@ Each new coverpoint should inherit from the Coverpoint class, and requires a 'na
 
 ``` Python
 class MyCoverpoint(Coverpoint):
-    def __init__(self, name: str, description: str):
-        super().__init__(name, description)
-```
-
-The above `__init__` method is optional if you are only providing a name and description when instancing. If you wish to create a coverpoint which relies on other data (such as a pre-processed list of instruction names, etc), then further arguments can be provided. These should all be placed before `super().__init_()` if you want them to be accessible to the `setup()` method.
-
-The example below shows instancing the same coverpoint twice with different names. These extra parameters could come from automatically generated lists which split up the original data into smaller groups.
-```Python
-class ChewToysByName(Coverpoint):
-    def __init__(self, name: str, description: str, names):
-        self.name_group = names
-        super().__init__(name, description)
-
-    def setup(self, ctx):
-        self.add_axis(
-            name="name",
-            values=self.name_group,
-            description="Most important dog names only",
-        )
-...
-# To be instanced as below:
-class DogsAndToys(Covergroup):
-    def setup(self, ctx):
-        self.add_coverpoint(
-            ChewToysByName(
-                name="chew_toys_by_name__group_a",
-                description="Preferred chew toys by name (Group A)",
-                names=["Barbara", "Connie", "Graham"],
-            )
-        )
-        self.add_coverpoint(
-            ChewToysByName(
-                name="chew_toys_by_name__group_b",
-                description="Preferred chew toys by name (Group B)",
-                names=["Clive", "Derek", "Ethel"],
-            )
-        )
 ```
 ---
-As seen above, a `setup()` method is then required to add the axes and goals of the coverpoint.
+A `setup()` method is then required to add the axes and goals of the coverpoint.
 
 You use `add_axis()` to add each axis, which requires a name, description and some values.
 
@@ -143,6 +106,45 @@ If multiple values are to be sampled for a given call of a coverpoint, then all 
                 bucket.set_axes(my_axis_3=trace.registers[gpr])
                 bucket.hit()
 ```
+---
+### Passing the coverpoint extra arguments
+
+If you wish to create a coverpoint which relies on other data (such as a pre-processed list of instruction names, etc), then further arguments can be provided. These should all be placed before `super().__init_()` if you want them to be accessible to the `setup()` method.
+
+The example below shows instancing the same coverpoint twice with different names. These extra parameters could come from automatically generated lists which split up the original data into smaller groups.
+```Python
+class ChewToysByName(Coverpoint):
+    def __init__(self, name: str, description: str, names):
+        self.name_group = names
+        super().__init__(name, description)
+
+    def setup(self, ctx):
+        self.add_axis(
+            name="name",
+            values=self.name_group,
+            description="Most important dog names only",
+        )
+...
+# To be instanced as below:
+class DogsAndToys(Covergroup):
+    def setup(self, ctx):
+        self.add_coverpoint(
+            ChewToysByName(
+                name="chew_toys_by_name__group_a",
+                description="Preferred chew toys by name (Group A)",
+                names=["Barbara", "Connie", "Graham"],
+            )
+        )
+        self.add_coverpoint(
+            ChewToysByName(
+                name="chew_toys_by_name__group_b",
+                description="Preferred chew toys by name (Group B)",
+                names=["Clive", "Derek", "Ethel"],
+            )
+        )
+```
+
+
 ---
 <br>
 
