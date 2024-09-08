@@ -21,4 +21,4 @@ Screenshots...
 
 Prev: [Export and merge](export_and_merge.md)
 <br>
-Next: [Back to index](index.md)
+---: [Back to index](index.md)

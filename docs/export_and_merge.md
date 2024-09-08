@@ -2,9 +2,9 @@
   ~ SPDX-License-Identifier: MIT
   ~ Copyright (c) 2023-2024 Vypercore. All Rights Reserved
   -->
+NOTE: THIS PAGE IS BEING UPDATED
 
 ## Exporting coverage
-
 
 It is possible to export the coverage data to SQL. This can be stored locally, or fed directly into a database hosted elsewhere. Coverage merging can also be performed to combine all coverage data from multiple simulations.
 
@@ -18,6 +18,7 @@ At the end of a simulation, the recorded coverage should be exported for later r
     def export_coverage(self):
         # Create a context specific hash
         # This is stored alongside recorded coverage and is used to determine if coverage is valid to merge.
+        # Alternatively, an empty string can be provided instead
         context_hash = Repo().head.object.hexsha
 
         # Collect coverage
@@ -30,15 +31,16 @@ At the end of a simulation, the recorded coverage should be exported for later r
         SQLAccessor.File("cvg.db").write(reading)
 
 ```
-
+---
 ## Merging coverage
 
 After running a regression, coverage from the separate simulations should be merged together ready to be viewed.
 
-At present a simple merge is done, with the merged dataset being produced. In future we plan to support producing a golden testset which will contain the subset of tests required to hit the same coverage. We also plan to provide more detailed analysis as to which buckets were hit by which testcases.
+At present a simple merge is done, with the merged dataset being produced. In future we plan to support producing a minimal testset which will contain the subset of tests required to hit the same coverage. We also plan to provide more detailed analysis as to which buckets were hit by which testcases.
 
 To merge coverage, the following commands should be run as part of your simulation/regression script:
 
+Should this be as per the example? Or via command line? Both?
 ```Python
     # Do some code here
 ```

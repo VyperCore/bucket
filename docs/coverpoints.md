@@ -5,7 +5,7 @@
 
 ## Coverpoints
 
-A coverpoint consists of one or more axes, which are then crossed. (An axis covers one signal/data). Each possible combination of the axes' values is called a bucket. Each bucket has a default goal with a target of 10 hits, which can be modified as required, or can be made illegal or ignored.
+A coverpoint consists of one or more axes, which are then crossed. (An axis covers one signal/data - similar to a UVM coverpoint). Each possible combination of the axes' values is called a bucket. Each bucket has a default goal with a target of 10 hits, which can be modified as required, or can be made illegal or ignored.
 
 Each new coverpoint should inherit from the Coverpoint class, and requires a 'name' and a 'description'. More arguments can be passed to the coverpoint as required (see example files).
 
@@ -15,7 +15,42 @@ class MyCoverpoint(Coverpoint):
         super().__init__(name, description)
 ```
 
-A `setup()` method is then required to create the axes and goals of the coverpoint.
+The above `__init__` method is optional if you are only providing a name and description when instancing. If you wish to create a coverpoint which relies on other data (such as a pre-processed list of instruction names, etc), then further arguments can be provided. These should all be placed before `super().__init_()` if you want them to be accessible to the `setup()` method.
+
+The example below shows instancing the same coverpoint twice with different names. These extra parameters could come from automatically generated lists which split up the original data into smaller groups.
+```Python
+class ChewToysByName(Coverpoint):
+    def __init__(self, name: str, description: str, names):
+        self.name_group = names
+        super().__init__(name, description)
+
+    def setup(self, ctx):
+        self.add_axis(
+            name="name",
+            values=self.name_group,
+            description="Most important dog names only",
+        )
+...
+# To be instanced as below:
+class DogsAndToys(Covergroup):
+    def setup(self, ctx):
+        self.add_coverpoint(
+            ChewToysByName(
+                name="chew_toys_by_name__group_a",
+                description="Preferred chew toys by name (Group A)",
+                names=["Barbara", "Connie", "Graham"],
+            )
+        )
+        self.add_coverpoint(
+            ChewToysByName(
+                name="chew_toys_by_name__group_b",
+                description="Preferred chew toys by name (Group B)",
+                names=["Clive", "Derek", "Ethel"],
+            )
+        )
+```
+---
+As seen above, a `setup()` method is then required to add the axes and goals of the coverpoint.
 
 You use `add_axis()` to add each axis, which requires a name, description and some values.
 
@@ -31,7 +66,7 @@ To specify a named value, a dictionary should be used in the form `{'name': valu
 <br>
 
 Ranges can also be specified by providing a MIN and MAX value in a list in place of a single value.<br>
-eg. `[0,1,2,[3, 9], 10]`
+Eg. `[0, 1, 2, [3, 9], 10]`
 
 The example below shows an axis being added with five buckets. Four of the buckets only accept a single value, while the remaining one can accept any value from `2` to `13`. Later, when sampling, either the auto-generated name of a bucket can be passed in (eg. "1", "2 -> 13", "15"), or the raw value can be passed instead (eg. 0, 5, 9)
 
