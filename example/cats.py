@@ -26,6 +26,12 @@ class TopCats(Covergroup):
                 description="A group of coverpoints about cat play toys",
             )
         )
+        self.add_coverpoint(
+            VIPNames(
+                name="VIPs",
+                description="Only important cat breeds",
+            )
+        )
 
     def should_sample(self, trace):
         """
@@ -224,5 +230,34 @@ class PlayToysByName(Coverpoint):
                 breed=trace["Breed"],
                 name=trace["Name"],
                 favourite_toy=trace["Play_toy"],
+            )
+            bucket.hit()
+
+
+class VIPNames(Coverpoint):
+    def __init__(self, name: str, description: str):
+        self.important_names = ["Clive", "Derek"]
+        super().__init__(name, description)
+
+    def setup(self, ctx):
+        self.add_axis(
+            name="breed",
+            values=ctx.pet_info.cat_breeds,
+            description="All known cat breeds",
+        )
+        # This axis uses the automatic 'other' to cover
+        # any values not explicitly provided
+        self.add_axis(
+            name="name",
+            values=self.important_names,
+            description="VIP names only",
+            enable_other="Plebs",
+        )
+
+    def sample(self, trace):
+        with self.bucket as bucket:
+            bucket.set_axes(
+                breed=trace["Breed"],
+                name=trace["Name"],
             )
             bucket.hit()
