@@ -10,6 +10,7 @@ Bucket is a functional coverage tool allowing for the creation of coverpoints, s
 Rather than binding coverage to each DUT monitor, Bucket creates a coverage tree which is to be instanced within your testbench. The testbench is expected to collate any data which is to be covered (normally a dataclass) and pass it to the Sampler.
 
 <br>
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/vypercore/bucket/stuart/doc_update/.github/images/trace_from_dut__dark.png">
   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/vypercore/bucket/stuart/doc_update/.github/images/trace_from_dut__light.png">
@@ -17,14 +18,18 @@ Rather than binding coverage to each DUT monitor, Bucket creates a coverage tree
 </picture>
 
 <br>
+
 Since Bucket coverage is independent from the simulator, and the testbench, it can also be instanced separately to work with a model. Alternatively, if you have a log / test output parser, a trace object can be re-formed and passed to Bucket. This allows you to quickly iterate on building and debugging coverage without having to re-run lengthy simulations.
 
 <br>
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/vypercore/bucket/stuart/doc_update/.github/images/trace_from_log__dark.png">
   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/vypercore/bucket/stuart/doc_update/.github/images/trace_from_log__light.png">
   <img alt="Image demonstrating collecting trace data from a log parser, reforming the trace data, before passing it to Bucket" src="https://raw.githubusercontent.com/vypercore/bucket/stuart/doc_update/.github/images/trace_from_log__dark.png">
 </picture>
+
+<br>
 
 ---
 <br>
