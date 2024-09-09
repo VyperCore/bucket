@@ -9,10 +9,19 @@ from .link import CovDef
 
 
 class Axis:
-    def __init__(self, name: str, values: dict | list | set | tuple, description: str):
+    def __init__(
+        self,
+        name: str,
+        values: dict | list | set | tuple,
+        description: str,
+        enable_other: None | bool | str = None,
+    ):
         self.name = name
-        self.values = self.sanitise_values(values)
         self.description = description
+        self.enable_other = True if enable_other is not None else False
+        self.other_name = enable_other if isinstance(enable_other, str) else "Other"
+
+        self.values = self.sanitise_values(values)
 
         self.size = 0
         self.sha = hashlib.sha256((self.name + self.description).encode())
@@ -48,12 +57,19 @@ class Axis:
                     values_dict[str(v)] = v
         else:
             raise Exception(
-                f"Unexpected type for values. Got {type(values)}, exp dict/list/tuple/set"
+                f"Unexpected type for values. Got {type(values)}. Expected dict/list/tuple/set"
             )
+
+        # Add 'other' if enabled
+        if self.enable_other:
+            assert (
+                self.other_name not in values_dict
+            ), f'Values already contains "{self.other_name}"'
+            values_dict[self.other_name] = None
 
         for key in values_dict:
             assert isinstance(key, str), f'Values provided for axis "{self.name}" \
-                are incorrectly formatted: {values}'
+                are incorrectly formatted: {values}. All keys must be string'
 
         return dict(sorted(values_dict.items()))
 
@@ -65,11 +81,17 @@ class Axis:
         if (value_str := str(value)) in self.values:
             return value_str
         else:
-            # Must be named or in a range
+            # Must be named, in a range or 'other'
             for k, v in self.values.items():
                 if value == v:
                     return k
                 elif isinstance(v, list):
                     if v[0] <= value <= v[1]:
                         return k
+
+            # Value not recognised as user defined
+            # If 'other' category has been enabled, then return other name
+            if self.enable_other:
+                return self.other_name
+
             raise Exception(f"Unrecognised value for axis '{self.name}': {value}")

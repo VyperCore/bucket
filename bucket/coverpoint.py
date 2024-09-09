@@ -165,11 +165,17 @@ class Coverpoint(CoverBase):
         self.cvg_hits[bucket] += hits
 
     @validate_call
-    def add_axis(self, name: str, values: dict | list | set | tuple, description: str):
+    def add_axis(
+        self,
+        name: str,
+        values: dict | list | set | tuple,
+        description: str,
+        enable_other: None | bool | str = None,
+    ):
         """
         Add axis with values to process later
         """
-        self.axes.append(Axis(name, values, description))
+        self.axes.append(Axis(name, values, description, enable_other))
 
     @validate_call
     def add_goal(
