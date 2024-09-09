@@ -21,3 +21,12 @@ Below describes how to use Bucket to create a coverage tree, sample your data an
 4. [Adding coverage to the testbench](add_to_testbench.md)
 5. [Merging coverage](export_and_merge.md)
 6. [Viewing coverage](viewing_coverage.md)
+
+
+---
+
+## Introduction
+
+Something about how Bucket coverage is instanced by the testbench, but should also be available to be instanced elsewhere and remain mergeable. (For example, running offline with stored test data, or with a model).
+
+Use diagrams generated.
