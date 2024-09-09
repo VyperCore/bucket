@@ -15,18 +15,13 @@ $ python -m example.example
 Below describes how to use Bucket to create a coverage tree, sample your data and then merge the results. Examples of coverpoints in use can be seen in [cats.py](https://github.com/VyperCore/bucket/blob/main/example/cats.py) and [dogs.py](https://github.com/VyperCore/bucket/blob/main/example/dogs.py).
 
 # Contents
-1. [Coverpoints](coverpoints.md)
-2. [Covergroups](covergroups.md)
-3. [Filters](filters.md)
-4. [Adding coverage to the testbench](add_to_testbench.md)
-5. [Merging coverage](export_and_merge.md)
-6. [Viewing coverage](viewing_coverage.md)
+1. [Introduction](introduction.md)
+2. [Coverpoints](coverpoints.md)
+3. [Covergroups](covergroups.md)
+4. [Filters](filters.md)
+5. [Adding coverage to the testbench](add_to_testbench.md)
+6. [Merging coverage](export_and_merge.md)
+7. [Viewing coverage](viewing_coverage.md)
 
 
 ---
-
-## Introduction
-
-Something about how Bucket coverage is instanced by the testbench, but should also be available to be instanced elsewhere and remain mergeable. (For example, running offline with stored test data, or with a model).
-
-Use diagrams generated.

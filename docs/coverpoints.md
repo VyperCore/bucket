@@ -148,6 +148,6 @@ class DogsAndToys(Covergroup):
 ---
 <br>
 
-Prev: [Index](index.md)
+Prev: [Introduction](introduction.md)
 <br>
 Next: [Covergroups](covergroups.md)
