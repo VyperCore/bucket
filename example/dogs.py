@@ -153,7 +153,7 @@ class ChewToysByAge(Coverpoint):
 
         self.add_axis(
             name="favourite_leg",
-            values=AxisUtils.one_hot(width=4),
+            values=AxisUtils.one_hot(width=4, include_zero=False),
             description="This makes no sense to display as one_hot, but here we are",
         )
 
