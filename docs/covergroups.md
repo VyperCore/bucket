@@ -23,7 +23,7 @@ class MyBigCoverGroup(Covergroup):
 ```
 ---
 ### Tier and tags
-If you wish to filter coverpoints or allow for easier searching in the coverage viewer then you can set a tier and/or tags per coverpoint instance. These are optionally applied to each within the covergroup setup phase.
+If you wish to filter coverpoints then you can set a tier and/or tags per coverpoint instance. These are optionally applied to each within the covergroup setup phase.
 <br>
 
 `Tier`: A coverpoint's tier is set to 0 by default, which is the highest priority. Any value can be set. When running a simulation, the tier_level can be set by the testbench which will disable coverpoints of a lower priority tier.
@@ -33,7 +33,7 @@ If you wish to filter coverpoints or allow for easier searching in the coverage 
 
 ---
 ### Smart Sampling
-If the covergroup is known to only contain coverpoints/covergroups which will only cover a subset of data, then the user can optionally provide a `should_sample` function. This will prevent any sampling in any sub-coverpoints/covergroups.
+If a covergroup is known to contain coverpoints/covergroups which will only cover a subset of data, then the user can optionally provide a `should_sample` function. This will prevent any sampling in any sub-coverpoints/covergroups when the data would not be sampled.
 ```Python
     def should_sample(self, trace):
         """
