@@ -266,7 +266,7 @@ class Covergroup(CoverBase):
         return start.close(self, child=child_close, link=CovRun(point=1), typ=CoverBase)
 
 
-class CoverTop(Covergroup):
+class Covertop(Covergroup):
     """This is for the top of the coverage tree"""
 
     def __init__(self):
