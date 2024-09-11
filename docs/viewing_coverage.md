@@ -20,10 +20,6 @@ Bucket is able to print both a summary, or whole tables of coverage collected du
     ConsoleWriter().write(reading_a)
     ...
 ```
-Or to read in coverage from a SQL database:
-```
-python -m bucket write console --sql-path [SQL_DB_PATH] --points --record [ID]
-```
 
 `ConsoleWriter` has the following options which can be set to True for more detailed information:
 |Parameter| Default | Description|
@@ -32,6 +28,11 @@ python -m bucket write console --sql-path [SQL_DB_PATH] --points --record [ID]
 |goals|False|Print name and description of all goals for all coverpoints|
 |points|False|Print out hit count and goal for all buckets for each coverpoint|
 |summary|True|Print out a summary of hits for each coverpoint in the tree|
+
+Or to read in coverage from a SQL database:
+```
+python -m bucket write console --sql-path [SQL_DB_PATH] [--axes] [--goals] [--points] [--summary] --record [ID]
+```
 
 ---
 
