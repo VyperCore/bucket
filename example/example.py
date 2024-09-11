@@ -74,14 +74,14 @@ def run(db_path: Path):
     print("\n-------------------------------------------------------")
     print("This is the coverage with 100 samples:")
     print(
-        f"To view this coverage in detail please run: python -m bucket read --sql-path example_file_store --points --record {rec_ref_a}"
+        f"To view this coverage in detail please run: python -m bucket write console --sql-path example_file_store.db --points --record {rec_ref_a}"
     )
     ConsoleWriter().write(reading_a)
     print(
         "\nThis is the coverage from 2 regressions. One with 100 samples, and one with 500:"
     )
     print(
-        f"To view this coverage in detail please run: python -m bucket read --sql-path example_file_store --points --record {rec_ref_merged}"
+        f"To view this coverage in detail please run: python -m bucket write console --sql-path example_file_store.db --points --record {rec_ref_merged}"
     )
     ConsoleWriter().write(merged_reading)
 
