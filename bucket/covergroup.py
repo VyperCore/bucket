@@ -22,17 +22,18 @@ class Covergroup(CoverBase):
     """This class groups coverpoints together, and adds them to the hierarchy"""
 
     @validate_call
-    def __init__(self, name: str, description: str):
+    def __init__(self, name: str | None = None, description: str | None = None):
         """
         Parameters:
             name: Name of covergroup
             description: Description of covergroup
         """
 
-        self.name = name
-        self.description = description
+        self.name = name if name is not None else self.NAME
+        self.description = description if description is not None else self.DESCRIPTION
+
         # Required for top covergroup - will be overwritten for all others
-        self.full_path = name.lower()
+        self.full_path = self.name.lower()
 
         self.tier = None
         self.tier_active = True
@@ -50,7 +51,7 @@ class Covergroup(CoverBase):
         This calls the user defined setup() plus any other setup required
         """
         self.setup(ctx=CoverageContext.get())
-        self._set_full_path()
+        self._set_full_path_for_children()
         self._update_tags_and_tiers()
 
     def setup(self, ctx: SimpleNamespace):
@@ -67,7 +68,7 @@ class Covergroup(CoverBase):
                 if tag not in self.tags:
                     self.tags.append(tag)
 
-    def _set_full_path(self):
+    def _set_full_path_for_children(self):
         """
         Set full_path strings for each child
         """
@@ -76,7 +77,7 @@ class Covergroup(CoverBase):
 
         for cg in self.covergroups.values():
             cg.full_path = self.full_path + f".{cg.name.lower()}"
-            cg._set_full_path()
+            cg._set_full_path_for_children()
 
     @validate_call
     def include_by_function(self, matcher: Callable[[CoverBase], bool]):

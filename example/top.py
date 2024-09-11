@@ -14,19 +14,12 @@ class TopPets(Covergroup):
     An instance of this covergroup will be passed to the sampler.
     """
 
+    NAME = "Pets"
+    DESCRIPTION = "Pet coverage"
+
     def setup(self, ctx):
-        self.add_covergroup(
-            TopDogs(
-                name="dogs",
-                description="Doggy coverage",
-            )
-        )
-        self.add_covergroup(
-            TopCats(
-                name="cats",
-                description="Kitty coverage",
-            )
-        )
+        self.add_covergroup(TopDogs())
+        self.add_covergroup(TopCats())
 
 
 # Sampler
