@@ -26,8 +26,8 @@ Bucket is able to print both a summary, or whole tables of coverage collected du
 |--|--|--|
 |axes|False|Print name and description of all axes for all coverpoints|
 |goals|False|Print name and description of all goals for all coverpoints|
-|points|False|Print out hit count and goal for all buckets for each coverpoint|
-|summary|True|Print out a summary of hits for each coverpoint in the tree|
+|points|False|Print hit count and goal for all buckets for each coverpoint|
+|summary|True|Print a summary of hits for each coverpoint in the tree|
 
 Or to read in coverage from a SQL database:
 ```
@@ -52,6 +52,15 @@ You can then open the created HTML file in your preferred browser.
   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/vypercore/bucket/stuart/doc_update/.github/images/Main__light.png">
   <img alt="Screenshot showing an example covertree loaded into the Bucket viewer" src="https://raw.githubusercontent.com/vypercore/bucket/stuart/doc_update/.github/images/Main__dark.png">
 </picture>
+
+Above you can see the initial window when opening. The whole coverage tree is shown along with various hit statistics.
+|Statistic| Descrption|
+|--|--|
+|Goal Targets| Total number all bucket targets|
+|Goal Hits | Total number of hits (capped at each bucket's target)
+|Buckets target | Number of targets (not their value)|
+|Buckets Hit | Number of buckets with at least 1 hit|
+|Buckets Full| Number of fully saturated buckets (hits >= target)|
 
 On the left, the navigation menu shows the coverage tree, which can be expanded/collapsed as necessary or searched.
 

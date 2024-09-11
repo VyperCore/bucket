@@ -8,7 +8,7 @@
 
 ### Filtering by function
 
-Coverpoint and Covergroups may be filtered to allow coverage to run quicker. This is useful when working on a small subset of coverage and you don't want to run everything, or for follow-up regressions to exclude already saturated coverpoints. Below are the methods to include, restrict or exclude coverage which match the condition provided.
+Coverpoints and Covergroups may be filtered to allow coverage to run quicker. This is useful when working on a small subset of coverage and you don't want to run everything, or for follow-up regressions to exclude already saturated coverpoints. Below are the methods to include, restrict or exclude coverage which match the condition provided.
 
 | Function  | Description |
 |---|---|
