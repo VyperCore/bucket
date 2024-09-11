@@ -3,7 +3,7 @@
 
 import hashlib
 import itertools
-from types import SimpleNamespace
+from types import NoneType, SimpleNamespace
 from typing import TYPE_CHECKING, Callable, Iterable
 
 from pydantic import validate_call
@@ -30,7 +30,7 @@ class Covergroup(CoverBase):
             description: Description of covergroup
         """
 
-        self.name = name if name is not None else self.NAME
+        self.name = name or self.NAME or type(self).__name__
         self.description = description if description is not None else self.DESCRIPTION
 
         # Required for top covergroup - will be overwritten for all others
@@ -148,16 +148,15 @@ class Covergroup(CoverBase):
             description: [Optional]: Override the description
             motivation: [Optional]: Override the motivation
         """
-        if name is not None:
-            assert isinstance(name, str), f"name must be a string, not {type(name)}"
-        if description is not None:
-            assert isinstance(
-                description, str
-            ), f"description must be a string, not {type(description)}"
-        if motivation is not None:
-            assert isinstance(
-                motivation, str
-            ), f"motivation must be a string, not {type(motivation)}"
+        assert isinstance(
+            name, str | NoneType
+        ), f"name must be a string, not {type(name)}"
+        assert isinstance(
+            description, str | NoneType
+        ), f"description must be a string, not {type(description)}"
+        assert isinstance(
+            motivation, str | NoneType
+        ), f"motivation must be a string, not {type(motivation)}"
         coverpoint._init(
             name=name, description=description, motivation=motivation, parent=self
         )
@@ -179,12 +178,12 @@ class Covergroup(CoverBase):
             name: [Optional]: Override the name
             description: [Optional]: Override the description
         """
-        if name is not None:
-            assert isinstance(name, str), f"name must be a string, not {type(name)}"
-        if description is not None:
-            assert isinstance(
-                description, str
-            ), f"description must be a string, not {type(description)}"
+        assert isinstance(
+            name, str | NoneType
+        ), f"name must be a string, not {type(name)}"
+        assert isinstance(
+            description, str | NoneType
+        ), f"description must be a string, not {type(description)}"
         covergroup._init(name=name, description=description, parent=self)
         if covergroup.name in self.covergroups:
             raise Exception("Covergroup names must be unique within a covergroup")
