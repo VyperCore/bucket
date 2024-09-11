@@ -56,7 +56,7 @@ You can then open the created HTML file in your preferred browser.
 Above you can see the initial window when opening. The whole coverage tree is shown along with various hit statistics.
 |Statistic| Descrption|
 |--|--|
-|Goal Targets| Total number all bucket targets|
+|Goal Targets| Total number of all bucket targets|
 |Goal Hits | Total number of hits (capped at each bucket's target)
 |Buckets target | Number of targets (not their value, excluding illegal and ignore)|
 |Buckets Hit | Number of buckets with at least 1 hit|
