@@ -58,7 +58,7 @@ Above you can see the initial window when opening. The whole coverage tree is sh
 |--|--|
 |Goal Targets| Total number all bucket targets|
 |Goal Hits | Total number of hits (capped at each bucket's target)
-|Buckets target | Number of targets (not their value)|
+|Buckets target | Number of targets (not their value, excluding illegal and ignore)|
 |Buckets Hit | Number of buckets with at least 1 hit|
 |Buckets Full| Number of fully saturated buckets (hits >= target)|
 
