@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2023-2024 Vypercore. All Rights Reserved
 
-from bucket import Covergroup, Sampler
+from bucket import CoverTop, Sampler
 
 from .cats import TopCats
 from .dogs import TopDogs
 
 
 # Top covergroup
-class TopPets(Covergroup):
+class TopPets(CoverTop):
     """
     This covergroup is top level covergroup, containing all other covergroups/coverpoints.
     An instance of this covergroup will be passed to the sampler.

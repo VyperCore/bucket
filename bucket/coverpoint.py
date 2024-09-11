@@ -66,12 +66,12 @@ class Coverpoint(CoverBase):
 
     """
 
-    @validate_call
-    def __init__(
+    def _init(
         self,
         name: str | None = None,
         description: str | None = None,
         motivation: str | None = None,
+        parent=None,
     ):
         self.active = True
 

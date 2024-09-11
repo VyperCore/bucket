@@ -52,11 +52,9 @@ class CatsAndToys(Covergroup):
 
         for idx, group in enumerate(name_groups.keys()):
             self.add_coverpoint(
-                PlayToysByName(
-                    name_group=name_groups[group],
-                    name=f"play_toys_by_name__group_{idx}",
-                    description=f"Preferred play toys by name (Group {idx})",
-                )
+                PlayToysByName(name_group=name_groups[group]),
+                name=f"play_toys_by_name__group_{idx}",
+                description=f"Preferred play toys by name (Group {idx})",
             )
 
 
@@ -71,12 +69,7 @@ class CatStats(Coverpoint):
     TIER = 1
     TAGS = ["basic", "stats"]
 
-    def __init__(
-        self,
-        name: str | None = None,
-        description: str | None = None,
-        motivation: str | None = None,
-    ):
+    def __init__(self):
         # Shortlist of names we care about
         self.important_names = [
             "Clive",
@@ -86,11 +79,6 @@ class CatStats(Coverpoint):
             "Connie",
             "Graham",
         ]
-
-        # NOTE: Any variables in self should be added BEFORE calling super.init
-        # as this will call setup
-
-        super().__init__(name=name, description=description, motivation=motivation)
 
     def setup(self, ctx):
         # The values passed to this axis are a simple list of str
@@ -195,15 +183,8 @@ class PlayToysByAge(Coverpoint):
 
 
 class PlayToysByName(Coverpoint):
-    def __init__(
-        self,
-        name_group,
-        name: str | None = None,
-        description: str | None = None,
-        motivation: str | None = None,
-    ):
+    def __init__(self, name_group):
         self.valid_names = name_group
-        super().__init__(name=name, description=description, motivation=motivation)
 
     def setup(self, ctx):
         self.add_axis(
@@ -241,14 +222,8 @@ class VIPNames(Coverpoint):
     NAME = "VIPs"
     DESCRIPTION = "Only important cat breeds"
 
-    def __init__(
-        self,
-        name: str | None = None,
-        description: str | None = None,
-        motivation: str | None = None,
-    ):
+    def __init__(self):
         self.important_names = ["Clive", "Derek"]
-        super().__init__(name=name, description=description, motivation=motivation)
 
     def setup(self, ctx):
         self.add_axis(

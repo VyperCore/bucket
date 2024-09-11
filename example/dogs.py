@@ -36,18 +36,14 @@ class DogsAndToys(Covergroup):
             ChewToysByAgeAndFavLeg().set_tier(5).set_tags(["toys", "age", "legs"])
         )
         self.add_coverpoint(
-            ChewToysByNameAndBreed(
-                name="chew_toys_by_name__group_a",
-                description="Preferred chew toys by name (Group A)",
-                names=["Barbara", "Connie", "Graham"],
-            )
+            ChewToysByNameAndBreed(names=["Barbara", "Connie", "Graham"]),
+            name="chew_toys_by_name__group_a",
+            description="Preferred chew toys by name (Group A)",
         )
         self.add_coverpoint(
-            ChewToysByNameAndBreed(
-                name="chew_toys_by_name__group_b",
-                description="Preferred chew toys by name (Group B)",
-                names=["Clive", "Derek", "Ethel"],
-            )
+            ChewToysByNameAndBreed(names=["Clive", "Derek", "Ethel"]),
+            name="chew_toys_by_name__group_b",
+            description="Preferred chew toys by name (Group B)",
         )
 
     def should_sample(self, trace):
@@ -194,9 +190,8 @@ class ChewToysByNameAndBreed(Coverpoint):
     TIER = 3
     TAGS = ["Toys", "Age", "Breed"]
 
-    def __init__(self, name: str, description: str, names):
+    def __init__(self, names):
         self.name_group = names
-        super().__init__(name=name, description=description)
 
     def setup(self, ctx):
         self.add_axis(

@@ -11,6 +11,7 @@ class Sampler:
 
     def __init__(self, coverage):
         # Coverage should be instance of the coverage to be updated
+        coverage._init()
         self.coverage = coverage
 
     def sample(self, trace):
