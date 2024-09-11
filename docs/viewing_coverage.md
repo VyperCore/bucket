@@ -22,7 +22,7 @@ Bucket is able to print both a summary, or whole tables of coverage collected du
 ```
 Or to read in coverage from a SQL database:
 ```
-python -m bucket read --sql-path [SQL_DB_PATH] --points --record [ID]
+python -m bucket write console --sql-path [SQL_DB_PATH] --points --record [ID]
 ```
 
 `ConsoleWriter` has the following options which can be set to True for more detailed information:
