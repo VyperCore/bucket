@@ -7,11 +7,35 @@
 
 A coverpoint consists of one or more axes, which are then crossed. (An axis covers one signal/data - similar to a UVM coverpoint). Each possible combination of the axes' values is called a bucket. Each bucket has a default goal with a target of 10 hits, which can be modified as required, or can be made illegal or ignored.
 
-Each new coverpoint should inherit from the Coverpoint class. When instancing, each coverpoint will require a 'name' and a 'description'. There is no need to override the `__init__` method if you are not passing in more arguments. Additional arguments can be passed to the coverpoint as required (see [below](#passing-the-coverpoint-extra-arguments), or the example files).
+Each new coverpoint should inherit from the Coverpoint class. When instancing, each coverpoint can optionally be passed a 'name' and a 'description' and 'motivation' to override the defaults. There is no need to override the `__init__` method if you are setting these fields within the coverpoint, or overriding them when instancing. If you want to pass additional arguments to the coverpoint see [below](#passing-the-coverpoint-extra-arguments), or the example files.
 
 ``` Python
 class MyCoverpoint(Coverpoint):
+    NAME = "default_name"
+    DESCRIPTION = "default_description"
+    MOTIVATION = "default_motivation"
+    TIER = 3 # Default tier
+    TAGS = ["default", "tags"]
+
 ```
+
+`Description` should explain WHAT is being covered.<br>
+`Motivation` should explain WHY you are covering it.
+
+These two fields can be very useful when later reviewing coverage to ensure you are collecting sufficient coverage. However, both are optional.
+
+---
+### Tier and tags
+If you wish to filter coverpoints then you can set a tier and/or tags per coverpoint instance. These are optionally applied to each within the covergroup setup phase.
+<br>
+
+`Tier`: A coverpoint's tier is set to 0 by default, which is the highest priority. Any value can be set. When running a simulation, the tier_level can be set by the testbench which will disable coverpoints of a lower priority tier.
+<br>
+
+`Tags`: Tags can be added to coverpoints to allow for easier filtering (where relying names may not make sense - such as a group of coverpoints across several covergroups). They will also be made available in the coverage viewer so only coverpoints with matching tags are shown.
+
+Both of these fields can be provided as above, as well as being overridden when instancing. See [Covergroups](covergroups.md) for how to use the available methods to override.
+
 ---
 ### Adding Axes and Goals
 A `setup()` method is then required to add the axes and goals of the coverpoint.
@@ -76,11 +100,6 @@ NOTE: The **name** of the axis value is used, not the original value. For string
 ```
 ---
 Finally, a `sample()` method needs to be defined. This method will be passed the trace data to be sampled. A trace object can be of any type, but is intended to be a class containing all information to be covered (accumulated from monitors, models, etc). Each coverpoint can then sample the relevant information. This could be as simple as directly assigning values to each axis, processing the values into something more useful and/or storing values for the next time the coverpoint is called.
-
-
-
-
-
 
 `set_axes()` is used to assign each axis a value/named-value. (eg. If an axis has the values `[0,1,2]` with the corresponding the names `[red,green,blue]` then either `0` or `red` could be assigned to the bucket). Once all axes have been set, then the bucket hit count can be incremented. If it is a regular bucket, then the hit count will be increased. If it is an IGNORE bucket, no action will be taken, and if it is an ILLEGAL bucket an error will be generated.
 
