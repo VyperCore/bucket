@@ -54,7 +54,7 @@ If a covergroup is known to contain coverpoints/covergroups which will only cove
 
 `Covertop` is a type of covergroup reserved for the very top of coverage. This class contains special fucntions such as filtering, which is talked about on the next page. This is the coverage instance that you will instance in your testbench, and pass to the Sampler.
 
-NOTE: The top of coverage should have a default name provided, and cannot be overridden when instancing. Description and motivation should also be added as default if they are used.
+NOTE: The top of coverage should have a default name provided, and cannot be overridden when instancing. A description should also be added as default if it is used.
 
 
 ---
