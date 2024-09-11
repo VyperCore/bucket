@@ -91,7 +91,7 @@ class Coverpoint(CoverBase):
         self.tags = []
 
         self._setup()
-        self.name = name if name is not None else self.NAME
+        self.name = name or self.NAME or type(self).__name__
         self.description = description if description is not None else self.DESCRIPTION
         self.motivation = motivation if motivation is not None else self.MOTIVATION
 

@@ -66,7 +66,7 @@ class CatStats(Coverpoint):
     specifying values to the axis.
     """
 
-    NAME = "cat_stats"
+    # No name provided to demonstrate that class name will be used
     DESCRIPTION = "Some basic cat stats"
     TIER = 1
     TAGS = ["basic", "stats"]
