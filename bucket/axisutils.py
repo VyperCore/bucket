@@ -12,7 +12,7 @@ class AxisUtils:
         width: int = None,
         display_bin: bool = False,
         display_hex: bool = False,
-        include_zero: bool = True,
+        include_zero: bool = False,
         pad_zero: bool = True,
     ):
         """
