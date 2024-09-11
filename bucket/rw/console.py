@@ -12,7 +12,7 @@ class ConsoleWriter(Writer):
     Write coverage information out to the terminal using Rich.
     """
 
-    def __init__(self, axes=True, goals=True, points=True, summary=True):
+    def __init__(self, axes=False, goals=False, points=False, summary=True):
         self.write_axes = axes
         self.write_goals = goals
         self.write_points = points

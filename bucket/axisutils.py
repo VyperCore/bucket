@@ -1,14 +1,18 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2023-2024 Vypercore. All Rights Reserved
 
+from pydantic import validate_call
+
 
 class AxisUtils:
     """Common utils for Axes"""
 
+    @validate_call
     def one_hot(
         width: int = None,
         display_bin: bool = False,
         display_hex: bool = False,
+        include_zero: bool = False,
         pad_zero: bool = True,
     ):
         """
@@ -19,6 +23,7 @@ class AxisUtils:
             width: Number of bits
             display_bin: Override bucket name to display as binary (Default: False)
             display_hex: Override bucket name to display as hexadecimal (Default: False)
+            include_zero: Include all-zero. (Default: True)
             pad_zero: Pad bucket name with leading zeroes. (Default: True)
 
             Returns: Dict of {bucket_name: value}
@@ -35,7 +40,9 @@ class AxisUtils:
             else:
                 display_hex = True
 
-        one_hot_vals = [0]
+        one_hot_vals = []
+        if include_zero:
+            one_hot_vals.append(0)
         for i in range(width):
             one_hot_vals.append(1 << i)
 
@@ -49,6 +56,7 @@ class AxisUtils:
 
         return one_hot_dict
 
+    @validate_call
     def msb(
         width: int = None,
         display_bin: bool = False,

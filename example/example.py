@@ -78,14 +78,14 @@ def run(db_path: Path):
     print(
         f"To view this coverage in detail please run: python -m bucket write console --sql-path example_file_store.db --points --record {rec_ref_a}"
     )
-    ConsoleWriter(axes=False, goals=False, points=False).write(reading_a)
+    ConsoleWriter().write(reading_a)
     print(
         "\nThis is the coverage from 2 regressions. One with 100 samples, and one with 500:"
     )
     print(
         f"To view this coverage in detail please run: python -m bucket write console --sql-path example_file_store.db --points --record {rec_ref_merged}"
     )
-    ConsoleWriter(axes=False, goals=False, points=False).write(merged_reading)
+    ConsoleWriter().write(merged_reading)
 
     # Read all back from sql - note as the db is not removed this will
     # accumulate each time this example is run. This will also include
@@ -94,7 +94,7 @@ def run(db_path: Path):
     merged_reading_all = MergeReading(*sql_accessor.read_all())
     print("\nThis is the coverage from all the regression data so far:")
     print("(To reset please delete the file 'example_file_store')")
-    ConsoleWriter(axes=False, goals=False, points=False).write(merged_reading_all)
+    ConsoleWriter().write(merged_reading_all)
 
     # Generating web viewer
     # To generate the HTML report run:
