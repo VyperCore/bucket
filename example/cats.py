@@ -14,24 +14,13 @@ class TopCats(Covergroup):
     This covergroup contains all cat related coverage.
     """
 
+    NAME = "cats"
+    DESCRIPTION = "Kitty coverage"
+
     def setup(self, ctx):
-        self.add_coverpoint(
-            CatStats(name="cat_stats", description="Some basic cat stats")
-            .set_tier(1)
-            .set_tags(["basic", "stats"])
-        )
-        self.add_covergroup(
-            CatsAndToys(
-                name="play_toys",
-                description="A group of coverpoints about cat play toys",
-            )
-        )
-        self.add_coverpoint(
-            VIPNames(
-                name="VIPs",
-                description="Only important cat breeds",
-            )
-        )
+        self.add_coverpoint(CatStats())
+        self.add_covergroup(CatsAndToys())
+        self.add_coverpoint(VIPNames())
 
     def should_sample(self, trace):
         """
@@ -45,13 +34,11 @@ class CatsAndToys(Covergroup):
     This is another covergroup to group similar coverpoints together.
     """
 
+    NAME = "play_toys"
+    DESCRIPTION = "A group of coverpoints about cat play toys"
+
     def setup(self, ctx):
-        self.add_coverpoint(
-            PlayToysByAge(
-                name="play_toys_by_age",
-                description="Preferred play toys by age",
-            )
-        )
+        self.add_coverpoint(PlayToysByAge())
 
         # Split names into groups, then assign to coverpoints
         name_groups = {"A-C": [], "D-F": [], "Other": []}
@@ -65,11 +52,9 @@ class CatsAndToys(Covergroup):
 
         for idx, group in enumerate(name_groups.keys()):
             self.add_coverpoint(
-                PlayToysByName(
-                    name=f"play_toys_by_name__group_{idx}",
-                    description=f"Preferred play toys by name (Group {idx})",
-                    names=name_groups[group],
-                )
+                PlayToysByName(name_group=name_groups[group]),
+                name=f"play_toys_by_name__group_{idx}",
+                description=f"Preferred play toys by name (Group {idx})",
             )
 
 
@@ -79,7 +64,12 @@ class CatStats(Coverpoint):
     specifying values to the axis.
     """
 
-    def __init__(self, name: str, description: str):
+    # No name provided to demonstrate that class name will be used
+    DESCRIPTION = "Some basic cat stats"
+    TIER = 1
+    TAGS = ["basic", "stats"]
+
+    def __init__(self):
         # Shortlist of names we care about
         self.important_names = [
             "Clive",
@@ -89,11 +79,6 @@ class CatStats(Coverpoint):
             "Connie",
             "Graham",
         ]
-
-        # NOTE: Any variables in self should be added BEFORE calling super.init
-        # as this will call setup
-
-        super().__init__(name, description)
 
     def setup(self, ctx):
         # The values passed to this axis are a simple list of str
@@ -148,8 +133,8 @@ class PlayToysByAge(Coverpoint):
     common axis values provided as part of this library (eg. msb, one_hot)
     """
 
-    def __init__(self, name: str, description: str):
-        super().__init__(name, description)
+    NAME = "play_toys_by_age"
+    DESCRIPTION = "Preferred play toys by age"
 
     def setup(self, ctx):
         self.add_axis(
@@ -198,9 +183,8 @@ class PlayToysByAge(Coverpoint):
 
 
 class PlayToysByName(Coverpoint):
-    def __init__(self, name: str, description: str, names):
-        self.valid_names = names
-        super().__init__(name, description)
+    def __init__(self, name_group):
+        self.valid_names = name_group
 
     def setup(self, ctx):
         self.add_axis(
@@ -235,9 +219,11 @@ class PlayToysByName(Coverpoint):
 
 
 class VIPNames(Coverpoint):
-    def __init__(self, name: str, description: str):
+    NAME = "VIPs"
+    DESCRIPTION = "Only important cat breeds"
+
+    def __init__(self):
         self.important_names = ["Clive", "Derek"]
-        super().__init__(name, description)
 
     def setup(self, ctx):
         self.add_axis(

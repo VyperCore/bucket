@@ -27,6 +27,10 @@ class GOAL(Enum):
 
 
 class Coverpoint(CoverBase):
+    MOTIVATION = ""
+    TIER = 0
+    TAGS = []
+
     bucket: Bucket
     """
     This Bucket class is used for incrementing the hit count on a given bucket.
@@ -62,10 +66,13 @@ class Coverpoint(CoverBase):
 
     """
 
-    @validate_call
-    def __init__(self, name: str, description: str):
-        self.name = name
-        self.description = description
+    def _init(
+        self,
+        name: str | None = None,
+        description: str | None = None,
+        motivation: str | None = None,
+        parent=None,
+    ):
         self.active = True
 
         # List of axes used by this coverpoint
@@ -79,11 +86,14 @@ class Coverpoint(CoverBase):
         # Instance of Bucket class to increment hit count for a bucket
         self.bucket = Bucket(self)
 
-        self._setup()
-
         self.tier = 0
         self.tier_active = True
         self.tags = []
+
+        self._setup()
+        self.name = name or self.NAME or type(self).__name__
+        self.description = description if description is not None else self.DESCRIPTION
+        self.motivation = motivation if motivation is not None else self.MOTIVATION
 
         self.sha = hashlib.sha256((self.name + self.description).encode())
         self.axis_names = [x.name for x in self.axes]
@@ -105,6 +115,8 @@ class Coverpoint(CoverBase):
         This calls the user defined setup() plus any other setup required
         """
         self.setup(ctx=CoverageContext.get())
+        self.set_tags(self.TAGS)
+        self.set_tier(self.TIER)
 
     def setup(self, ctx: SimpleNamespace):
         """
@@ -121,7 +133,13 @@ class Coverpoint(CoverBase):
 
     @validate_call
     def set_tags(self, tags: TagStrs):
-        """Set coverpoint tags"""
+        """Override coverpoint tags with only those provided"""
+        self.tags = tags
+        return self
+
+    @validate_call
+    def add_tags(self, tags: TagStrs):
+        """Add coverpoint tags to existing ones"""
         self.tags += tags
         return self
 

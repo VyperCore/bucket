@@ -15,18 +15,12 @@ class TopDogs(Covergroup):
     This covergroup contains all dog related coverage.
     """
 
+    NAME = "dogs"
+    DESCRIPTION = "Doggy coverage"
+
     def setup(self, ctx):
-        self.add_coverpoint(
-            DogStats(name="doggy_stats", description="Some basic doggy stats")
-            .set_tier(1)
-            .set_tags(["basic", "stats"])
-        )
-        self.add_covergroup(
-            DogsAndToys(
-                name="dog_toys",
-                description="A group of coverpoints about dog chew toys",
-            )
-        )
+        self.add_coverpoint(DogStats())
+        self.add_covergroup(DogsAndToys())
 
 
 class DogsAndToys(Covergroup):
@@ -34,32 +28,22 @@ class DogsAndToys(Covergroup):
     This is another covergroup to group similar coverpoints together.
     """
 
+    NAME = "dog_and_their_toys"
+    DESCRIPTION = "A group of coverpoints about dog chew toys"
+
     def setup(self, ctx):
         self.add_coverpoint(
-            ChewToysByAge(
-                name="chew_toys_by_age",
-                description="Preferred chew toys by age",
-            )
-            .set_tier(5)
-            .set_tags(["toys", "age"])
+            ChewToysByAgeAndFavLeg().set_tier(5).set_tags(["toys", "age", "legs"])
         )
         self.add_coverpoint(
-            ChewToysByName(
-                name="chew_toys_by_name__group_a",
-                description="Preferred chew toys by name (Group A)",
-                names=["Barbara", "Connie", "Graham"],
-            )
-            .set_tier(3)
-            .set_tags(["toys", "name"])
+            ChewToysByNameAndBreed(names=["Barbara", "Connie", "Graham"]),
+            name="chew_toys_by_name__group_a",
+            description="Preferred chew toys by name (Group A)",
         )
         self.add_coverpoint(
-            ChewToysByName(
-                name="chew_toys_by_name__group_b",
-                description="Preferred chew toys by name (Group B)",
-                names=["Clive", "Derek", "Ethel"],
-            )
-            .set_tier(2)
-            .set_tags(["toys", "name"])
+            ChewToysByNameAndBreed(names=["Clive", "Derek", "Ethel"]),
+            name="chew_toys_by_name__group_b",
+            description="Preferred chew toys by name (Group B)",
         )
 
     def should_sample(self, trace):
@@ -75,8 +59,11 @@ class DogStats(Coverpoint):
     specifying values to the axis.
     """
 
-    def __init__(self, name: str, description: str):
-        super().__init__(name, description)
+    NAME = "Doggy stats"
+    DESCRIPTION = "Covering basic stats for all dogs"
+    MOTIVATION = "Make sure we have seen a wide variety of dogs"
+    TIER = 0
+    TAGS = ["basic", "stats"]
 
     def setup(self, ctx):
         # The values passed to this axis are a simple list of str
@@ -120,41 +107,33 @@ class DogStats(Coverpoint):
         self.bucket.hit()
 
 
-class ChewToysByAge(Coverpoint):
+class ChewToysByAgeAndFavLeg(Coverpoint):
     """
     This is another example coverpoint. This one contains an axis demonstrating the use of
     common axis values provided as part of this library (eg. msb, one_hot)
     """
 
-    def __init__(self, name: str, description: str):
-        super().__init__(name, description)
+    NAME = "chew_toys_by_age"
+    DESCRIPTION = "Cover preferred chew toys by age category and favourite leg"
+    MOTIVATION = "Check that favourite leg does not affect preferred chew toy"
 
     def setup(self, ctx):
-        self.add_axis(
-            name="breed",
-            values={
-                "Border Collie": [0, 1],
-                "Whippet": 2,
-                "Labrador": 3,
-                "Cockapoo": 4,
-            },
-            description="All known dog breeds",
-        )
         self.add_axis(
             name="age",
             values=["Puppy", "Adult", "Senior"],
             description="Range of dog years",
-        )
-        self.add_axis(
-            name="favourite_toy",
-            values=["Slipper", "Ball", "Stick", "Ring"],
-            description="Types of dog toys",
         )
 
         self.add_axis(
             name="favourite_leg",
             values=AxisUtils.one_hot(width=4),
             description="This makes no sense to display as one_hot, but here we are",
+        )
+
+        self.add_axis(
+            name="favourite_toy",
+            values=["Slipper", "Ball", "Stick", "Ring"],
+            description="Types of dog toys",
         )
 
         self.add_goal("NO_SLIPPERS", "Only puppies chew slippers!", illegal=True)
@@ -193,7 +172,7 @@ class ChewToysByAge(Coverpoint):
             age = "Adult"
 
         with self.bucket as bucket:
-            bucket.set_axes(breed=trace["Breed"], age=age, favourite_leg=trace["Leg"])
+            bucket.set_axes(age=age, favourite_leg=trace["Leg"])
 
             # For when multiple values might need covering from one trace
             # Only need to set the axes that change
@@ -202,10 +181,17 @@ class ChewToysByAge(Coverpoint):
                 bucket.hit()
 
 
-class ChewToysByName(Coverpoint):
-    def __init__(self, name: str, description: str, names):
+class ChewToysByNameAndBreed(Coverpoint):
+    NAME = "incorrect_name_which_will_be_overridden"
+    DESCRIPTION = "Incorrect description that will be overridden"
+    MOTIVATION = (
+        "Check we have seen all breed and all names pick each toy as their favourite"
+    )
+    TIER = 3
+    TAGS = ["Toys", "Age", "Breed"]
+
+    def __init__(self, names):
         self.name_group = names
-        super().__init__(name, description)
 
     def setup(self, ctx):
         self.add_axis(
@@ -229,7 +215,9 @@ class ChewToysByName(Coverpoint):
             description="Types of dog toys",
         )
 
-        self.add_goal("WEIRDO_DOG", "Dogs named Barbara can't be trusted", ignore=True)
+        self.add_goal(
+            "WEIRDO_DOG", "Collies named Barbara can't be trusted", ignore=True
+        )
 
     def apply_goals(self, bucket, goals):
         if bucket.breed == "Border Collie" and bucket.name in ["Barbara"]:

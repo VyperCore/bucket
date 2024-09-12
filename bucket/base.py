@@ -8,9 +8,10 @@ from .link import CovDef, CovRun
 
 
 class CoverBase:
-    name: str
+    NAME: str | None = None
+    DESCRIPTION: str = ""
+
     full_path: str
-    description: str
     target: int
     hits: int
 

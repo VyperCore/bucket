@@ -1,32 +1,25 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2023-2024 Vypercore. All Rights Reserved
 
-from bucket import Covergroup, Sampler
+from bucket import Covertop, Sampler
 
 from .cats import TopCats
 from .dogs import TopDogs
 
 
 # Top covergroup
-class TopPets(Covergroup):
+class TopPets(Covertop):
     """
     This covergroup is top level covergroup, containing all other covergroups/coverpoints.
     An instance of this covergroup will be passed to the sampler.
     """
 
+    NAME = "Pets"
+    DESCRIPTION = "Pet coverage"
+
     def setup(self, ctx):
-        self.add_covergroup(
-            TopDogs(
-                name="dogs",
-                description="Doggy coverage",
-            )
-        )
-        self.add_covergroup(
-            TopCats(
-                name="cats",
-                description="Kitty coverage",
-            )
-        )
+        self.add_covergroup(TopDogs())
+        self.add_covergroup(TopCats())
 
 
 # Sampler

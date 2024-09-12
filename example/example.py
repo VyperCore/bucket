@@ -25,13 +25,11 @@ def run(db_path: Path):
     # normally be hardcoded, but instead come from the command line/regression
     # configuration.
     with CoverageContext(pet_info=pet_info):
-        cvg_a = TopPets(name="Pets", description="Pet coverage").include_by_name(
-            "toys_by_name"
-        )
+        cvg_a = TopPets().include_by_name("toys_by_name")
         cvg_a.exclude_by_name(["group_b"])
 
     with CoverageContext(pet_info=pet_info):
-        cvg_b = TopPets(name="Pets", description="Pet coverage")
+        cvg_b = TopPets()
 
     # Instance 2 samplers. Again, you would only normally have one, but two are used here
     # to demonstrate merging coverage from multiple regressions/tests.

@@ -7,7 +7,7 @@
 
 A coverpoint consists of one or more axes, which are then crossed. (An axis covers one signal/data - similar to a UVM coverpoint). Each possible combination of the axes' values is called a bucket. Each bucket has a default goal with a target of 10 hits, which can be modified as required, or can be made illegal or ignored.
 
-Each new coverpoint should inherit from the Coverpoint class. When instancing, each coverpoint can optionally be passed a 'name' and a 'description' and 'motivation' to override the defaults. There is no need to override the `__init__` method if you are setting these fields within the coverpoint, or overriding them when instancing. If you want to pass additional arguments to the coverpoint see [below](#passing-the-coverpoint-extra-arguments), or the example files.
+Each new coverpoint should inherit from the Coverpoint class. When adding a coverpoint to a covergroup, you can optionally provide a 'name', a 'description' and a 'motivation' to override the defaults. If you want to pass additional arguments to the coverpoint see [below](#passing-the-coverpoint-extra-arguments), or the example files.
 
 ``` Python
 class MyCoverpoint(Coverpoint):
@@ -126,14 +126,13 @@ If multiple values are to be sampled for a given call of the sample method, then
 ---
 ### Passing the coverpoint extra arguments
 
-If you wish to create a coverpoint which relies on external data (such as a pre-processed list of instruction names, or a prefix for the axis names, etc), then further arguments can be provided. Any variables added to `self` should all be placed before `super().__init_()` if you want them to be accessible to the `setup()` method.
+If you wish to create a coverpoint which relies on external data (such as a pre-processed list of instruction names, or a prefix for the axis names, etc), then you can use `__init__()`.
 
 The example below shows instancing the same coverpoint twice with different names. These extra parameters could come from automatically generated lists which split up the original data into smaller groups.
 ```Python
 class ChewToysByName(Coverpoint):
-    def __init__(self, name: str, description: str, dog_names):
+    def __init__(self, dog_names):
         self.dog_names = dog_names
-        super().__init__(name, description)
 
     def setup(self, ctx):
         self.add_axis(
