@@ -216,12 +216,12 @@ class Covergroup(CoverBase):
         indentation = "    " * indent
         for cp in self._coverpoints.values():
             print(
-                f"[{fmt_active(cp._active)}]({cp._tier}) {indentation}|-- {cp._name}: {cp.description} -- Tags:{cp._tags}"
+                f"[{fmt_active(cp._active)}]({cp._tier}) {indentation}|-- {cp._name}: {cp._description} -- Tags:{cp._tags}"
             )
 
         for cg in self._covergroups.values():
             print(
-                f"[{fmt_active(cg._active)}]({cg._tier}) {indentation}|-- {cg._name}: {cg.description} -- Tags:{cg._tags}"
+                f"[{fmt_active(cg._active)}]({cg._tier}) {indentation}|-- {cg._name}: {cg._description} -- Tags:{cg._tags}"
             )
             cg.print_tree(indent + 1)
 
