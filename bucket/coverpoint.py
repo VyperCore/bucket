@@ -73,12 +73,12 @@ class Coverpoint(CoverBase):
         motivation: str | None = None,
         parent=None,
     ):
-        self.active = True
+        self._active = True
 
         # List of axes used by this coverpoint
-        self.axes: list[Axis] = []  # TODO make a dict
+        self._axes: list[Axis] = []  # TODO make a dict
         # Number of hits for each bucket
-        self.cvg_hits = defaultdict(int)
+        self._cvg_hits = defaultdict(int)
         # Dictionary of defined goals
         self._goal_dict = {"DEFAULT": GoalItem()}
         # Dictionary of goals for each bucket
@@ -86,29 +86,29 @@ class Coverpoint(CoverBase):
         # Instance of Bucket class to increment hit count for a bucket
         self.bucket = Bucket(self)
 
-        self.tier = 0
-        self.tier_active = True
-        self.tags = []
+        self._tier = 0
+        self._tier_active = True
+        self._tags = []
 
         self._setup()
-        self.name = name or self.NAME or type(self).__name__
-        self.description = description if description is not None else self.DESCRIPTION
-        self.motivation = motivation if motivation is not None else self.MOTIVATION
+        self._name = name or self.NAME or type(self).__name__
+        self._description = description if description is not None else self.DESCRIPTION
+        self._motivation = motivation if motivation is not None else self.MOTIVATION
 
-        self.sha = hashlib.sha256((self.name + self.description).encode())
-        self.axis_names = [x.name for x in self.axes]
+        self._sha = hashlib.sha256((self._name + self._description).encode())
+        self._axis_names = [x.name for x in self._axes]
         goals = SimpleNamespace(**self._goal_dict)
         for combination in self._all_axis_value_combinations():
             bucket = SimpleNamespace(
-                **dict(zip(self.axis_names, combination, strict=True))
+                **dict(zip(self._axis_names, combination, strict=True))
             )
             if goal := self.apply_goals(bucket, goals):
                 self._cvg_goals[combination] = goal
             else:
                 goal = self._goal_dict["DEFAULT"]
-            self.sha.update(goal.sha.digest())
+            self._sha.update(goal.sha.digest())
 
-        print(f"{self.name}: {self.description} created")
+        print(f"{self._name}: {self._description} created")
 
     def _setup(self):
         """
@@ -128,24 +128,24 @@ class Coverpoint(CoverBase):
     @validate_call
     def set_tier(self, tier):
         """Set coverpoint tier"""
-        self.tier = tier
+        self._tier = tier
         return self
 
     @validate_call
     def set_tags(self, tags: TagStrs):
         """Override coverpoint tags with only those provided"""
-        self.tags = tags
+        self._tags = tags
         return self
 
     @validate_call
     def add_tags(self, tags: TagStrs):
         """Add coverpoint tags to existing ones"""
-        self.tags += tags
+        self._tags += tags
         return self
 
     def _set_tier_level(self, tier: int):
-        self.tier_active = True if tier >= self.tier else False
-        return self.tier_active
+        self._tier_active = True if tier >= self._tier else False
+        return self._tier_active
 
     def _apply_filter(
         self,
@@ -155,16 +155,16 @@ class Coverpoint(CoverBase):
     ):
         is_match = matcher(self)
         if is_match and match_state is not None:
-            self.active = match_state
+            self._active = match_state
         elif not is_match and mismatch_state is not None:
-            self.active = mismatch_state
-        return self.active
+            self._active = mismatch_state
+        return self._active
 
     def _sample(self, trace):
         """
         Call user defined sample function if active
         """
-        if self.active and self.tier_active:
+        if self._active and self._tier_active:
             self.sample(trace)
 
     def _all_axis_value_combinations(self):
@@ -172,7 +172,7 @@ class Coverpoint(CoverBase):
         Iterate over all possible axis value combinations
         """
         axis_values = []
-        for axis in self.axes:
+        for axis in self._axes:
             axis_values.append(list(axis.values.keys()))
         yield from itertools.product(*axis_values)
 
@@ -180,7 +180,7 @@ class Coverpoint(CoverBase):
         """
         Increment hit count for the specified bucket. Default is +1
         """
-        self.cvg_hits[bucket] += hits
+        self._cvg_hits[bucket] += hits
 
     @validate_call
     def add_axis(
@@ -193,7 +193,7 @@ class Coverpoint(CoverBase):
         """
         Add axis with values to process later
         """
-        self.axes.append(Axis(name, values, description, enable_other))
+        self._axes.append(Axis(name, values, description, enable_other))
 
     @validate_call
     def add_goal(
@@ -248,7 +248,7 @@ class Coverpoint(CoverBase):
         child_start = start.link_down()
         child_close = None
 
-        for axis in self.axes:
+        for axis in self._axes:
             child_close = axis.chain(child_start)
             child_start = child_close.link_across()
 
@@ -271,7 +271,7 @@ class Coverpoint(CoverBase):
             bucket=buckets,
             target=target,
             target_buckets=target_buckets,
-            sha=self.sha,
+            sha=self._sha,
         )
 
         return start.close(self, child=child_close, link=link, typ=CoverBase)
@@ -285,7 +285,7 @@ class Coverpoint(CoverBase):
         full_buckets = 0
         for bucket in self._all_axis_value_combinations():
             bucket_target = self._get_goal(bucket).target
-            bucket_hits = self.cvg_hits[bucket]
+            bucket_hits = self._cvg_hits[bucket]
 
             if bucket_target > 0:
                 bucket_hits = min(bucket_target, bucket_hits)
@@ -318,4 +318,4 @@ class Coverpoint(CoverBase):
         Get hits for each bucket
         """
         for bucket in self._all_axis_value_combinations():
-            yield self.cvg_hits[bucket]
+            yield self._cvg_hits[bucket]

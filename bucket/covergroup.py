@@ -30,21 +30,21 @@ class Covergroup(CoverBase):
             description: Description of covergroup
         """
 
-        self.name = name or self.NAME or type(self).__name__
-        self.description = description if description is not None else self.DESCRIPTION
+        self._name = name or self.NAME or type(self).__name__
+        self._description = description if description is not None else self.DESCRIPTION
 
         # Required for top covergroup - will be overwritten for all others
-        self.full_path = self.name.lower()
+        self._full_path = self._name.lower()
 
-        self.tier = None
-        self.tier_active = True
-        self.tags = []
+        self._tier = None
+        self._tier_active = True
+        self._tags = []
 
         self._filter_applied = False
-        self.active = True
-        self.coverpoints = {}
-        self.covergroups = {}
-        self.sha = hashlib.sha256((self.name + self.description).encode())
+        self._active = True
+        self._coverpoints = {}
+        self._covergroups = {}
+        self._sha = hashlib.sha256((self._name + self._description).encode())
         self._setup()
 
     def _setup(self):
@@ -63,40 +63,40 @@ class Covergroup(CoverBase):
         Update covergroup with child tiers and tags
         """
         for child in self.iter_children():
-            if self.tier is None or child.tier < self.tier:
-                self.tier = child.tier
-            for tag in child.tags:
-                if tag not in self.tags:
-                    self.tags.append(tag)
+            if self._tier is None or child._tier < self._tier:
+                self._tier = child._tier
+            for tag in child._tags:
+                if tag not in self._tags:
+                    self._tags.append(tag)
 
     def _set_full_path_for_children(self):
         """
         Set full_path strings for each child
         """
-        for cp in self.coverpoints.values():
-            cp.full_path = self.full_path + f".{cp.name.lower()}"
+        for cp in self._coverpoints.values():
+            cp._full_path = self._full_path + f".{cp._name.lower()}"
 
-        for cg in self.covergroups.values():
-            cg.full_path = self.full_path + f".{cg.name.lower()}"
+        for cg in self._covergroups.values():
+            cg._full_path = self._full_path + f".{cg._name.lower()}"
             cg._set_full_path_for_children()
 
     def _set_tier_level(self, tier: int):
         any_children_active = False
         for child in self.iter_children():
             any_children_active |= child._set_tier_level(tier)
-        self.tier_active = any_children_active
-        return self.tier_active
+        self._tier_active = any_children_active
+        return self._tier_active
 
     def _match_by_name(self, names: MatchStrs):
         def matcher(cp: CoverBase):
-            l_name = cp.full_path.lower()
+            l_name = cp._full_path.lower()
             return any(f_str in l_name for f_str in names)
 
         return matcher
 
     def _match_by_tier(self, tier: int):
         def matcher(cp: CoverBase):
-            return cp.tier <= tier
+            return cp._tier <= tier
 
         return matcher
 
@@ -105,9 +105,9 @@ class Covergroup(CoverBase):
             if not isinstance(cp, Coverpoint):
                 return False
             if match_all:
-                return all(tag in cp.tags for tag in tags)
+                return all(tag in cp._tags for tag in tags)
             else:
-                return any(tag in cp.tags for tag in tags)
+                return any(tag in cp._tags for tag in tags)
 
         return matcher
 
@@ -130,8 +130,8 @@ class Covergroup(CoverBase):
                     matcher, match_state, mismatch_state
                 )
 
-        self.active = any_children_active
-        return self.active
+        self._active = any_children_active
+        return self._active
 
     def add_coverpoint(
         self,
@@ -161,9 +161,9 @@ class Covergroup(CoverBase):
             name=name, description=description, motivation=motivation, parent=self
         )
 
-        if coverpoint.name in self.coverpoints:
+        if coverpoint._name in self._coverpoints:
             raise Exception("Coverpoint names must be unique within a covergroup")
-        self.coverpoints[coverpoint.name] = coverpoint
+        self._coverpoints[coverpoint._name] = coverpoint
 
     def add_covergroup(
         self,
@@ -185,18 +185,18 @@ class Covergroup(CoverBase):
             description, str | NoneType
         ), f"description must be a string, not {type(description)}"
         covergroup._init(name=name, description=description, parent=self)
-        if covergroup.name in self.covergroups:
+        if covergroup._name in self._covergroups:
             raise Exception("Covergroup names must be unique within a covergroup")
-        self.covergroups[covergroup.name] = covergroup
+        self._covergroups[covergroup._name] = covergroup
 
     def __getattr__(self, key: str):
         """
         Allow reference to child covergroups and coverpoints using <parent>.<child>
         """
-        if key in self.covergroups:
-            return self.covergroups[key]
-        elif key in self.coverpoints:
-            return self.coverpoints[key]
+        if key in self._covergroups:
+            return self._covergroups[key]
+        elif key in self._coverpoints:
+            return self._coverpoints[key]
         else:
             return super().__getattribute__(key)
 
@@ -210,18 +210,18 @@ class Covergroup(CoverBase):
         if indent == 0:
             print("COVERAGE_TREE")
             print(
-                f"[{fmt_active(self.active)}]({self.tier}) {self.name}: {self.description} -- Tags:{self.tags}"
+                f"[{fmt_active(self._active)}]({self._tier}) {self._name}: {self._description} -- Tags:{self._tags}"
             )
         indent += 1
         indentation = "    " * indent
-        for cp in self.coverpoints.values():
+        for cp in self._coverpoints.values():
             print(
-                f"[{fmt_active(cp.active)}]({cp.tier}) {indentation}|-- {cp.name}: {cp.description} -- Tags:{cp.tags}"
+                f"[{fmt_active(cp._active)}]({cp._tier}) {indentation}|-- {cp._name}: {cp.description} -- Tags:{cp._tags}"
             )
 
-        for cg in self.covergroups.values():
+        for cg in self._covergroups.values():
             print(
-                f"[{fmt_active(cg.active)}]({cg.tier}) {indentation}|-- {cg.name}: {cg.description} -- Tags:{cg.tags}"
+                f"[{fmt_active(cg._active)}]({cg._tier}) {indentation}|-- {cg._name}: {cg.description} -- Tags:{cg._tags}"
             )
             cg.print_tree(indent + 1)
 
@@ -233,16 +233,18 @@ class Covergroup(CoverBase):
     def _sample(self, trace):
         """Call sample for all children if active"""
 
-        if self.active and self.should_sample(trace):
+        if self._active and self.should_sample(trace):
             for child in self.iter_children():
                 child._sample(trace)
 
     @validate_call
     def iter_children(self) -> Iterable[CoverBase]:
-        self.coverpoints = dict(sorted(self.coverpoints.items()))
-        self.covergroups = dict(sorted(self.covergroups.items()))
+        self._coverpoints = dict(sorted(self._coverpoints.items()))
+        self._covergroups = dict(sorted(self._covergroups.items()))
 
-        yield from itertools.chain(self.coverpoints.values(), self.covergroups.values())
+        yield from itertools.chain(
+            self._coverpoints.values(), self._covergroups.values()
+        )
 
     def _chain_def(self, start: OpenLink[CovDef] | None = None) -> Link[CovDef]:
         start = start or OpenLink(CovDef())
@@ -252,7 +254,7 @@ class Covergroup(CoverBase):
             child_close = child._chain_def(child_start)
             child_start = child_close.link_across()
         return start.close(
-            self, child=child_close, link=CovDef(point=1, sha=self.sha), typ=CoverBase
+            self, child=child_close, link=CovDef(point=1, sha=self._sha), typ=CoverBase
         )
 
     def _chain_run(self, start: OpenLink[CovRun] | None = None) -> Link[CovRun]:
