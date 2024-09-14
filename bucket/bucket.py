@@ -44,12 +44,12 @@ class Bucket:
         self.set_axes(**kwargs)
 
         assert len(self.axis_values) == len(
-            self.parent.axes
+            self.parent._axes
         ), "Incorrect number of axes have been set"
         axis_value_list = []
-        for i, axis in enumerate(self.parent.axes):
+        for i, axis in enumerate(self.parent._axes):
             if axis.name in self.axis_values:
-                result = self.parent.axes[i].get_named_value(
+                result = self.parent._axes[i].get_named_value(
                     self.axis_values[axis.name]
                 )
                 axis_value_list.append(result)
@@ -67,9 +67,9 @@ class Bucket:
         if bucket_goal.target > 0:
             self.parent._increment_hit_count(axis_value_tuple)
         elif bucket_goal.target < 0:
-            print(f"Illegal bucket '{self.parent.name}.{bucket_goal.name}' hit!")
+            print(f"Illegal bucket '{self.parent._name}.{bucket_goal.name}' hit!")
             print(
-                f"  Bucket: {dict(zip(self.parent.axis_names, list(axis_value_tuple), strict=True))}"
+                f"  Bucket: {dict(zip(self.parent._axis_names, list(axis_value_tuple), strict=True))}"
             )
 
     def set_axes(self, **kwargs):

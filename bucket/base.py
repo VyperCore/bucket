@@ -11,9 +11,7 @@ class CoverBase:
     NAME: str | None = None
     DESCRIPTION: str = ""
 
-    full_path: str
-    target: int
-    hits: int
+    _full_path: str
 
     def setup(self):
         raise NotImplementedError("This needs to be implemented by the coverpoint")

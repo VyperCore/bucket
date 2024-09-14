@@ -45,8 +45,8 @@ class PointTuple(NamedTuple):
             bucket_end=link.end.bucket,
             target=link.end.target - link.start.target,
             target_buckets=link.end.target_buckets - link.start.target_buckets,
-            name=link.item.name,
-            description=link.item.description,
+            name=link.item._name,
+            description=link.item._description,
         )
 
 
