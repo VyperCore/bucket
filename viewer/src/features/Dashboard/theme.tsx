@@ -24,18 +24,18 @@ const sider = {
         collapsible: false,
         defaultCollapsed: false,
         reverseArrow: false,
-        width: 'auto',
+        width: "auto",
         collapsedWidth: 0,
         style: {
             padding: 5,
             borderRightColor: cl.tertiarybg.toString(),
             borderRightWidth: 1,
             borderRightStyle: "solid",
-            maxWidth: 'auto'
+            maxWidth: "auto",
         },
         zeroWidthTriggerStyle: {
             background: cl.accentbg.toString(),
-            zIndex: 10
+            zIndex: 10,
         },
     } as SiderProps,
     search: {
@@ -100,16 +100,16 @@ const body = {
             style: {
                 margin: 0,
                 minHeight: 280,
-                overflow: 'scroll'
+                overflow: "scroll",
             },
         } as ComponentPropsWithoutRef<"div">,
         table: {
             props: {
                 pagination: false,
                 sticky: true,
-                size: 'small',
-                tableLayout: 'auto',
-                bordered: true
+                size: "small",
+                tableLayout: "auto",
+                bordered: true,
             } as TableProps,
         },
     },
@@ -133,6 +133,11 @@ export const antTheme: ThemeConfig = (() => {
     return {
         token: {
             colorText: cl.primarytxt.toString(),
+            // These tokens are used in the breadcrumb menu
+            colorBgElevated: cl.secondarybg.toString(),
+            controlItemBgHover: cl.highlightbg.toString(),
+            controlItemBgActive: cl.lowlightbg.toString(),
+            controlItemBgActiveHover: cl.highlightbg.toString(),
         },
         components: {
             Layout: {
@@ -184,7 +189,7 @@ export const antTheme: ThemeConfig = (() => {
                 rowHoverBg: cl.secondarybg.toString(),
                 headerSortHoverBg: cl.secondarybg.toString(),
                 headerSortActiveBg: cl.primarybg.toString(),
-                bodySortBg: cl.tertiarybg.toString()
+                bodySortBg: cl.tertiarybg.toString(),
             },
         },
     };
