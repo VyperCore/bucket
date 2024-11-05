@@ -68,10 +68,8 @@ class Bucket:
             self.parent._increment_hit_count(axis_value_tuple)
         elif bucket_goal.target < 0:
             print(f"Illegal bucket '{self.parent.name}.{bucket_goal.name}' hit!")
-            print(
-                f"  Bucket: {dict(zip(self.parent.axis_names, list(axis_value_tuple), strict=True))}"
-            )
-
+            raise RuntimeError(f"Invalid bucket hit: {dict(zip(self.parent.axis_names, list(axis_value_tuple), strict=True))}")
+    
     def set_axes(self, **kwargs):
         """
         Update dictionary of axis values, overwriting existing axis values if same key is set again
