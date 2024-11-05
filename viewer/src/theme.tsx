@@ -20,7 +20,7 @@ const lightThemeDef = {
             primarytxt: "#222222",
             desaturatedtxt: "#888888",
             positivebg: "#4bFF4b",
-            negativebg: "#FF4b4b"
+            negativebg: "#FF4b4b",
         },
     },
 };
@@ -39,7 +39,7 @@ const darkThemeDef: typeof lightThemeDef = {
             primarytxt: "#CCCCCC",
             desaturatedtxt: "#888888",
             positivebg: "#2BAA2B",
-            negativebg: "#AA2B2B"
+            negativebg: "#AA2B2B",
         },
     },
 };
@@ -58,7 +58,7 @@ const oddThemeDef: typeof lightThemeDef = {
             primarytxt: "#44CCCC",
             desaturatedtxt: "#888888",
             positivebg: "#ADFF6E",
-            negativebg: "#FFB6B6"
+            negativebg: "#FFB6B6",
         },
     },
 };
@@ -78,5 +78,4 @@ function createTheme(themeDef: typeof lightThemeDef) {
 export type Theme = ReturnType<typeof createTheme>;
 export const themes = themeDefs.map(createTheme);
 export const { styled } = stitches;
-const theme = stitches.theme;
-export default theme;
+export default stitches.theme;

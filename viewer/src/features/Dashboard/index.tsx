@@ -3,7 +3,7 @@
  * Copyright (c) 2023-2024 Vypercore. All Rights Reserved
  */
 
-import { themes } from "@/theme";
+import { Theme as ThemeType, themes } from "@/theme";
 import Theme from "@/providers/Theme";
 import type { FloatButtonProps, TreeDataNode } from "antd";
 import {
@@ -57,6 +57,8 @@ type breadCrumbMenuProps = {
     menuNodes: TreeDataNode[];
     /** Callback when a menu node is selected */
     onSelect: (selectedKeys: TreeKey[]) => void;
+    /** Theme object */
+    theme: ThemeType;
 };
 /**
  * Factory for bread crumb menus (dropdowns on breadcrumb)
@@ -67,6 +69,7 @@ function getBreadCrumbMenu({
     pathNode,
     menuNodes,
     onSelect,
+    theme,
 }: breadCrumbMenuProps) {
     let menu: BreadcrumbItemType["menu"] | undefined = undefined;
     if (menuNodes.length > 1 || pathNode !== menuNodes[0]) {
@@ -78,6 +81,7 @@ function getBreadCrumbMenu({
             selectable: true,
             selectedKeys: [pathNode.key as string],
             onSelect: ({ selectedKeys }) => onSelect(selectedKeys),
+            className: theme.theme.className,
         };
     }
     return menu;
@@ -90,6 +94,8 @@ type breadCrumbItemsProps = {
     selectedTreeKeys: TreeKey[];
     /** Callback when a node is selected */
     onSelect: (newSelectedKeys: TreeKey[]) => void;
+    /** Theme object */
+    theme: ThemeType;
 };
 /**
  * Create bread crumb items from the tree data
@@ -98,6 +104,7 @@ function getBreadCrumbItems({
     tree,
     selectedTreeKeys,
     onSelect,
+    theme,
 }: breadCrumbItemsProps): BreadcrumbItemType[] {
     const pathNodes = tree.getAncestorsByKey(selectedTreeKeys[0]);
 
@@ -120,7 +127,7 @@ function getBreadCrumbItems({
             title: <a>{pathNode.title as string}</a>,
             key: pathNode.key,
             onClick: () => onSelect([pathNode.key]),
-            menu: getBreadCrumbMenu({ pathNode, menuNodes, onSelect }),
+            menu: getBreadCrumbMenu({ pathNode, menuNodes, onSelect, theme }),
         });
         menuNodes = pathNode.children ?? [];
     }
@@ -132,7 +139,7 @@ function getBreadCrumbItems({
         breadCrumbItems.push({
             title: pathNode.title,
             key: pathNode.key,
-            menu: getBreadCrumbMenu({ pathNode, menuNodes, onSelect }),
+            menu: getBreadCrumbMenu({ pathNode, menuNodes, onSelect, theme }),
         });
     }
 
@@ -140,8 +147,8 @@ function getBreadCrumbItems({
 }
 
 export type DashboardProps = {
-    tree: Tree
-}
+    tree: Tree;
+};
 
 export default function Dashboard({ tree }: DashboardProps) {
     const [selectedTreeKeys, setSelectedTreeKeys] = useState<TreeKey[]>([]);
@@ -164,12 +171,6 @@ export default function Dashboard({ tree }: DashboardProps) {
         setAutoExpandTreeParent(false);
     };
 
-    const breadCrumbItems = getBreadCrumbItems({
-        tree,
-        selectedTreeKeys,
-        onSelect,
-    });
-
     const viewKey = selectedTreeKeys[0] ?? Tree.ROOT;
     const contentViews = tree.getViewsByKey(viewKey);
     const defaultView = contentViews[0];
@@ -185,13 +186,19 @@ export default function Dashboard({ tree }: DashboardProps) {
     const selectedViewContent = useMemo(() => {
         switch (currentContentKey) {
             case "Pivot":
-                return <LayoutOutlined />
+                return <LayoutOutlined />;
             case "Summary":
-                return <PointSummaryGrid tree={tree} node={tree.getNodeByKey(viewKey)} setSelectedTreeKeys={onSelect} />
+                return (
+                    <PointSummaryGrid
+                        tree={tree}
+                        node={tree.getNodeByKey(viewKey)}
+                        setSelectedTreeKeys={onSelect}
+                    />
+                );
             case "Point":
-                return <PointGrid node={tree.getNodeByKey(viewKey)} />
+                return <PointGrid node={tree.getNodeByKey(viewKey)} />;
             default:
-                throw new Error("Invalid view!?")
+                throw new Error("Invalid view!?");
         }
     }, [viewKey, currentContentKey]);
 
@@ -209,9 +216,21 @@ export default function Dashboard({ tree }: DashboardProps) {
                 <Layout {...view.body.props}>
                     <Header {...view.body.header.props}>
                         <Flex {...view.body.header.flex.props}>
-                            <Breadcrumb
-                                {...view.body.header.flex.breadcrumb.props}
-                                items={breadCrumbItems}></Breadcrumb>
+                            <Theme.Consumer>
+                                {/* The breadcrumb menu is placed outside of the main DOM tree
+                                    so we need to pass through the theme class */}
+                                {({ theme }) => (
+                                    <Breadcrumb
+                                        {...view.body.header.flex.breadcrumb
+                                            .props}
+                                        items={getBreadCrumbItems({
+                                            tree,
+                                            selectedTreeKeys,
+                                            onSelect,
+                                            theme,
+                                        })}></Breadcrumb>
+                                )}
+                            </Theme.Consumer>
                             <Segmented
                                 {...view.body.header.flex.segmented.props}
                                 options={contentViews}
