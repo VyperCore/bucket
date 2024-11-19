@@ -119,3 +119,15 @@ class AxisUtils:
             msb_dict = {f"0x{v:0{pad}_x}": val_range(v) for v in msb_vals}
 
         return msb_dict
+
+    def enabled():
+        return {"Enabled": 1, "Disabled": 0}
+
+    def disabled():
+        return {"Disabled": 1, "Enabled": 0}
+
+    def read_write():
+        return {"WRITE": 1, "READ": 0}
+
+    def polarity():
+        return {"Negative": 1, "Positive": 0}
