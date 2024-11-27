@@ -131,3 +131,81 @@ class AxisUtils:
 
     def polarity():
         return {"Negative": 1, "Positive": 0}
+
+    def ranges(
+        min_val=0,
+        max_val=None,
+        num_ranges=None,
+        include_min=False,
+        include_max=False,
+        force_hex=False,
+        force_dec=False,
+    ):
+        """
+        Creates an axis with a specified number of ranges from min to max values.
+        Decimal values will be used if max_val < 2**20, else they will be hexadecimal
+
+        eg. max_val=100, num_ranges=5, include_max=True:
+        -> {
+             "0 -> 19": [0, 19],
+             "20 -> 39": [20, 39],
+             "40 -> 59": [40, 59],
+             "60 -> 79": [60, 79],
+             "80 -> 99": [80, 99],
+             "100": 100
+            }
+
+
+        Parameters:
+            min_val: Min value for range (default: 0)
+            max_val: Max value for range
+            num_ranges: Number of ranges to be split into
+            include_min: Split out min val as separate bucket (default: False)
+            include_max: Split out max val as separate bucket (default: False)
+            force_hex: Force hexadecimal values for range names (default: False)
+            force_dec: Force decimal values for range names (default: False)
+
+        Returns: Dict of {bucket_name: value}
+
+        """
+
+        assert max_val is not None, "Max_val must be provided"
+        assert (
+            min_val < max_val
+        ), f"min_val ({min_val} must be lower than max_val ({max_val}))"
+        assert not (force_hex and force_dec), "Can only select force_hex OR force_dec"
+
+        # assert each range is 1+ in size
+        total_range = max_val - min_val
+        total_range -= 1 if include_min else 0
+        total_range -= 1 if include_max else 0
+        assert (
+            (total_range / num_ranges) > 1.0
+        ), f"Total range is too small to have {num_ranges} ranges. Need at least 1 value per range."
+
+        use_hex = force_hex or ((max_val > 2**20) and not force_dec)
+
+        ranges = {}
+        if include_min:
+            name = f"{min_val:#x}" if use_hex else f"{min_val}"
+            ranges[name] = min_val
+            min_val += 1
+        if include_max:
+            name = f"{max_val:#x}" if use_hex else f"{max_val}"
+            ranges[name] = max_val
+            max_val -= 1
+
+        step = (total_range + 1) // num_ranges
+        remainder = (total_range + 1) % num_ranges
+
+        start = min_val
+        for _ in range(num_ranges):
+            end = start + step - 1
+            if remainder > 0:
+                end += 1
+                remainder -= 1
+            name = f"{start:#x} -> {end:#x}" if use_hex else f"{start} -> {end}"
+            ranges[name] = [start, end]
+            start = end + 1
+
+        return ranges
