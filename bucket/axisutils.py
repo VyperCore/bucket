@@ -136,16 +136,15 @@ class AxisUtils:
         min_val=0,
         max_val=None,
         num_ranges=None,
-        include_min=False,
-        include_max=False,
-        force_hex=False,
-        force_dec=False,
+        separate_min=False,
+        separate_max=False,
+        format="dec",
     ):
         """
         Creates an axis with a specified number of ranges from min to max values.
         Decimal values will be used if max_val < 2**20, else they will be hexadecimal
 
-        eg. max_val=100, num_ranges=5, include_max=True:
+        eg. max_val=100, num_ranges=5, separate_max=True:
         -> {
              "0 -> 19": [0, 19],
              "20 -> 39": [20, 39],
@@ -160,10 +159,9 @@ class AxisUtils:
             min_val: Min value for range (default: 0)
             max_val: Max value for range
             num_ranges: Number of ranges to be split into
-            include_min: Split out min val as separate bucket (default: False)
-            include_max: Split out max val as separate bucket (default: False)
-            force_hex: Force hexadecimal values for range names (default: False)
-            force_dec: Force decimal values for range names (default: False)
+            separate_min: Split out min val as separate bucket (default: False)
+            separate_max: Split out max val as separate bucket (default: False)
+            format: Format for the name of each bucket. ['bin', 'dec', 'hex']. (default: 'dec')
 
         Returns: Dict of {bucket_name: value}
 
@@ -173,25 +171,35 @@ class AxisUtils:
         assert (
             min_val < max_val
         ), f"min_val ({min_val} must be lower than max_val ({max_val}))"
-        assert not (force_hex and force_dec), "Can only select force_hex OR force_dec"
+        assert format in [
+            "bin",
+            "dec",
+            "hex",
+        ], "Format can only be 'bin', dec', or 'hex'"
 
         # assert each range is 1+ in size
         total_range = max_val - min_val
-        total_range -= 1 if include_min else 0
-        total_range -= 1 if include_max else 0
+        total_range -= 1 if separate_min else 0
+        total_range -= 1 if separate_max else 0
         assert (
             (total_range / num_ranges) > 1.0
         ), f"Total range is too small to have {num_ranges} ranges. Need at least 1 value per range."
 
-        use_hex = force_hex or ((max_val > 2**20) and not force_dec)
+        def fname(val):
+            if format == "bin":
+                return f"{val:#b}"
+            elif format == "hex":
+                return f"{val:#x}"
+            else:
+                return f"{val}"
 
         ranges = {}
-        if include_min:
-            name = f"{min_val:#x}" if use_hex else f"{min_val}"
+        if separate_min:
+            name = fname(min_val)
             ranges[name] = min_val
             min_val += 1
-        if include_max:
-            name = f"{max_val:#x}" if use_hex else f"{max_val}"
+        if separate_max:
+            name = fname(max_val)
             ranges[name] = max_val
             max_val -= 1
 
@@ -204,8 +212,9 @@ class AxisUtils:
             if remainder > 0:
                 end += 1
                 remainder -= 1
-            name = f"{start:#x} -> {end:#x}" if use_hex else f"{start} -> {end}"
+            name = f"{fname(start)} -> {fname(end)}"
             ranges[name] = [start, end]
             start = end + 1
 
+        print(ranges)
         return ranges
