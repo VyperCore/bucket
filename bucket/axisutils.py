@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2023-2024 Vypercore. All Rights Reserved
 
+from typing import Callable
+
 from pydantic import validate_call
 
 
@@ -132,13 +134,14 @@ class AxisUtils:
     def polarity():
         return {"Negative": 1, "Positive": 0}
 
+    @validate_call
     def ranges(
-        min_val=0,
-        max_val=None,
-        num_ranges=None,
-        separate_min=False,
-        separate_max=False,
-        format="dec",
+        min_val: int = 0,
+        max_val: int | None = None,
+        num_ranges: int = None,
+        separate_min: bool = False,
+        separate_max: bool = False,
+        formatter: Callable[[int], str] = str,
     ):
         """
         Creates an axis with a specified number of ranges from min to max values.
@@ -161,7 +164,7 @@ class AxisUtils:
             num_ranges: Number of ranges to be split into
             separate_min: Split out min val as separate bucket (default: False)
             separate_max: Split out max val as separate bucket (default: False)
-            format: Format for the name of each bucket. ['bin', 'dec', 'hex']. (default: 'dec')
+            formatter: Formatter for the name of each bucket. (default: str)
 
         Returns: Dict of {bucket_name: value}
 
@@ -171,11 +174,6 @@ class AxisUtils:
         assert (
             min_val < max_val
         ), f"min_val ({min_val} must be lower than max_val ({max_val}))"
-        assert format in [
-            "bin",
-            "dec",
-            "hex",
-        ], "Format can only be 'bin', dec', or 'hex'"
 
         # assert each range is 1+ in size
         total_range = max_val - min_val
@@ -185,21 +183,13 @@ class AxisUtils:
             (total_range / num_ranges) > 1.0
         ), f"Total range is too small to have {num_ranges} ranges. Need at least 1 value per range."
 
-        def fname(val):
-            if format == "bin":
-                return f"{val:#b}"
-            elif format == "hex":
-                return f"{val:#x}"
-            else:
-                return f"{val}"
-
         ranges = {}
         if separate_min:
-            name = fname(min_val)
+            name = formatter(min_val)
             ranges[name] = min_val
             min_val += 1
         if separate_max:
-            name = fname(max_val)
+            name = formatter(max_val)
             ranges[name] = max_val
             max_val -= 1
 
@@ -212,7 +202,7 @@ class AxisUtils:
             if remainder > 0:
                 end += 1
                 remainder -= 1
-            name = f"{fname(start)} -> {fname(end)}"
+            name = f"{formatter(start)} -> {formatter(end)}"
             ranges[name] = [start, end]
             start = end + 1
 
