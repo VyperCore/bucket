@@ -206,5 +206,4 @@ class AxisUtils:
             ranges[name] = [start, end]
             start = end + 1
 
-        print(ranges)
         return ranges
