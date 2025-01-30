@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2023-2024 Vypercore. All Rights Reserved
+# Copyright (c) 2023-2025 Vypercore. All Rights Reserved
 
 from rich.console import Console
 from rich.table import Column, Table
@@ -50,14 +50,20 @@ class ConsoleWriter(Writer):
             desc = point.description
             hits = point_hit.hits
             target = point.target
-            target_percent = (hits / target) * 100
+            if target == 0:
+                target_percent = 100
+            else:
+                target_percent = (hits / target) * 100
 
             bucket_hits = point_hit.hit_buckets
             bucket_target = point.target_buckets
-            bucket_target_percent = (bucket_hits / bucket_target) * 100
-
             buckets_full = point_hit.full_buckets
-            buckets_full_percent = (buckets_full / bucket_target) * 100
+            if bucket_target == 0:
+                bucket_target_percent = 100
+                buckets_full_percent = 100
+            else:
+                bucket_target_percent = (bucket_hits / bucket_target) * 100
+                buckets_full_percent = (buckets_full / bucket_target) * 100
 
             summary_table.add_row(
                 name,
