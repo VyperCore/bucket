@@ -10,7 +10,6 @@ import { TreeKey } from "./tree";
 import {Theme as ThemeType} from "@/theme";
 import Color from "colorjs.io";
 import Theme from "@/providers/Theme";
-import treeMock from "../test/mocks/tree";
 
 export type PointGridProps = {
     node: PointNode;
