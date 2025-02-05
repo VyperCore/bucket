@@ -1,6 +1,6 @@
 /*
  * SPDX-License-Identifier: MIT
- * Copyright (c) 2023-2024 Vypercore. All Rights Reserved
+ * Copyright (c) 2023-2025 Vypercore. All Rights Reserved
  */
 
 import CoverageTree, { PointNode } from "./coveragetree";
@@ -178,6 +178,8 @@ export function PointGrid({node}: PointGridProps) {
                         text: axis_value.value,
                         value: axis_value.value
                     })),
+                    filterMode: 'tree',
+                    filterSearch: true,
                     onFilter: (value, record) => record[axis.name] == value,
                     sorter: getColumnMixedCompare(axis.name)
                 }
@@ -194,6 +196,8 @@ export function PointGrid({node}: PointGridProps) {
                         text: `${goal.name} - ${goal.description}`,
                         value: goal.name
                     })),
+                    filterMode: 'tree',
+                    filterSearch: true,
                     onFilter: (value, record) => record["goal_name"] == value,
                     sorter: getColumnMixedCompare("goal_name")
                 },
@@ -213,6 +217,46 @@ export function PointGrid({node}: PointGridProps) {
                     title: "Hit %",
                     dataIndex: "hit_ratio",
                     key: "hit_ratio",
+                    filters: [
+                        {
+                          text: 'Full',
+                          value: 'full',
+                        },
+                        {
+                          text: 'Partial',
+                          value: 'partial'
+                        },
+                        {
+                          text: 'Empty',
+                          value: 'empty'
+                        },
+                        {
+                          text: 'Illegal',
+                          value: 'illegal'
+                        },
+                        {
+                          text: 'Ignore',
+                          value: 'ignore'
+                        },
+                    ],
+                    onFilter: (value, record) => {
+                        switch (value) {
+                            case "full":
+                                return (record["target"] > 0) && (record["hits"] >= record["target"])
+                            case "partial":
+                                return (record["target"] > 0) && (record["hits"] > 0) && (record["hits"] < record["target"])
+                            case "empty":
+                                return (record["target"] > 0) && (record["hits"] === 0)
+                            case "illegal":
+                                return (record["target"] < 0)
+                            case "ignore":
+                                return (record["target"] === 0)
+                            default:
+                                throw new Error(`Unexpected value ${value}`);
+                        }
+                    },
+                    filterMode: 'tree',
+                    filterSearch: true,
                     ...getCoverageColumnConfig(theme, "hit_ratio"),
                     sorter: getColumnNumCompare('hit_ratio')
                 },
