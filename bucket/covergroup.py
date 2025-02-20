@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2023-2024 Vypercore. All Rights Reserved
+# Copyright (c) 2023-2025 Vypercore. All Rights Reserved
 
 import hashlib
 import itertools
+import logging
 from types import NoneType, SimpleNamespace
 from typing import TYPE_CHECKING, Callable, Iterable
 
@@ -22,13 +23,22 @@ class Covergroup(CoverBase):
     """This class groups coverpoints together, and adds them to the hierarchy"""
 
     def _init(
-        self, name: str | None = None, description: str | None = None, parent=None
+        self,
+        log,
+        name: str | None = None,
+        description: str | None = None,
+        parent=None,
     ):
         """
         Parameters:
             name: Name of covergroup
             description: Description of covergroup
         """
+        self.log = log
+        self.debug = log.debug
+        self.info = log.info
+        self.warning = log.warning
+        self.error = log.error
 
         self._name = name or self.NAME or type(self).__name__
         self._description = description if description is not None else self.DESCRIPTION
@@ -158,7 +168,11 @@ class Covergroup(CoverBase):
             motivation, str | NoneType
         ), f"motivation must be a string, not {type(motivation)}"
         coverpoint._init(
-            name=name, description=description, motivation=motivation, parent=self
+            self.log,
+            name=name,
+            description=description,
+            motivation=motivation,
+            parent=self,
         )
 
         if coverpoint._name in self._coverpoints:
@@ -184,7 +198,12 @@ class Covergroup(CoverBase):
         assert isinstance(
             description, str | NoneType
         ), f"description must be a string, not {type(description)}"
-        covergroup._init(name=name, description=description, parent=self)
+        covergroup._init(
+            self.log,
+            name=name,
+            description=description,
+            parent=self,
+        )
         if covergroup._name in self._covergroups:
             raise Exception("Covergroup names must be unique within a covergroup")
         self._covergroups[covergroup._name] = covergroup
@@ -208,19 +227,19 @@ class Covergroup(CoverBase):
             return "A" if active else "-"
 
         if indent == 0:
-            print("COVERAGE_TREE")
-            print(
+            self.info("COVERAGE_TREE")
+            self.info(
                 f"[{fmt_active(self._active)}]({self._tier}) {self._name}: {self._description} -- Tags:{self._tags}"
             )
         indent += 1
         indentation = "    " * indent
         for cp in self._coverpoints.values():
-            print(
+            self.info(
                 f"[{fmt_active(cp._active)}]({cp._tier}) {indentation}|-- {cp._name}: {cp._description} -- Tags:{cp._tags}"
             )
 
         for cg in self._covergroups.values():
-            print(
+            self.info(
                 f"[{fmt_active(cg._active)}]({cg._tier}) {indentation}|-- {cg._name}: {cg._description} -- Tags:{cg._tags}"
             )
             cg.print_tree(indent + 1)
@@ -270,8 +289,26 @@ class Covergroup(CoverBase):
 class Covertop(Covergroup):
     """This is for the top of the coverage tree"""
 
-    def __init__(self):
-        self._init()
+    def __init__(self, log=None, verbosity: str | int = "INFO"):
+        if log:
+            assert isinstance(
+                log, logging.Logger
+            ), f"log should be an instance of logging.Logger. Instead got {type(log)}"
+            self.log = log.getChild("bucket")
+            self.log.setLevel(getattr(logging, verbosity, getattr(logging, "INFO")))
+        else:
+            import sys
+
+            self.log = logging.getLogger("bucket")
+            handler = logging.StreamHandler(sys.stdout)
+            logging_verbosity = getattr(logging, verbosity, getattr(logging, "INFO"))
+            handler.setLevel(logging_verbosity)
+            formatter = logging.Formatter(
+                "%(asctime)s - %(name)-20s - %(levelname)s - %(message)s"
+            )
+            handler.setFormatter(formatter)
+            self.log.addHandler(handler)
+        self._init(self.log)
 
     @validate_call
     def include_by_function(self, matcher: Callable[[CoverBase], bool]):

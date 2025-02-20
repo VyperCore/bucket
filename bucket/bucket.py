@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2023-2024 Vypercore. All Rights Reserved
+# Copyright (c) 2023-2025 Vypercore. All Rights Reserved
 
 
 class Bucket:
@@ -9,11 +9,9 @@ class Bucket:
     See coverpoint.py or example.py for how to use
     """
 
-    def __init__(
-        self,
-        parent,
-    ):
+    def __init__(self, parent, log):
         self.parent = parent
+        self.log = log
         self.clear()
 
     def __call__(self): ...
@@ -67,9 +65,9 @@ class Bucket:
         if bucket_goal.target > 0:
             self.parent._increment_hit_count(axis_value_tuple)
         elif bucket_goal.target < 0:
-            print(f"Illegal bucket '{self.parent._name}.{bucket_goal.name}' hit!")
-            print(
-                f"  Bucket: {dict(zip(self.parent._axis_names, list(axis_value_tuple), strict=True))}"
+            self.log.error(
+                f"Illegal bucket '{self.parent._name}.{bucket_goal.name}' hit! "
+                + f"Bucket values: {dict(zip(self.parent._axis_names, list(axis_value_tuple), strict=True))}"
             )
 
     def set_axes(self, **kwargs):

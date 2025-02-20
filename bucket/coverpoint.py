@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2023-2024 Vypercore. All Rights Reserved
+# Copyright (c) 2023-2025 Vypercore. All Rights Reserved
 
 import hashlib
 import itertools
@@ -68,12 +68,19 @@ class Coverpoint(CoverBase):
 
     def _init(
         self,
+        log,
         name: str | None = None,
         description: str | None = None,
         motivation: str | None = None,
         parent=None,
     ):
         self._active = True
+
+        self.log = log
+        self.debug = log.debug
+        self.info = log.info
+        self.warning = log.warning
+        self.error = log.error
 
         # List of axes used by this coverpoint
         self._axes: list[Axis] = []  # TODO make a dict
@@ -84,7 +91,7 @@ class Coverpoint(CoverBase):
         # Dictionary of goals for each bucket
         self._cvg_goals = {}
         # Instance of Bucket class to increment hit count for a bucket
-        self.bucket = Bucket(self)
+        self.bucket = Bucket(self, log)
 
         self._tier = 0
         self._tier_active = True
@@ -108,7 +115,7 @@ class Coverpoint(CoverBase):
                 goal = self._goal_dict["DEFAULT"]
             self._sha.update(goal.sha.digest())
 
-        print(f"{self._name}: {self._description} created")
+        self.info(f"{self._name}: {self._description} created")
 
     def _setup(self):
         """
