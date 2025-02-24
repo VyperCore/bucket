@@ -24,7 +24,7 @@ class Covergroup(CoverBase):
 
     def _init(
         self,
-        log,
+        log: logging.Logger,
         name: str | None = None,
         description: str | None = None,
         parent=None,
@@ -289,7 +289,9 @@ class Covergroup(CoverBase):
 class Covertop(Covergroup):
     """This is for the top of the coverage tree"""
 
-    def __init__(self, log=None, verbosity: str | int = "INFO"):
+    def __init__(
+        self, log: logging.Logger | None = None, verbosity: str | int = "INFO"
+    ):
         if log:
             assert isinstance(
                 log, logging.Logger

@@ -3,6 +3,7 @@
 
 import hashlib
 import itertools
+import logging
 from collections import defaultdict
 from enum import Enum
 from types import SimpleNamespace
@@ -68,7 +69,7 @@ class Coverpoint(CoverBase):
 
     def _init(
         self,
-        log,
+        log: logging.Logger,
         name: str | None = None,
         description: str | None = None,
         motivation: str | None = None,

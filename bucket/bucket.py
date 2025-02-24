@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2023-2025 Vypercore. All Rights Reserved
+import logging
 
 
 class Bucket:
@@ -9,7 +10,7 @@ class Bucket:
     See coverpoint.py or example.py for how to use
     """
 
-    def __init__(self, parent, log):
+    def __init__(self, parent, log: logging.Logger):
         self.parent = parent
         self.log = log
         self.clear()
