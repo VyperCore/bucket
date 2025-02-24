@@ -2,19 +2,49 @@
 # Copyright (c) 2023-2024 Vypercore. All Rights Reserved
 
 from pathlib import Path
-
 from git.repo import Repo
-
+import random
 from bucket import CoverageContext
 from bucket.rw import ConsoleWriter, HTMLWriter, MergeReading, PointReader, SQLAccessor
-
-from .top import MadeUpStuff, MySampler, TopPets
+from .common import MadeUpStuff
+from .top import TopPets
 
 # This file sets up and runs the example coverage. While it doesn't reflect the expected
 # setup within a testbench, it will demonstrate several useful features.
 
+def create_trace(self):
+    """
+    Nonsense function to generate a trace object for the example
+    In a real testbench this would come from monitors, etc
+    For this example, create random dog and cat data and put in a dictionary
+    In practise this would normally be a class, which can be populated with as
+    many types of nested data as required.
+    """
 
-def run(db_path: Path):
+    trace = {}
+
+    trace["type"] = self.random.choice(["Cat", "Dog"])
+    trace["Breed"] = self.random.randint(0, 4)
+    trace["Age"] = self.random.randint(0, 15)
+    trace["Name"] = self.random.choice(MadeUpStuff.pet_names)
+
+    if trace["type"] == "Dog":
+        trace["Chew_toy"] = self.random.choices(
+            ["Slipper", "Ball", "Stick", "Ring"], k=2
+        )
+        trace["Weight"] = self.random.randint(5, 50)
+        trace["Leg"] = self.random.choice([1, 2, 4, 8])
+
+    else:
+        trace["Evil_thoughts"] = self.random.randint(5, 50)
+        trace["Superiority"] = self.random.choice(["low", "medium", "high"])
+        trace["Play_toy"] = self.random.choice(
+            ["Toy_mouse", "Scratching Post", "Laser", "Box"]
+        )
+    return trace
+
+
+def run(db_path: Path, rand: random.Random):
     # Get some common pet info for coverpoints to use
     pet_info = MadeUpStuff()
 
@@ -115,4 +145,5 @@ def run(db_path: Path):
 
 
 if __name__ == "__main__":
-    run("example_file_store.db")
+    rand = random.Random()
+    run("example_file_store.db", rand)

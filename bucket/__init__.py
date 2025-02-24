@@ -4,8 +4,8 @@
 from . import rw
 from .axisutils import AxisUtils
 from .context import CoverageContext
-from .covergroup import Covergroup, Covertop
+from .covergroup import Covergroup
+from .covertop import Covertop
 from .coverpoint import Coverpoint
-from .sampler import Sampler
 
-assert all((CoverageContext, Sampler, Covergroup, Coverpoint, Covertop, AxisUtils, rw))
+assert all((CoverageContext, Covergroup, Coverpoint, Covertop, AxisUtils, rw))
