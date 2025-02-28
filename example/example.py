@@ -50,7 +50,7 @@ def pretend_monitor(rand):
 def run_testbench(
     db_path: Path,
     rand: random.Random,
-    logger: logging.Logger,
+    log: logging.Logger,
     apply_filters_and_logging: bool = False,
 ):
     samples = 250
@@ -170,17 +170,19 @@ def merge(log, regr_db_path, merged_db_path, ref_1, ref_2):
         log.error("Web viewer failed")
 
 
-if __name__ == "__main__":
+def run(reg_db_path: Path = "example_regr_file_store.db"):
     logging.basicConfig(level=logging.DEBUG)
     log = logging.getLogger("tb")
     log.setLevel(logging.DEBUG)
-
     rand = random.Random()
-    reg_db_path = "example_regr_file_store.db"
+
     merged_db_path = "example_merged_file_store.db"
 
     ref_1 = run_testbench(reg_db_path, rand, log)
-
     ref_2 = run_testbench(reg_db_path, rand, log, apply_filters_and_logging=True)
 
     merge(log, reg_db_path, merged_db_path, ref_1, ref_2)
+
+
+if __name__ == "__main__":
+    run()
