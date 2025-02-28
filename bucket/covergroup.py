@@ -16,7 +16,9 @@ from .context import CoverageContext
 from .link import CovDef, CovRun
 
 if TYPE_CHECKING:
+    from .covergroup import Covergroup
     from .coverpoint import Coverpoint
+    from .covertop import CoverConfig
 
 
 class Covergroup(CoverBase):
@@ -27,7 +29,8 @@ class Covergroup(CoverBase):
         log: logging.Logger,
         name: str | None = None,
         description: str | None = None,
-        parent=None,
+        *,
+        config: "CoverConfig",
     ):
         """
         Parameters:
@@ -39,6 +42,8 @@ class Covergroup(CoverBase):
         self.info = log.info
         self.warning = log.warning
         self.error = log.error
+
+        self._config = config
 
         self._name = name or self.NAME or type(self).__name__
         self._description = description if description is not None else self.DESCRIPTION
@@ -172,7 +177,7 @@ class Covergroup(CoverBase):
             name=name,
             description=description,
             motivation=motivation,
-            parent=self,
+            config=self._config,
         )
 
         if coverpoint._name in self._coverpoints:
@@ -199,10 +204,7 @@ class Covergroup(CoverBase):
             description, str | NoneType
         ), f"description must be a string, not {type(description)}"
         covergroup._init(
-            self.log,
-            name=name,
-            description=description,
-            parent=self,
+            self.log, name=name, description=description, config=self._config
         )
         if covergroup._name in self._covergroups:
             raise Exception("Covergroup names must be unique within a covergroup")
@@ -284,4 +286,3 @@ class Covergroup(CoverBase):
             child_close = child._chain_run(child_start)
             child_start = child_close.link_across()
         return start.close(self, child=child_close, link=CovRun(point=1), typ=CoverBase)
-

@@ -1,6 +1,10 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2023-2025 Vypercore. All Rights Reserved
 import logging
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .coverpoint import Coverpoint
 
 
 class Bucket:
@@ -10,7 +14,7 @@ class Bucket:
     See coverpoint.py or example.py for how to use
     """
 
-    def __init__(self, parent, log: logging.Logger):
+    def __init__(self, parent: "Coverpoint", log: logging.Logger):
         self.parent = parent
         self.log = log
         self.clear()
@@ -63,13 +67,16 @@ class Bucket:
         # If the bucket goal is defined as IGNORE, nothing happens.
         # If the bucket goal is defined as ILLEGAL, an error is printed out
         # Else the bucket hit count is incremented
-        if bucket_goal.target > 0:
+        if bucket_goal.target != 0:
             self.parent._increment_hit_count(axis_value_tuple)
-        elif bucket_goal.target < 0:
-            self.log.error(
+        if bucket_goal.target < 0:
+            illegal_str = (
                 f"Illegal bucket '{self.parent._name}.{bucket_goal.name}' hit! "
                 + f"Bucket values: {dict(zip(self.parent._axis_names, list(axis_value_tuple), strict=True))}"
             )
+            if self.parent._config.except_on_illegal:
+                raise RuntimeError(illegal_str)
+            self.log.error(illegal_str)
 
     def set_axes(self, **kwargs):
         """

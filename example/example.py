@@ -1,18 +1,23 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2023-2024 Vypercore. All Rights Reserved
+# Copyright (c) 2023-2025 Vypercore. All Rights Reserved
 
-from pathlib import Path
-from git.repo import Repo
+import logging
 import random
+from pathlib import Path
+
+from git.repo import Repo
+
 from bucket import CoverageContext
 from bucket.rw import ConsoleWriter, HTMLWriter, MergeReading, PointReader, SQLAccessor
+
 from .common import MadeUpStuff
 from .top import TopPets
 
 # This file sets up and runs the example coverage. While it doesn't reflect the expected
 # setup within a testbench, it will demonstrate several useful features.
 
-def create_trace(self):
+
+def pretend_monitor(rand):
     """
     Nonsense function to generate a trace object for the example
     In a real testbench this would come from monitors, etc
@@ -23,53 +28,57 @@ def create_trace(self):
 
     trace = {}
 
-    trace["type"] = self.random.choice(["Cat", "Dog"])
-    trace["Breed"] = self.random.randint(0, 4)
-    trace["Age"] = self.random.randint(0, 15)
-    trace["Name"] = self.random.choice(MadeUpStuff.pet_names)
+    trace["type"] = rand.choice(["Cat", "Dog"])
+    trace["Breed"] = rand.randint(0, 4)
+    trace["Age"] = rand.randint(0, 15)
+    trace["Name"] = rand.choice(MadeUpStuff.pet_names)
 
     if trace["type"] == "Dog":
-        trace["Chew_toy"] = self.random.choices(
-            ["Slipper", "Ball", "Stick", "Ring"], k=2
-        )
-        trace["Weight"] = self.random.randint(5, 50)
-        trace["Leg"] = self.random.choice([1, 2, 4, 8])
+        trace["Chew_toy"] = rand.choices(["Slipper", "Ball", "Stick", "Ring"], k=2)
+        trace["Weight"] = rand.randint(5, 50)
+        trace["Leg"] = rand.choice([1, 2, 4, 8])
 
     else:
-        trace["Evil_thoughts"] = self.random.randint(5, 50)
-        trace["Superiority"] = self.random.choice(["low", "medium", "high"])
-        trace["Play_toy"] = self.random.choice(
+        trace["Evil_thoughts"] = rand.randint(5, 50)
+        trace["Superiority"] = rand.choice(["low", "medium", "high"])
+        trace["Play_toy"] = rand.choice(
             ["Toy_mouse", "Scratching Post", "Laser", "Box"]
         )
     return trace
 
 
-def run(db_path: Path, rand: random.Random):
-    # Get some common pet info for coverpoints to use
+def run_testbench(
+    db_path: Path,
+    rand: random.Random,
+    logger: logging.Logger,
+    apply_filters_and_logging: bool = False,
+):
+    samples = 250
+
+    # Get some common pet info for coverpoints to use. This would usually come from an ISA
+    # or defined constants. In this case,  it is breeds and names of pets for coverage to use.
+    log.info("Get information used to build coverpoints")
     pet_info = MadeUpStuff()
 
-    # Instance two copies of the coverage. Normally only one is required, but this is to
-    # demonstrate merging coverage.
-    # The first instance demonstrates the use of filters to remove some of the coverage,
-    # while still being able to merge with another run of coverage. These wouldn't
-    # normally be hardcoded, but instead come from the command line/regression
-    # configuration.
+    # Instance the coverage. We'll be doing this twice in this example, but this is to demonstrate
+    # merging as well as other features.
+    log.info("Build coverpoints...")
     with CoverageContext(pet_info=pet_info):
-        cvg_a = TopPets().include_by_name("toys_by_name")
-        cvg_a.exclude_by_name(["group_b"])
+        if apply_filters_and_logging:
+            # except_on_illegal is set here as an example, but the filtered coverage
+            # is not expected to hit any illegal buckets
+            cvg = TopPets(log=log, verbosity=logging.DEBUG, except_on_illegal=True)
+            # If apply_filters_and_logging is passed in, apply filters to the coverage
+            # Filtered coverage will only activate the selected coverpoints
+            # but remain compatible with the full coverage for merging
+            cvg.include_by_name("toys_by_name")
+            cvg.exclude_by_name(["group_b", "group_2"])
+        else:
+            cvg = TopPets()
 
-    with CoverageContext(pet_info=pet_info):
-        cvg_b = TopPets()
-
-    # Instance 2 samplers. Again, you would only normally have one, but two are used here
-    # to demonstrate merging coverage from multiple regressions/tests.
-    sampler_a = MySampler(coverage=cvg_a)
-    for _ in range(100):
-        sampler_a.sample(sampler_a.create_trace())
-
-    sampler_b = MySampler(coverage=cvg_b)
-    for _ in range(500):
-        sampler_b.sample(sampler_b.create_trace())
+    log.info("Run the 'test'...")
+    for _ in range(samples):
+        cvg.sample(pretend_monitor(rand))
 
     # Create a context specific hash
     # This is stored alongside recorded coverage and is used to determine if
@@ -79,71 +88,99 @@ def run(db_path: Path, rand: random.Random):
     # Create a reader
     point_reader = PointReader(context_hash)
 
-    # Read the two sets of coverage
-    reading_a = point_reader.read(cvg_a)
-    reading_b = point_reader.read(cvg_b)
+    # Read the coverage
+    reading = point_reader.read(cvg)
 
-    # Create a local sql database
+    # Create/Access a local sql database
     sql_accessor = SQLAccessor.File(db_path)
 
-    # Write each reading into the database
-    rec_ref_a = sql_accessor.write(reading_a)
-    rec_ref_b = sql_accessor.write(reading_b)
-
-    # Read back from sql
-    sql_reading_a = sql_accessor.read(rec_ref_a)
-    sql_reading_b = sql_accessor.read(rec_ref_b)
-
-    # Merge together
-    merged_reading = MergeReading(sql_reading_a, sql_reading_b)
-
-    # Write merged coverage into the database
-    rec_ref_merged = sql_accessor.write(merged_reading)
+    # Write the reading into the database
+    rec_ref = sql_accessor.write(reading)
 
     # Output to console
-    print("\n-------------------------------------------------------")
-    print("This is the coverage with 100 samples:")
-    print(
-        f"To view this coverage in detail please run: python -m bucket write console --sql-path example_file_store.db --points --record {rec_ref_a}"
+    if apply_filters_and_logging:
+        log.info(f"\nThis is the reduced coverage with {samples} samples:")
+    else:
+        log.info(f"This is the coverage with {samples} samples:")
+    log.info(
+        f"To view this coverage in detail please run: python -m bucket write console --sql-path example_file_store.db --points --record {rec_ref}"
     )
-    ConsoleWriter().write(reading_a)
-    print(
-        "\nThis is the coverage from 2 regressions. One with 100 samples, and one with 500:"
-    )
-    print(
+    ConsoleWriter().write(reading)
+    log.info("-------------------------------------------------------")
+
+    if apply_filters_and_logging:
+        # print_tree() is a useful function to see the hierarchy of your coverage
+        # You can call it from the top level covergroup, or from another covergroup
+        # within your coverage tree.
+        log.info("Print tree for whole coverage using 'cvg.print_tree():")
+        cvg.print_tree()
+
+        log.info("-------------------------------------------------------")
+        log.info("Print tree for partial coverage using 'cvg.dogs.print_tree():")
+        cvg.dogs.print_tree()
+        log.info("-------------------------------------------------------")
+
+    return rec_ref
+
+
+def merge(log, regr_db_path, merged_db_path, ref_1, ref_2):
+    log = log.getChild("merger")
+
+    # Access regression and merged sql databases
+    r_sql_accessor = SQLAccessor.File(regr_db_path)
+    m_sql_accessor = SQLAccessor.File(merged_db_path)
+
+    # Read back from sql
+    sql_reading_1 = r_sql_accessor.read(ref_1)
+    sql_reading_2 = r_sql_accessor.read(ref_2)
+
+    # Merge together
+    merged_reading = MergeReading(sql_reading_1, sql_reading_2)
+
+    # Write merged coverage into the merged database
+    rec_ref_merged = m_sql_accessor.write(merged_reading)
+
+    log.info("This is the merged coverage from the above 2 regressions.")
+    log.info(
         f"To view this coverage in detail please run: python -m bucket write console --sql-path example_file_store.db --points --record {rec_ref_merged}"
     )
     ConsoleWriter().write(merged_reading)
+    log.info("-------------------------------------------------------")
 
     # Read all back from sql - note as the db is not removed this will
     # accumulate each time this example is run. This will also include
     # merged data as well as the individual runs. It is meant as an example
     # of how to use the command
-    merged_reading_all = MergeReading(*sql_accessor.read_all())
-    print("\nThis is the coverage from all the regression data so far:")
-    print("(To reset please delete the file 'example_file_store')")
+    merged_reading_all = MergeReading(*r_sql_accessor.read_all())
+    log.info("This is the coverage from all the regression data so far:")
+    log.info(
+        f"(To reset please delete the files '{regr_db_path}' and '{merged_db_path}')"
+    )
     ConsoleWriter().write(merged_reading_all)
+    log.info("-------------------------------------------------------")
 
     # Generating web viewer
     # To generate the HTML report run:
     # python -m bucket write html --sql-path ./example_file_store.db --output index.html
+    log.info("Generating the web viewer for all coverage")
     try:
         HTMLWriter().write(merged_reading_all)
-        print("\n-------------------------------------------------------")
-        print("Open index.html to view coverage")
+        log.info("To see the coverage in your browser open: index.html")
     except Exception:
-        print("\n-------------------------------------------------------")
-        print("Web viewer failed")
-
-    # print_tree() is a useful function to see the hierarchy of your coverage
-    # You can call it from the top level covergroup, or from another covergroup
-    # within your coverage tree.
-    print("\n-------------------------------------------------------")
-    print("Print coverage tree for cvg_a")
-    cvg_a.print_tree()
-    cvg_a.dogs.print_tree()
+        log.error("Web viewer failed")
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
+    log = logging.getLogger("tb")
+    log.setLevel(logging.DEBUG)
+
     rand = random.Random()
-    run("example_file_store.db", rand)
+    reg_db_path = "example_regr_file_store.db"
+    merged_db_path = "example_merged_file_store.db"
+
+    ref_1 = run_testbench(reg_db_path, rand, log)
+
+    ref_2 = run_testbench(reg_db_path, rand, log, apply_filters_and_logging=True)
+
+    merge(log, reg_db_path, merged_db_path, ref_1, ref_2)
