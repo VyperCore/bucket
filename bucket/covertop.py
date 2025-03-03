@@ -40,7 +40,7 @@ class Covertop(Covergroup):
 
         else:
             self.log = logging.getLogger("bucket")
-        if verbosity:
+        if verbosity is not None:
             self.log.setLevel(verbosity)
         self._init(self.log, config=self.config)
 
