@@ -33,7 +33,6 @@ class Covertop(Covergroup):
                 log, logging.Logger
             ), f"log should be an instance of logging.Logger. Instead got {type(log)}"
             self.log = log.getChild("bucket")
-            self.log.info("REPORTING FOR DUTY")
 
         else:
             self.log = logging.getLogger("bucket")
