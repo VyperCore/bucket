@@ -1,6 +1,6 @@
 <!--
   ~ SPDX-License-Identifier: MIT
-  ~ Copyright (c) 2023-2024 Vypercore. All Rights Reserved
+  ~ Copyright (c) 2023-2025 Vypercore. All Rights Reserved
   -->
 
 # Getting Started:
@@ -18,7 +18,7 @@ Below describes how to use Bucket to create a coverage tree, sample your data an
 1. [Introduction](introduction.md)
 2. [Coverpoints](coverpoints.md)
 3. [Covergroups](covergroups.md)
-4. [Filters](filters.md)
+4. [Covertop](covertop.md)
 5. [Adding coverage to the testbench](add_to_testbench.md)
 6. [Exporting and merging coverage](export_and_merge.md)
 7. [Viewing coverage](viewing_coverage.md)

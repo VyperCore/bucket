@@ -7,7 +7,7 @@ import logging
 from collections import defaultdict
 from enum import Enum
 from types import SimpleNamespace
-from typing import Callable
+from typing import TYPE_CHECKING, Callable
 
 from pydantic import validate_call
 
@@ -19,6 +19,9 @@ from .common.types import TagStrs
 from .context import CoverageContext
 from .goal import GoalItem
 from .link import CovDef, CovRun
+
+if TYPE_CHECKING:
+    from .covertop import CoverConfig
 
 
 class GOAL(Enum):
@@ -73,9 +76,11 @@ class Coverpoint(CoverBase):
         name: str | None = None,
         description: str | None = None,
         motivation: str | None = None,
-        parent=None,
+        *,
+        config: "CoverConfig",
     ):
         self._active = True
+        self._config = config
 
         self.log = log
         self.debug = log.debug
@@ -92,7 +97,7 @@ class Coverpoint(CoverBase):
         # Dictionary of goals for each bucket
         self._cvg_goals = {}
         # Instance of Bucket class to increment hit count for a bucket
-        self.bucket = Bucket(self, log)
+        self.bucket = Bucket(parent=self, log=log)
 
         self._tier = 0
         self._tier_active = True
@@ -116,7 +121,7 @@ class Coverpoint(CoverBase):
                 goal = self._goal_dict["DEFAULT"]
             self._sha.update(goal.sha.digest())
 
-        self.info(f"{self._name}: {self._description} created")
+        self.debug(f"Coverpoint created: {self._name}: {self._description}")
 
     def _setup(self):
         """
