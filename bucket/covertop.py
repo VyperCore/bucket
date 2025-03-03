@@ -23,24 +23,23 @@ class Covertop(Covergroup):
     def __init__(
         self,
         log: logging.Logger | None = None,
-        verbosity: str | int = logging.INFO,
+        verbosity: str | int | None = None,
         except_on_illegal: bool = False,
     ):
         self.config = CoverConfig(except_on_illegal=except_on_illegal)
-
-        if not isinstance(verbosity, int):
-            verbosity = getattr(logging, verbosity)
 
         if log:
             assert isinstance(
                 log, logging.Logger
             ), f"log should be an instance of logging.Logger. Instead got {type(log)}"
             self.log = log.getChild("bucket")
-            self.log.setLevel(verbosity)
-            self.log.info("REPORTING FOR DUTY")
 
         else:
             self.log = logging.getLogger("bucket")
+
+        if verbosity is not None:
+            if not isinstance(verbosity, int):
+                verbosity = getattr(logging, verbosity)
             self.log.setLevel(verbosity)
         self._init(self.log, config=self.config)
 
