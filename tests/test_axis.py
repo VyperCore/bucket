@@ -252,3 +252,19 @@ class TestSanitiseValues:
         result = axis.sanitise_values(test_stimulus)
         assert list(result.keys()) == ["1 -> 6", "Apple", "Banana", "Cherry"]
         assert list(result.values()) == [[1, 6], "Apple", "Banana", "Cherry"]
+
+    def test_dict_with_non_string_keys(self):
+        """Check that a dict with non-string keys is not allowed"""
+        axis = Axis(name="test", values=[0], description="test")
+
+        test_stimulus = {
+            3: 3,
+            2: 2,
+            1: 1,
+        }
+
+        with pytest.raises(
+            AssertionError,
+            match="Values provided for axis are incorrectly formatted: 3 is int. All names must be string",
+        ):
+            axis.sanitise_values(test_stimulus)

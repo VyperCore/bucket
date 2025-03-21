@@ -78,8 +78,10 @@ class Axis:
             values_dict[str(self.other_name)] = None
 
         for key in values_dict:
-            assert isinstance(key, str), f'Values provided for axis "{self.name}" \
-                are incorrectly formatted {key} is {type(key)}. All names must be string'
+            assert isinstance(key, str), (
+                "Values provided for axis are incorrectly formatted: "
+                + f"{key} is {type(key).__name__}. All names must be string"
+            )
 
         return dict(sorted(values_dict.items()))
 
