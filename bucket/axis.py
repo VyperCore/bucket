@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2023-2024 Vypercore. All Rights Reserved
+# Copyright (c) 2023-2025 Vypercore. All Rights Reserved
 
 import hashlib
 from functools import lru_cache
@@ -41,15 +41,25 @@ class Axis:
         The return dictionary will have string form of the values as the key
         and the values (or ranges) as the value.
         """
+
+        def check_ranges(ranges):
+            assert all(
+                isinstance(item, int) for item in ranges
+            ), "Ranges should be specified as integers"
+            assert (
+                len(ranges) == 2
+            ), f"length of range is not 2. Length was {len(ranges)}"
+
         if isinstance(values, dict):
             values_dict = values
+            for v in values_dict.values():
+                if isinstance(v, list | tuple | set):
+                    check_ranges(v)
         elif isinstance(values, list | tuple | set):
             values_dict = {}
             for v in values:
                 if isinstance(v, list | tuple | set):
-                    assert (
-                        len(v) == 2
-                    ), f"length of min-max is not 2. Length was {len(v)}: ({v})"
+                    check_ranges(v)
                     sorted_v = sorted(v)
                     key = f"{sorted_v[0]} -> {sorted_v[1]}"
                     values_dict[key] = sorted_v
@@ -65,11 +75,11 @@ class Axis:
             assert (
                 self.other_name not in values_dict
             ), f'Values already contains "{self.other_name}"'
-            values_dict[self.other_name] = None
+            values_dict[str(self.other_name)] = None
 
         for key in values_dict:
             assert isinstance(key, str), f'Values provided for axis "{self.name}" \
-                are incorrectly formatted: {values}. All keys must be string'
+                are incorrectly formatted {key} is {type(key)}. All names must be string'
 
         return dict(sorted(values_dict.items()))
 
