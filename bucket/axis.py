@@ -29,6 +29,10 @@ class AxisIncorrectValueFormat(Exception):
     pass
 
 
+class AxisUnrecognisedValue(Exception):
+    pass
+
+
 class Axis:
     def __init__(
         self,
@@ -129,13 +133,15 @@ class Axis:
             for k, v in self.values.items():
                 if value == v:
                     return k
-                elif isinstance(v, list):
+                elif isinstance(v, list) and isinstance(value, int):
                     if v[0] <= value <= v[1]:
                         return k
 
             # Value not recognised as user defined
             # If 'other' category has been enabled, then return other name
-            if self.enable_other:
-                return self.other_name
-
-            raise Exception(f"Unrecognised value for axis '{self.name}': {value}")
+            ensure(
+                self.enable_other,
+                AxisUnrecognisedValue,
+                f"Unrecognised value for axis '{self.name}': {value}",
+            )
+            return self.other_name
