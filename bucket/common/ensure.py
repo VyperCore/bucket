@@ -12,3 +12,12 @@ def ensure(condition, error_type, message):
     """
     if not condition:
         raise error_type(message)
+
+
+def raise_assertion(error_type, message):
+    """
+    For when you want to raise an exception without a condition.
+    :param error_type: The type of exception to raise
+    :param message: The message to include in the exception
+    """
+    ensure(False, error_type, message)

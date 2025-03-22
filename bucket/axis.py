@@ -5,7 +5,7 @@ import hashlib
 from functools import lru_cache
 
 from .common.chain import Link, OpenLink
-from .common.ensure import ensure
+from .common.ensure import ensure, raise_assertion
 from .link import CovDef
 
 
@@ -96,8 +96,7 @@ class Axis:
                 else:
                     values_dict[str(v)] = v
         else:
-            ensure(
-                False,
+            raise_assertion(
                 AxisIncorrectValueFormat,
                 f"Unexpected type for values. Got {type(values)}. Expected dict/list/tuple/set",
             )
