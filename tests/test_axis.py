@@ -177,7 +177,7 @@ class TestSanitiseValues:
 
     def test_dict_with_undersized_range(self):
         """
-        Pass in a list range with non-ints, as part of dict
+        Pass in a dict with an undersized range
         Should raise an assertion error.
         """
         axis = Axis(
@@ -194,7 +194,7 @@ class TestSanitiseValues:
 
     def test_dict_with_oversized_range(self):
         """
-        Pass in a list range with non-ints, as part of dict
+        Pass in a dict with an oversized range
         Should raise an assertion error.
         """
         axis = Axis(
@@ -227,7 +227,7 @@ class TestSanitiseValues:
             axis.sanitise_values(test_stimulus)
 
     def test_set_range_values(self):
-        """Check that a unordered list is returned as a sorted dict"""
+        """Check that a set range is correctly processed"""
         axis = Axis(name="test", values=[0], description="test")
 
         test_stimulus = ["Cherry", "Banana", "Apple", {9, 3}]
@@ -236,7 +236,7 @@ class TestSanitiseValues:
         assert list(result.values()) == [[3, 9], "Apple", "Banana", "Cherry"]
 
     def test_list_range_values(self):
-        """Check that a unordered list is returned as a sorted dict"""
+        """Check that a list range is correctly processed"""
         axis = Axis(name="test", values=[0], description="test")
 
         test_stimulus = ["Cherry", "Banana", "Apple", [19, 5]]
@@ -245,7 +245,7 @@ class TestSanitiseValues:
         assert list(result.values()) == [[5, 19], "Apple", "Banana", "Cherry"]
 
     def test_tuple_range_values(self):
-        """Check that a unordered list is returned as a sorted dict"""
+        """Check that a tuple range is correctly processed"""
         axis = Axis(name="test", values=[0], description="test")
 
         test_stimulus = ["Cherry", "Banana", "Apple", (6, 1)]
