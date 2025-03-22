@@ -5,7 +5,28 @@ import hashlib
 from functools import lru_cache
 
 from .common.chain import Link, OpenLink
+from .common.ensure import ensure
 from .link import CovDef
+
+
+class AxisRangeNotInt(Exception):
+    pass
+
+
+class AxisRangeIncorrectLength(Exception):
+    pass
+
+
+class AxisIncorrectNameFormat(Exception):
+    pass
+
+
+class AxisOtherNameAlreadyInUse(Exception):
+    pass
+
+
+class AxisIncorrectValueFormat(Exception):
+    pass
 
 
 class Axis:
@@ -43,12 +64,17 @@ class Axis:
         """
 
         def check_ranges(ranges):
-            assert all(
-                isinstance(item, int) for item in ranges
-            ), "Ranges should be specified as integers"
-            assert (
-                len(ranges) == 2
-            ), f"length of range is not 2. Length was {len(ranges)}"
+            ensure(
+                all(isinstance(item, int) for item in ranges),
+                AxisRangeNotInt,
+                "Ranges should be specified as integers",
+            )
+            ensure(
+                len(ranges) == 2,
+                AxisRangeIncorrectLength,
+                "Ranges should be specified as a list of two integers"
+                + f"length of range is not 2. Length was {len(ranges)}",
+            )
 
         if isinstance(values, dict):
             values_dict = values
@@ -66,21 +92,27 @@ class Axis:
                 else:
                     values_dict[str(v)] = v
         else:
-            raise Exception(
-                f"Unexpected type for values. Got {type(values)}. Expected dict/list/tuple/set"
+            ensure(
+                False,
+                AxisIncorrectValueFormat,
+                f"Unexpected type for values. Got {type(values)}. Expected dict/list/tuple/set",
             )
 
         # Add 'other' if enabled
         if self.enable_other:
-            assert (
-                self.other_name not in values_dict
-            ), f'Values already contains "{self.other_name}"'
+            ensure(
+                self.other_name not in values_dict,
+                AxisOtherNameAlreadyInUse,
+                f'Values already contains "{self.other_name}"',
+            )
             values_dict[str(self.other_name)] = None
 
         for key in values_dict:
-            assert isinstance(key, str), (
+            ensure(
+                isinstance(key, str),
+                AxisIncorrectNameFormat,
                 "Values provided for axis are incorrectly formatted: "
-                + f"{key} is {type(key).__name__}. All names must be string"
+                + f"{key} is {type(key).__name__}. All names must be string",
             )
 
         return dict(sorted(values_dict.items()))

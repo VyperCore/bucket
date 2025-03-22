@@ -3,7 +3,14 @@
 
 import pytest
 
-from bucket.axis import Axis
+from bucket.axis import (
+    Axis,
+    AxisIncorrectNameFormat,
+    AxisIncorrectValueFormat,
+    AxisOtherNameAlreadyInUse,
+    AxisRangeIncorrectLength,
+    AxisRangeNotInt,
+)
 
 
 class TestSanitiseValues:
@@ -105,7 +112,7 @@ class TestSanitiseValues:
             "Banana": 2,
             "Apple": 1,
         }
-        with pytest.raises(AssertionError, match='Values already contains "Apple"'):
+        with pytest.raises(AxisOtherNameAlreadyInUse):
             axis.sanitise_values(test_stimulus)
 
     def test_named_other_non_string(self):
@@ -129,16 +136,10 @@ class TestSanitiseValues:
         Pass in a set range with too few values
         Should raise an assertion error.
         """
-        axis = Axis(
-            name="test",
-            values=[0],
-            description="test",
-        )
+        axis = Axis(name="test", values=[0], description="test")
 
         test_stimulus = [1, 2, 3, 4, {5}]
-        with pytest.raises(
-            AssertionError, match="length of range is not 2. Length was 1"
-        ):
+        with pytest.raises(AxisRangeIncorrectLength):
             axis.sanitise_values(test_stimulus)
 
     def test_oversized_list_range(self):
@@ -146,16 +147,10 @@ class TestSanitiseValues:
         Pass in a list range with too many values
         Should raise an assertion error.
         """
-        axis = Axis(
-            name="test",
-            values=[0],
-            description="test",
-        )
+        axis = Axis(name="test", values=[0], description="test")
 
         test_stimulus = [1, 2, 3, 4, [5, 6, 7]]
-        with pytest.raises(
-            AssertionError, match="length of range is not 2. Length was 3"
-        ):
+        with pytest.raises(AxisRangeIncorrectLength):
             axis.sanitise_values(test_stimulus)
 
     def test_non_int_tuple_range(self):
@@ -163,16 +158,10 @@ class TestSanitiseValues:
         Pass in a tuple range with non-ints
         Should raise an assertion error.
         """
-        axis = Axis(
-            name="test",
-            values=[0],
-            description="test",
-        )
+        axis = Axis(name="test", values=[0], description="test")
 
         test_stimulus = [1, 2, 3, 4, ("Steve", "Bob")]
-        with pytest.raises(
-            AssertionError, match="Ranges should be specified as integers"
-        ):
+        with pytest.raises(AxisRangeNotInt):
             axis.sanitise_values(test_stimulus)
 
     def test_dict_with_undersized_range(self):
@@ -180,16 +169,10 @@ class TestSanitiseValues:
         Pass in a dict with an undersized range
         Should raise an assertion error.
         """
-        axis = Axis(
-            name="test",
-            values=[0],
-            description="test",
-        )
+        axis = Axis(name="test", values=[0], description="test")
 
         test_stimulus = {"Apple": 1, "Banana": 2, "Cherry": [3]}
-        with pytest.raises(
-            AssertionError, match="length of range is not 2. Length was 1"
-        ):
+        with pytest.raises(AxisRangeIncorrectLength):
             axis.sanitise_values(test_stimulus)
 
     def test_dict_with_oversized_range(self):
@@ -197,16 +180,10 @@ class TestSanitiseValues:
         Pass in a dict with an oversized range
         Should raise an assertion error.
         """
-        axis = Axis(
-            name="test",
-            values=[0],
-            description="test",
-        )
+        axis = Axis(name="test", values=[0], description="test")
 
         test_stimulus = {"Apple": 1, "Banana": 2, "Cherry": [50, 63, 75, 88]}
-        with pytest.raises(
-            AssertionError, match="length of range is not 2. Length was 4"
-        ):
+        with pytest.raises(AxisRangeIncorrectLength):
             axis.sanitise_values(test_stimulus)
 
     def test_dict_with_non_int_range(self):
@@ -214,16 +191,10 @@ class TestSanitiseValues:
         Pass in a tuple range with non-ints, as part of dict
         Should raise an assertion error.
         """
-        axis = Axis(
-            name="test",
-            values=[0],
-            description="test",
-        )
+        axis = Axis(name="test", values=[0], description="test")
 
         test_stimulus = {"Apple": 1, "Banana": 2, "Cherry": ("Steve", "Bob")}
-        with pytest.raises(
-            AssertionError, match="Ranges should be specified as integers"
-        ):
+        with pytest.raises(AxisRangeNotInt):
             axis.sanitise_values(test_stimulus)
 
     def test_set_range_values(self):
@@ -263,8 +234,14 @@ class TestSanitiseValues:
             1: 1,
         }
 
-        with pytest.raises(
-            AssertionError,
-            match="Values provided for axis are incorrectly formatted: 3 is int. All names must be string",
-        ):
+        with pytest.raises(AxisIncorrectNameFormat):
+            axis.sanitise_values(test_stimulus)
+
+    def test_incorrect_values_type(self):
+        """Check that incorrect type for values is not allowed"""
+        axis = Axis(name="test", values=[0], description="test")
+
+        test_stimulus = 1
+
+        with pytest.raises(AxisIncorrectValueFormat):
             axis.sanitise_values(test_stimulus)
