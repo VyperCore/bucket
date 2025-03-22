@@ -391,6 +391,3 @@ class TestGetNamedValue:
             # The first call doesn't count as a hit,
             # but the second call should be a hit.
             assert cache_info.hits == count
-
-
-class TestChain: ...
