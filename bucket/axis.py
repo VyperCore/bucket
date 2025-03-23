@@ -5,11 +5,7 @@ import hashlib
 from functools import lru_cache
 
 from .common.chain import Link, OpenLink
-from .common.exceptions import (
-    BucketException,
-    ensure,
-    raise_exception,
-)
+from .common.exceptions import BucketException
 from .link import CovDef
 
 
@@ -76,17 +72,13 @@ class Axis:
         """
 
         def check_ranges(ranges):
-            ensure(
-                all(isinstance(item, int) for item in ranges),
-                AxisRangeNotInt,
-                "Ranges should be specified as integers",
-            )
-            ensure(
-                len(ranges) == 2,
-                AxisRangeIncorrectLength,
-                "Ranges should be specified as a list of two integers"
-                + f"length of range is not 2. Length was {len(ranges)}",
-            )
+            if any(not isinstance(item, int) for item in ranges):
+                raise AxisRangeNotInt("Ranges should be specified as integers")
+            if len(ranges) != 2:
+                raise AxisRangeIncorrectLength(
+                    "Ranges should be specified as a list of two integers"
+                    + f"length of range is not 2. Length was {len(ranges)}"
+                )
 
         if isinstance(values, dict):
             values_dict = values
@@ -104,27 +96,25 @@ class Axis:
                 else:
                     values_dict[str(v)] = v
         else:
-            raise_exception(
-                AxisIncorrectValueFormat,
-                f"Unexpected type for values. Got {type(values)}. Expected dict/list/tuple/set",
+            raise AxisIncorrectValueFormat(
+                f"Unexpected type for values. Got {type(values)}. Expected dict/list/tuple/set"
             )
 
         # Add 'other' if enabled
         if self.enable_other:
-            ensure(
-                self.other_name not in values_dict,
-                AxisOtherNameAlreadyInUse,
-                f'Values already contains "{self.other_name}"',
-            )
+            if self.other_name in values_dict:
+                raise AxisOtherNameAlreadyInUse(
+                    f'Values already contains name "{self.other_name}"'
+                    + " - alterate name for Other must be used"
+                )
             values_dict[str(self.other_name)] = None
 
         for key in values_dict:
-            ensure(
-                isinstance(key, str),
-                AxisIncorrectNameFormat,
-                "Values provided for axis are incorrectly formatted: "
-                + f"{key} is {type(key).__name__}. All names must be string",
-            )
+            if not isinstance(key, str):
+                raise AxisIncorrectNameFormat(
+                    "Values provided for axis are incorrectly formatted: "
+                    + f"{key} is {type(key).__name__}. All names must be string",
+                )
 
         return dict(sorted(values_dict.items()))
 
@@ -146,9 +136,8 @@ class Axis:
 
             # Value not recognised as user defined
             # If 'other' category has been enabled, then return other name
-            ensure(
-                self.enable_other,
-                AxisUnrecognisedValue,
-                f"Unrecognised value for axis '{self.name}': {value}",
-            )
+            if not self.enable_other:
+                raise AxisUnrecognisedValue(
+                    f'Unrecognised value for axis "{self.name}": {value}',
+                )
             return self.other_name
