@@ -5,31 +5,39 @@ import hashlib
 from functools import lru_cache
 
 from .common.chain import Link, OpenLink
-from .common.ensure import ensure, raise_assertion
+from .common.exceptions import (
+    BucketException,
+    ensure,
+    raise_exception,
+)
 from .link import CovDef
 
 
-class AxisRangeNotInt(Exception):
+class AxisException(BucketException):
     pass
 
 
-class AxisRangeIncorrectLength(Exception):
+class AxisRangeNotInt(AxisException):
     pass
 
 
-class AxisIncorrectNameFormat(Exception):
+class AxisRangeIncorrectLength(AxisException):
     pass
 
 
-class AxisOtherNameAlreadyInUse(Exception):
+class AxisIncorrectNameFormat(AxisException):
     pass
 
 
-class AxisIncorrectValueFormat(Exception):
+class AxisOtherNameAlreadyInUse(AxisException):
     pass
 
 
-class AxisUnrecognisedValue(Exception):
+class AxisIncorrectValueFormat(AxisException):
+    pass
+
+
+class AxisUnrecognisedValue(AxisException):
     pass
 
 
@@ -96,7 +104,7 @@ class Axis:
                 else:
                     values_dict[str(v)] = v
         else:
-            raise_assertion(
+            raise_exception(
                 AxisIncorrectValueFormat,
                 f"Unexpected type for values. Got {type(values)}. Expected dict/list/tuple/set",
             )
