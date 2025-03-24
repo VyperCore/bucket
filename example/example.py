@@ -10,7 +10,7 @@ from git.repo import Repo
 from bucket import CoverageContext
 from bucket.rw import ConsoleWriter, HTMLWriter, MergeReading, PointReader, SQLAccessor
 
-from .common import MadeUpStuff
+from .common import CatInfo, DogInfo, MadeUpStuff, PetInfo
 from .top import TopPets
 
 # This file sets up and runs the example coverage. While it doesn't reflect the expected
@@ -22,28 +22,29 @@ def pretend_monitor(rand):
     Nonsense function to generate a trace object for the example
     In a real testbench this would come from monitors, etc
     For this example, create random dog and cat data and put in a dictionary
-    In practise this would normally be a class, which can be populated with as
+    In practice this would normally be a class, which can be populated with as
     many types of nested data as required.
     """
 
-    trace = {}
+    trace = PetInfo()
+    trace.pet_type = rand.choice(["Cat", "Dog"])
+    trace.breed = rand.randint(0, 4)
+    trace.age = rand.randint(0, 18)
+    trace.name = rand.choice(MadeUpStuff.pet_names)
 
-    trace["type"] = rand.choice(["Cat", "Dog"])
-    trace["Breed"] = rand.randint(0, 4)
-    trace["Age"] = rand.randint(0, 15)
-    trace["Name"] = rand.choice(MadeUpStuff.pet_names)
-
-    if trace["type"] == "Dog":
-        trace["Chew_toy"] = rand.choices(["Slipper", "Ball", "Stick", "Ring"], k=2)
-        trace["Weight"] = rand.randint(5, 50)
-        trace["Leg"] = rand.choice([1, 2, 4, 8])
+    if trace.pet_type == "Dog":
+        info = DogInfo()
+        info.chew_toy = rand.choices(MadeUpStuff.dog_chew_toys, k=2)
+        info.weight = rand.randint(5, 50)
+        info.leg = rand.choice([1, 2, 4, 8])
+        trace.info = info
 
     else:
-        trace["Evil_thoughts"] = rand.randint(5, 50)
-        trace["Superiority"] = rand.choice(["low", "medium", "high"])
-        trace["Play_toy"] = rand.choice(
-            ["Toy_mouse", "Scratching Post", "Laser", "Box"]
-        )
+        info = CatInfo()
+        info.evil_thoughts_per_hour = rand.randint(5, 50)
+        info.superiority_factor = rand.choice(MadeUpStuff.cat_superiority)
+        info.play_toy = rand.choice(MadeUpStuff.cat_play_toy)
+        trace.info = info
     return trace
 
 
@@ -178,9 +179,13 @@ def run(reg_db_path: Path = "example_regr_file_store.db"):
 
     merged_db_path = "example_merged_file_store.db"
 
+    # Run "testbench" once with all coverage enabled
     ref_1 = run_testbench(reg_db_path, rand, log)
+
+    # Run "testbench" a second time with some coverage filtered
     ref_2 = run_testbench(reg_db_path, rand, log, apply_filters_and_logging=True)
 
+    # Merge the two runs
     merge(log, reg_db_path, merged_db_path, ref_1, ref_2)
 
 

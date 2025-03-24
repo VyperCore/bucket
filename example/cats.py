@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2023-2024 Vypercore. All Rights Reserved
+# Copyright (c) 2023-2025 Vypercore. All Rights Reserved
 
 from bucket import Covergroup, Coverpoint
 
@@ -26,7 +26,7 @@ class TopCats(Covergroup):
         """
         This function is used to stop cat coverage being sampled when not relevant
         """
-        return True if trace["type"] == "Cat" else False
+        return True if trace.pet_type == "Cat" else False
 
 
 class CatsAndToys(Covergroup):
@@ -76,7 +76,7 @@ class CatStats(Coverpoint):
             "Derek",
             "Ethel",
             "Barbara",
-            "Connie",
+            "Linda",
             "Graham",
         ]
 
@@ -85,13 +85,13 @@ class CatStats(Coverpoint):
         self.add_axis(
             name="name",
             values=self.important_names,
-            description="All the acceptable dog names",
+            description="All the acceptable cat names",
         )
         # The values passed to this axes is a list of int
         self.add_axis(
             name="age",
-            values=list(range(16)),
-            description="Dog age in years",
+            values=list(range(19)),
+            description="Cat age in years",
         )
         # The values in this axis are named ranges, in a dict.
         # Single values and ranges can be mixed in a dict
@@ -117,12 +117,14 @@ class CatStats(Coverpoint):
             return goals.SUSPICIOUS
 
     def sample(self, trace):
-        if trace["Name"] not in self.important_names:
+        if trace.name not in self.important_names:
             return
 
         self.bucket.clear()
         self.bucket.set_axes(
-            name=trace["Name"], age=trace["Age"], evil_thoughts=trace["Evil_thoughts"]
+            name=trace.name,
+            age=trace.age,
+            evil_thoughts=trace.info.evil_thoughts_per_hour,
         )
         self.bucket.hit()
 
@@ -168,17 +170,17 @@ class PlayToysByAge(Coverpoint):
         # This could also be achieved by creating the axis with
         # a dict which specifies ranges for each age group. Then the value
         # from trace can be set directly without processing here.
-        cat_age = trace["Age"]
+        cat_age = trace.age
         if cat_age < 2:
             age = "Kitten"
-        elif cat_age > 12:
+        elif cat_age > 15:
             age = "Senior"
         else:
             age = "Adult"
 
         with self.bucket as bucket:
-            bucket.set_axes(breed=trace["Breed"], age=age)
-            bucket.set_axes(favourite_toy=trace["Play_toy"])
+            bucket.set_axes(breed=trace.breed, age=age)
+            bucket.set_axes(favourite_toy=trace.info.play_toy)
             bucket.hit()
 
 
@@ -206,14 +208,14 @@ class PlayToysByName(Coverpoint):
     def sample(self, trace):
         # 'with bucket' is used, so bucket values are cleared each time
         # bucket can also be manually cleared by using bucket.clear()
-        if trace["Name"] not in self.valid_names:
+        if trace.name not in self.valid_names:
             return
 
         with self.bucket as bucket:
             bucket.set_axes(
-                breed=trace["Breed"],
-                name=trace["Name"],
-                favourite_toy=trace["Play_toy"],
+                breed=trace.breed,
+                name=trace.name,
+                favourite_toy=trace.info.play_toy,
             )
             bucket.hit()
 
@@ -240,10 +242,17 @@ class VIPNames(Coverpoint):
             enable_other="Plebs",
         )
 
+        self.add_axis(
+            name="superiority_factor",
+            values=ctx.pet_info.cat_superiority,
+            description="All known cat breeds",
+        )
+
     def sample(self, trace):
         with self.bucket as bucket:
             bucket.set_axes(
-                breed=trace["Breed"],
-                name=trace["Name"],
+                breed=trace.breed,
+                name=trace.name,
+                superiority_factor=trace.info.superiority_factor,
             )
             bucket.hit()
