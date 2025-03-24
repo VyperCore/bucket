@@ -105,7 +105,7 @@ class Axis:
             if self.other_name in values_dict:
                 raise AxisOtherNameAlreadyInUse(
                     f'Values already contains name "{self.other_name}"'
-                    + " - alterate name for Other must be used"
+                    + " - alternate name for Other must be used"
                 )
             values_dict[str(self.other_name)] = None
 
