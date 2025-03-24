@@ -1,9 +1,39 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2023-2024 Vypercore. All Rights Reserved
+# Copyright (c) 2023-2025 Vypercore. All Rights Reserved
 
 from typing import Callable
 
 from pydantic import validate_call
+
+from .common.exceptions import BucketException
+
+
+class AxisUtilsException(BucketException):
+    pass
+
+
+class AxisUtilsOneHotIncorrectWidth(AxisUtilsException):
+    pass
+
+
+class AxisUtilsOneHotIncompatibleOptions(AxisUtilsException):
+    pass
+
+
+class AxisUtilsMsbIncorrectWidth(AxisUtilsException):
+    pass
+
+
+class AxisUtilsMsbIncompatibleOptions(AxisUtilsException):
+    pass
+
+
+class AxisUtilsRangesMinHigherThanMax(AxisUtilsException):
+    pass
+
+
+class AxisUtilsRangesTooManyRanges(AxisUtilsException):
+    pass
 
 
 class AxisUtils:
@@ -11,7 +41,7 @@ class AxisUtils:
 
     @validate_call
     def one_hot(
-        width: int = None,
+        width: int,
         display_bin: bool = False,
         display_hex: bool = False,
         include_zero: bool = False,
@@ -31,13 +61,17 @@ class AxisUtils:
             Returns: Dict of {bucket_name: value}
 
         """
-        assert width > 0, f"Width must be 1+ for one_hot_axis. Recieved: {width}"
-        assert not (
-            display_bin and display_hex
-        ), "Either display_bin OR display_hex may be set for one_hot"
+        if width <= 0:
+            raise AxisUtilsOneHotIncorrectWidth(
+                f"Width must be 1+ for one_hot_axis. Received: {width}"
+            )
+        if display_bin and display_hex:
+            raise AxisUtilsOneHotIncompatibleOptions(
+                "Either display_bin OR display_hex may be set for one_hot"
+            )
 
         if not (display_bin or display_hex):
-            if width < 8:
+            if width <= 8:
                 display_bin = True
             else:
                 display_hex = True
@@ -49,8 +83,8 @@ class AxisUtils:
             one_hot_vals.append(1 << i)
 
         if display_bin:
-            pad = width if pad_zero else 0
-            one_hot_dict = {f"0b{v:0{pad}b}": v for v in one_hot_vals}
+            pad = (width + ((width - 1) // 4)) if pad_zero else 0
+            one_hot_dict = {f"0b{v:0{pad}_b}": v for v in one_hot_vals}
         elif display_hex:
             # Count hexadecimal bits plus underscores
             pad = (((width - 1) // 4) + 1 + ((width - 1) // 16)) if pad_zero else 0
@@ -60,7 +94,7 @@ class AxisUtils:
 
     @validate_call
     def msb(
-        width: int = None,
+        width: int,
         display_bin: bool = False,
         display_hex: bool = False,
         pad_zero: bool = True,
@@ -81,13 +115,17 @@ class AxisUtils:
             Returns: Dict of {bucket_name: value_range}
 
         """
-        assert width > 1, f"Width must be 2+ for msb_axis. Recieved: {width}"
-        assert not (
-            display_bin and display_hex
-        ), "Either display_bin OR display_hex may be set for msb"
+        if width < 2:
+            raise AxisUtilsMsbIncorrectWidth(
+                f"Width must be 2+ for msb_axis. Received: {width}"
+            )
+        if display_bin and display_hex:
+            raise AxisUtilsMsbIncompatibleOptions(
+                "Either display_bin OR display_hex may be set for msb"
+            )
 
         if not (display_bin or display_hex):
-            if width < 8:
+            if width <= 8:
                 display_bin = True
             else:
                 display_hex = True
@@ -113,8 +151,8 @@ class AxisUtils:
             return [lower, upper]
 
         if display_bin:
-            pad = width if pad_zero else 0
-            msb_dict = {f"0b{v:0{pad}b}": val_range(v) for v in msb_vals}
+            pad = (width + ((width - 1) // 4)) if pad_zero else 0
+            msb_dict = {f"0b{v:0{pad}_b}": val_range(v) for v in msb_vals}
         elif display_hex:
             # Count hexadecimal bits plus underscores
             pad = (((width - 1) // 4) + 1 + ((width - 1) // 16)) if pad_zero else 0
@@ -136,17 +174,15 @@ class AxisUtils:
 
     @validate_call
     def ranges(
+        max_val: int,
+        num_ranges: int,
         min_val: int = 0,
-        max_val: int | None = None,
-        num_ranges: int = None,
         separate_min: bool = False,
         separate_max: bool = False,
         formatter: Callable[[int], str] = str,
     ):
         """
         Creates an axis with a specified number of ranges from min to max values.
-        Decimal values will be used if max_val < 2**20, else they will be hexadecimal
-
         eg. max_val=100, num_ranges=5, separate_max=True:
         -> {
              "0 -> 19": [0, 19],
@@ -156,7 +192,6 @@ class AxisUtils:
              "80 -> 99": [80, 99],
              "100": 100
             }
-
 
         Parameters:
             min_val: Min value for range (default: 0)
@@ -169,19 +204,19 @@ class AxisUtils:
         Returns: Dict of {bucket_name: value}
 
         """
-
-        assert max_val is not None, "Max_val must be provided"
-        assert (
-            min_val < max_val
-        ), f"min_val ({min_val} must be lower than max_val ({max_val}))"
+        if min_val >= max_val:
+            raise AxisUtilsRangesMinHigherThanMax(
+                f"min_val ({min_val}) must be lower than max_val ({max_val})"
+            )
 
         # assert each range is 1+ in size
         total_range = max_val - min_val
         total_range -= 1 if separate_min else 0
         total_range -= 1 if separate_max else 0
-        assert (
-            (total_range / num_ranges) > 1.0
-        ), f"Total range is too small to have {num_ranges} ranges. Need at least 1 value per range."
+        if (total_range // num_ranges) < 1:
+            raise AxisUtilsRangesTooManyRanges(
+                f"Total range is too small to have {num_ranges} ranges. Need at least 1 value per range."
+            )
 
         ranges = {}
         if separate_min:
