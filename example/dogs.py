@@ -26,7 +26,7 @@ class TopDogs(Covergroup):
         """
         This function is used to stop dog coverage being sampled when not relevant
         """
-        return True if trace.pet_type == "Dog" else False
+        return trace.pet_type == "Dog"
 
 
 class DogsAndToys(Covergroup):
