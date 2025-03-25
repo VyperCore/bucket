@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2023-2024 Vypercore. All Rights Reserved
+# Copyright (c) 2023-2025 Vypercore. All Rights Reserved
 
 
 from bucket import AxisUtils, Covergroup, Coverpoint
@@ -22,6 +22,12 @@ class TopDogs(Covergroup):
         self.add_coverpoint(DogStats())
         self.add_covergroup(DogsAndToys())
 
+    def should_sample(self, trace):
+        """
+        This function is used to stop dog coverage being sampled when not relevant
+        """
+        return trace.pet_type == "Dog"
+
 
 class DogsAndToys(Covergroup):
     """
@@ -36,21 +42,15 @@ class DogsAndToys(Covergroup):
             ChewToysByAgeAndFavLeg().set_tier(5).set_tags(["toys", "age", "legs"])
         )
         self.add_coverpoint(
-            ChewToysByNameAndBreed(names=["Barbara", "Connie", "Graham"]),
+            ChewToysByNameAndBreed(names=["Barbara", "Ethel", "Graham"]),
             name="chew_toys_by_name__group_a",
             description="Preferred chew toys by name (Group A)",
         )
         self.add_coverpoint(
-            ChewToysByNameAndBreed(names=["Clive", "Derek", "Ethel"]),
+            ChewToysByNameAndBreed(names=["Clive", "Derek", "Linda"]),
             name="chew_toys_by_name__group_b",
             description="Preferred chew toys by name (Group B)",
         )
-
-    def should_sample(self, trace):
-        """
-        This function is used to stop dog coverage being sampled when not relevant
-        """
-        return True if trace["type"] == "Dog" else False
 
 
 class DogStats(Coverpoint):
@@ -73,10 +73,12 @@ class DogStats(Coverpoint):
             description="All the acceptable dog names",
         )
         # The values passed to this axes is a list of int
+        # "Other" is enabled, so any value above 15 will be grouped into "16+"
         self.add_axis(
             name="age",
             values=list(range(16)),
             description="Dog age in years",
+            enable_other="16+",
         )
         # The values in this axis are named ranges, in a dict.
         # Single values and ranges can be mixed in a dict
@@ -94,16 +96,15 @@ class DogStats(Coverpoint):
         # Buckets use str names, not values. If you want to compare against a value,
         # you must first convert the string back to int, etc
         # Any bucket with no goal assigned, will have the default goal applied
-        if int(bucket.age) <= 1 and bucket.size in ["large"]:
+        if bucket.age != "16+" and int(bucket.age) <= 1 and bucket.size in ["large"]:
             return goals.HECKIN_CHONKY
 
     def sample(self, trace):
-        # Don't sample coverage if this isn't a dog
-        if trace["type"] != "Dog":
-            return
-
+        # In this example, the bucket is manually cleared each time
+        # before setting to new values.
+        # Finally hit() is called to increment the hit count
         self.bucket.clear()
-        self.bucket.set_axes(name=trace["Name"], age=trace["Age"], size=trace["Weight"])
+        self.bucket.set_axes(name=trace.name, age=trace.age, size=trace.info.weight)
         self.bucket.hit()
 
 
@@ -132,10 +133,14 @@ class ChewToysByAgeAndFavLeg(Coverpoint):
 
         self.add_axis(
             name="favourite_toy",
-            values=["Slipper", "Ball", "Stick", "Ring"],
+            values=ctx.pet_info.dog_chew_toys,
             description="Types of dog toys",
         )
 
+        # Here are 3 example goals which are applied to the coverpoint's buckets.
+        # ILLEGAL goals will generate an error if the bucket is hit
+        # IGNORE goals will not be counted
+        # TARGET goals modify the required hit count for the bucket
         self.add_goal("NO_SLIPPERS", "Only puppies chew slippers!", illegal=True)
         self.add_goal(
             "FRONT_LEGS_ONLY",
@@ -160,10 +165,10 @@ class ChewToysByAgeAndFavLeg(Coverpoint):
         # 'with bucket' is used, so bucket values are cleared each time
         # bucket can also be manually cleared by using bucket.clear()
 
-        # This could also be achieved by creating the axis with
+        # Dog age groups could also be achieved by creating the axis with
         # a dict which specifies ranges for each age group. Then the value
         # from trace can be set directly without processing here.
-        dog_age = trace["Age"]
+        dog_age = trace.age
         if dog_age < 2:
             age = "Puppy"
         elif dog_age > 12:
@@ -172,12 +177,12 @@ class ChewToysByAgeAndFavLeg(Coverpoint):
             age = "Adult"
 
         with self.bucket as bucket:
-            bucket.set_axes(age=age, favourite_leg=trace["Leg"])
+            bucket.set_axes(age=age, favourite_leg=trace.info.leg)
 
             # For when multiple values might need covering from one trace
-            # Only need to set the axes that change
-            for toy in range(len(trace["Chew_toy"])):
-                bucket.set_axes(favourite_toy=trace["Chew_toy"][toy])
+            # Only need to re-set the axes that change
+            for toy in range(len(trace.info.chew_toy)):
+                bucket.set_axes(favourite_toy=trace.info.chew_toy[toy])
                 bucket.hit()
 
 
@@ -196,12 +201,7 @@ class ChewToysByNameAndBreed(Coverpoint):
     def setup(self, ctx):
         self.add_axis(
             name="breed",
-            values={
-                "Border Collie": [0, 1],
-                "Whippet": 2,
-                "Labrador": 3,
-                "Cockapoo": 4,
-            },
+            values=ctx.pet_info.dog_breeds,
             description="All known dog breeds",
         )
         self.add_axis(
@@ -211,33 +211,34 @@ class ChewToysByNameAndBreed(Coverpoint):
         )
         self.add_axis(
             name="favourite_toy",
-            values=["Slipper", "Ball", "Stick", "Ring"],
+            values=ctx.pet_info.dog_chew_toys,
             description="Types of dog toys",
         )
 
         self.add_goal(
-            "WEIRDO_DOG", "Collies named Barbara can't be trusted", ignore=True
+            "WEIRDO_DOG", "Collies named Barbara or Linda can't be trusted", ignore=True
         )
 
     def apply_goals(self, bucket, goals):
-        if bucket.breed == "Border Collie" and bucket.name in ["Barbara"]:
+        if bucket.breed == "Border Collie" and bucket.name in ["Barbara", "Linda"]:
             return goals.WEIRDO_DOG
 
     def sample(self, trace):
         # 'with bucket' is used, so bucket values are cleared each time
         # bucket can also be manually cleared by using bucket.clear()
 
-        if trace["Name"] not in self.name_group:
+        # We're only covering a subset of names in this coverpoint instance
+        if trace.name not in self.name_group:
             return
 
         with self.bucket as bucket:
             bucket.set_axes(
-                breed=trace["Breed"],
-                name=trace["Name"],
+                breed=trace.breed,
+                name=trace.name,
             )
 
             # For when multiple values might need covering from one trace
             # Only need to set the axes that change
-            for toy in range(len(trace["Chew_toy"])):
-                bucket.set_axes(favourite_toy=trace["Chew_toy"][toy])
+            for toy in range(len(trace.info.chew_toy)):
+                bucket.set_axes(favourite_toy=trace.info.chew_toy[toy])
                 bucket.hit()
