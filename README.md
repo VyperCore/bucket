@@ -34,10 +34,10 @@ There are several features planned, these include:
 - <s>Coverage filtering</s>
 - <s>Tiered/tagged coverage</s>
 - <s>Browser-based coverage viewer</s>
+- <s>Use logging instead of print</s>
+- <s>Improved documentation</s>
 - Additional coverage viewer features
 - CI / testing
-- Improved documentation
-- Use logging instead of print
 - Track which testcases contribute to coverage
 - Speed optimisations
 
